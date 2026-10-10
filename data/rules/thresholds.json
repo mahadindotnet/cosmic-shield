@@ -1,0 +1,23 @@
+{
+  "missionDay": 42,
+  "commsDelayMinutes": 22,
+  "vitals": {
+    "heartRateBpm": { "baseline": 68, "watchHigh": 88, "watchLow": 52 },
+    "hrvMs": { "baseline": 42, "watchLow": 28 },
+    "spo2Pct": { "baseline": 97, "watchLow": 94 },
+    "systolicBp": { "baseline": 118, "watchHigh": 135, "watchLow": 100 },
+    "diastolicBp": { "baseline": 72, "watchHigh": 88 },
+    "sleepHours": { "baseline": 7.2, "watchLow": 5.5 },
+    "stressIndex": { "baseline": 35, "watchHigh": 65 },
+    "radiationMsvDay": { "baseline": 0.18, "watchHigh": 0.35, "cumulativeWatchMsv": 8.5 }
+  },
+  "trends": {
+    "hrDriftDays": 14,
+    "hrDriftBpm": 6
+  },
+  "modules": {
+    "bristolEscalateTypes": [6, 7],
+    "sansConfidenceWatch": 0.72,
+    "sansConfidenceEscalate": 0.88
+  }
+}

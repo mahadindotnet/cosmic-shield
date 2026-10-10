@@ -1,0 +1,12 @@
+{
+  "source": "NASA Human Research Program — human system risks",
+  "url": "https://humanresearchroadmap.nasa.gov/",
+  "riskDomains": [
+    { "id": "immune", "label": "Altered immune response", "mapsTo": "immune changes" },
+    { "id": "cardio", "label": "Cardiovascular adaptations", "mapsTo": "cardiovascular events" },
+    { "id": "bone", "label": "Bone and muscle changes", "mapsTo": "bone loss" },
+    { "id": "behavioral", "label": "Behavioral health and psychiatric disorders", "mapsTo": "behavioral health" },
+    { "id": "radiation", "label": "Radiation carcinogenesis / acute exposure", "mapsTo": "radiation stressor" },
+    { "id": "sans", "label": "Spaceflight Associated Neuro-ocular Syndrome (SANS)", "mapsTo": "ocular screening" }
+  ]
+}

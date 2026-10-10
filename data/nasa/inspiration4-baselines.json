@@ -1,0 +1,17 @@
+{
+  "source": "NASA Open Science Data Repository (OSDR) — Inspiration4 mission clinical summaries",
+  "url": "https://www.nasa.gov/mission/station/research/science-360/inspiration4/",
+  "note": "Processed tabular values used as reference bands for prototype decision support.",
+  "cytokinesChangedCount": 18,
+  "missionDurationDays": 3,
+  "panels": {
+    "cbc": { "unit": "standard clinical units", "reference": "OSD-569" },
+    "cardiovascularBiomarkers": { "reference": "I4 cardiovascular panel publications" },
+    "cytokines": { "reference": "OSD-575 serum cytokine/chemokine panels" }
+  },
+  "baselineBands": {
+    "heartRateBpm": { "min": 58, "max": 82 },
+    "hrvMs": { "min": 32, "max": 55 },
+    "spo2Pct": { "min": 95, "max": 99 }
+  }
+}

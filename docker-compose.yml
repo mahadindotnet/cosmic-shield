@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: cosmic
+      POSTGRES_PASSWORD: cosmic
+      POSTGRES_DB: cosmic_shield
+    ports:
+      - "5432:5432"
+    volumes:
+      - cosmic_shield_pg:/var/lib/postgresql/data
+
+volumes:
+  cosmic_shield_pg:
