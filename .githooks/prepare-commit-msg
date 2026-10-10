@@ -1,0 +1,7 @@
+#!/bin/sh
+# Strip IDE co-author trailers so GitHub contributor list stays team-only.
+COMMIT_MSG_FILE=$1
+if [ -f "$COMMIT_MSG_FILE" ]; then
+  sed -i '' '/^Co-authored-by: Cursor /d' "$COMMIT_MSG_FILE" 2>/dev/null || \
+  sed -i '/^Co-authored-by: Cursor /d' "$COMMIT_MSG_FILE" 2>/dev/null || true
+fi
