@@ -88,7 +88,7 @@ export function RadiationView() {
           </EntryForm>
           <TrendChart
             title="Daily dose"
-            description={env ? `Typical on ${env.name}: ${env.radiationMsvPerDay} mSv/d` : undefined}
+            description={env ? `Typical on ${env.name}: ${env.radiationMsvPerDay} mSv/d (${env.radiation.basis}: ${env.radiation.sourceLabel})` : undefined}
             data={doseTrend}
             unit="mSv/d"
             baseline={band}

@@ -12,7 +12,13 @@ export async function runMissionCopilot(input: {
     const rad = getRadiationSummary();
     return {
       toolsUsed,
-      reply: `Radiation summary (${rad.source}): cumulative sample exposure ${rad.cumulativeMsv} mSv across the reference window. Today's onboard reading should be compared to mission cumulative limits and any SPE events in the log. This is decision support — confirm with flight surgeon protocols before changing operations.`,
+      reply: `Reference dose rates (${rad.source}):\n${rad.environments
+        .map((e) =>
+          e.mSvPerDay !== null
+            ? `- ${e.environment}: ${e.mSvPerDay} mSv/day (${e.basis})`
+            : `- ${e.environment}: ${e.typicalMGyPerDay} mGy/day absorbed (no dose equivalent available)`,
+        )
+        .join("\n")}\n\nCompare today's onboard reading with these references, the mission cumulative limit and any SPE events in the log. This is decision support — confirm with flight surgeon protocols before changing operations.`,
     };
   }
 

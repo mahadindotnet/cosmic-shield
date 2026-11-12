@@ -20,7 +20,7 @@ The mark is a **shield** (protection), crossed by an **orbit** (space), with a *
 | `chart-baseline`, `chart-baseline-edge` | Baseline band fill and edge in `TrendChart` |
 
 Rules:
-- Status colours never appear without an icon and a text label (`StatusBadge`). Normal is green, Watch is amber, Escalate is red, and "No data" is grey.
+- Status colours never appear without an icon and a text label (`StatusBadge`). Normal is green, Watch is amber, Escalate is red, and "No data" is grey. The meaning of each level is explained in every page's Instructions popup (not in the top bar).
 - Never use status colours for chart series, and never use chart colours to show status.
 - Reference facts that aren't crew health (such as the mission environment) use `StatusCard neutral`.
 - The chart palette was checked with a colour-vision-deficiency validator against the dark surface (worst adjacent ΔE 9.4).
@@ -40,7 +40,7 @@ Rules:
 | `HistoryTable` | Typed column definitions for previous entries, with an empty state |
 | `EntryForm` (+ `EntryField`, `EntryFieldGrid`, `SegmentedField`) | Card-framed form; values arrive as an object in `onSubmit` |
 | `HowToMeasure` | Numbered onboard guidance with equipment, duration, tip and caution |
-| `SectionHeader`, `ModuleGrid`, `ModuleRow` | Shared page scaffolding so every tab lines up |
+| `ModulePage`, `ModuleHero`, `PageSection` | Shared page scaffolding so every tab lines up |
 
 Baseline bands live in `lib/health/reference-ranges.ts` and read the Watch thresholds from `data/rules/thresholds.json`.
 
@@ -52,14 +52,15 @@ The dashboard background is a full-screen image (`SpaceBackdrop`) with a light s
 |---|---|
 | None selected | `public/backgrounds/default.webp` (purple forest) |
 | ISS | `public/backgrounds/iss.webp` |
-| Lunar base | `public/backgrounds/lunar.webp` |
+| Lunar surface | `public/backgrounds/lunar.webp` |
 | Mars transit | `public/backgrounds/mars-transit.webp` |
+| Mars surface | `public/backgrounds/mars-surface.webp` (a crop of the Mars image) |
 
-The astronaut picks an environment with `MissionPicker` (on Overview, the Mission tab, and in every module banner when none is set). The choice is saved in localStorage. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
+The astronaut picks an environment with `MissionPicker`: always in the top navigation bar (`variant="bar"`), on the Mission tab, and in module banners when none is set. The choice is saved in localStorage. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose (from `data/nasa`, see docs/nasa-data-sources.md) and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
 
 ## Body map and feature images
 
-`BodyMap` on Overview uses `public/organs/body-front.webp`, `body-left.webp` and `body-right.webp`. All three are cropped to the same 305 × 461 box so the poses line up. Hovering plays one turn (front, left, front, right, front) and settles on the front view, where the callouts are placed. Reduced motion keeps it on the front view. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection.
+`BodyMap` on the Health Dashboard uses `public/organs/body-front.webp`, `body-left.webp` and `body-right.webp`. All three are cropped to the same 305 × 461 box so the poses line up. Hovering plays one turn (front, left, front, right, front) and settles on the front view, where the callouts are placed. Reduced motion keeps it on the front view. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection.
 
 Feature pages show transparent images from `public/organs/` (heart, bone, eye, gi, mind) through `OrganImage`. Callout positions are fractions of each image, converted with `onImage(fx, fy, aspect)`; if an image is replaced, update its aspect constant in the view. Sources are in `feature_img/`. `bone.webp` is recoloured to light cyan so it shows on dark backgrounds. Sleep & Stress and Radiation keep drawn SVG holograms (`holograms.tsx`).
 

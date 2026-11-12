@@ -4,7 +4,6 @@ import { Bell, CalendarCheck, Dumbbell, Flame, ScanLine, Trophy } from "lucide-r
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BodyMap } from "@/components/cosmic-shield/body-map";
 import { MissionContext } from "@/components/cosmic-shield/mission-context";
-import { SectionHeader } from "@/components/cosmic-shield/section-header";
 import { getSection, type SectionSlug } from "@/components/cosmic-shield/sections";
 import { StatusCard } from "@/components/cosmic-shield/status-card";
 
@@ -23,9 +22,10 @@ function ModuleCard({ slug }: { slug: SectionSlug }) {
 export function OverviewView() {
   return (
     <>
-      <SectionHeader section={getSection("overview")!} />
+      {/* Title and description live in the top bar and the Instructions popup. */}
+      <h1 className="sr-only">{getSection("overview")!.title}</h1>
       <div id="overview-mission" className="scroll-mt-20">
-        <MissionContext />
+        <MissionContext showPicker={false} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,400px)_minmax(0,1fr)]">

@@ -147,6 +147,36 @@ export function parseLabNumber(v: string | undefined): number | null {
 
 /* --------------------------------------------------------- RadLab doses */
 
+/** A day counts as elevated when its dose exceeds this multiple of the window median. */
+export const ELEVATED_DAY_FACTOR = 1.5;
+
+/**
+ * Consecutive runs of days whose dose is above `factor` × the median of all
+ * days (a simple, transparent flag for spikes such as solar particle events).
+ */
+export function elevatedRuns(days: readonly { day: string; dose: number }[], factor = ELEVATED_DAY_FACTOR) {
+  if (days.length === 0) return [];
+  const threshold = factor * median(days.map((d) => d.dose));
+  const runs: { start: string; end: string; peak_day: string; peak: number; threshold: number }[] = [];
+  let prev: string | null = null;
+  for (const d of [...days].sort((a, b) => a.day.localeCompare(b.day))) {
+    if (d.dose <= threshold) {
+      prev = null;
+      continue;
+    }
+    const last = runs.at(-1);
+    const consecutive = prev !== null && Date.parse(`${d.day}T00:00Z`) - Date.parse(`${prev}T00:00Z`) === 86_400_000;
+    if (last && consecutive) {
+      last.end = d.day;
+      if (d.dose > last.peak) Object.assign(last, { peak_day: d.day, peak: d.dose });
+    } else {
+      runs.push({ start: d.day, end: d.day, peak_day: d.day, peak: d.dose, threshold });
+    }
+    prev = d.day;
+  }
+  return runs;
+}
+
 export interface DoseSample {
   /** UTC day, "YYYY-MM-DD". */
   day: string;

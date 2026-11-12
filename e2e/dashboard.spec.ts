@@ -1,7 +1,7 @@
 import { test, expect, type Page } from "@playwright/test";
 
 const TABS = [
-  ["overview", "Overview"],
+  ["overview", "Health Dashboard"],
   ["vitals", "Vitals"],
   ["sleep-stress", "Sleep & Stress"],
   ["radiation", "Radiation"],
@@ -14,8 +14,8 @@ const TABS = [
 
 /** Module pages show the tab name in the eyebrow above a display title. */
 function visibleModuleHeading(page: Page, title: string) {
-  return title === "Overview"
-    ? page.getByRole("heading", { level: 1, name: "Overview" })
+  return title === "Health Dashboard"
+    ? page.getByRole("heading", { level: 1, name: "Health Dashboard" })
     : page.getByTestId("module-eyebrow").filter({ visible: true, hasText: title });
 }
 
@@ -31,7 +31,7 @@ const BODY_SPOTS = [
 
 test("sidebar navigates all nine tabs", async ({ page }) => {
   await page.goto("/dashboard");
-  await expect(page.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { level: 1, name: "Health Dashboard" })).toBeAttached({ timeout: 30_000 });
 
   for (const [slug, title] of TABS) {
     await page.getByTestId(`nav-${slug}`).click();
@@ -57,13 +57,15 @@ test("mission environment switches background and info, and is remembered", asyn
   const backdrop = page.getByTestId("space-backdrop");
   await expect(backdrop).toHaveAttribute("data-environment", "default");
 
-  await visible("mission-mars-transit").click();
+  // The environment buttons live in the top navigation bar.
+  await page.getByTestId("topbar-mission-mars-transit").click();
   await expect(backdrop).toHaveAttribute("data-environment", "mars-transit");
-  await expect(page.getByTestId("header-mission")).toHaveText(/Mars transit · 3–22 min/);
+  await expect(page.getByTestId("topbar-mission-mars-transit")).toHaveAttribute("aria-checked", "true");
+  await expect(visible("mission-context")).toContainText("3–22 min");
 
   await page.getByTestId("nav-radiation").click();
-  await expect(page.getByText("Typical on Mars transit: 1.8 mSv/d").filter({ visible: true })).toBeVisible();
-  await expect(page.getByText("Below watch 0–3 mSv/d").filter({ visible: true })).toBeVisible();
+  await expect(page.getByText("Typical on Mars transit: 1.84 mSv/d").filter({ visible: true })).toBeVisible();
+  await expect(page.getByText("Below watch 0–3.7 mSv/d").filter({ visible: true })).toBeVisible();
 
   await page.getByTestId("nav-mission").click();
   await visible("mission-lunar").click();
@@ -90,6 +92,8 @@ test("every page has an Instructions popup", async ({ page }) => {
     const dialog = page.getByTestId("instructions-dialog");
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole("heading", { name: `How to use ${title}` })).toBeVisible();
+    // The Normal / Watch / Escalate legend moved from the top bar into the popup.
+    await expect(dialog.getByTestId("instructions-status-levels")).toContainText("Escalate");
     await dialog.getByRole("button", { name: "Got it" }).click();
     await expect(dialog).toBeHidden();
   }

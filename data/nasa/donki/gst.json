@@ -3,7 +3,7 @@
   "startDate": "2026-09-13",
   "endDate": "2026-11-12",
   "source": "https://api.nasa.gov/DONKI/GST?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
-  "fetchedAt": "2026-11-12T14:07:20.148Z",
+  "fetchedAt": "2026-11-12T15:28:34.282Z",
   "count": 3,
   "events": [
     {

@@ -54,7 +54,8 @@ See [docs/TECH_STACK.md](./docs/TECH_STACK.md) and [docs/ARCHITECTURE.md](./docs
 Reference data and documentation:
 
 - [OSDR OSD-575](https://osdr.nasa.gov/bio/repo/data/studies/OSD-575) — Inspiration4 metabolic panel baselines (pre- and post-flight only; no in-flight samples)  
-- [RadLab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/) — measured daily dose for ISS, lunar orbit and the Mars surface  
+- [RadLab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/) — measured daily dose for ISS, lunar orbit and the Mars surface; ISS dose equivalent from ALTEA  
+- Published dose equivalents where RadLab has none: Mars transit (Zeitlin et al. 2013), Mars surface (Hassler et al. 2014), lunar surface (Zhang et al. 2020)  
 - [DONKI](https://api.nasa.gov/) — recent solar flares, SEPs, CMEs and geomagnetic storms  
 - [NASA Human Research Program risks](https://humanresearchroadmap.nasa.gov/) — escalation framework  
 

@@ -5,7 +5,8 @@
  *
  * Reads only data/nasa/ (no network) and writes:
  *   data/nasa/derived/baselines.json              OSD-575 metabolic panel
- *   data/nasa/derived/radiation-environments.json RadLab daily dose per environment
+ *   data/nasa/derived/radiation-environments.json daily dose per environment
+ *     (RadLab measurements; published mSv/day only where RadLab has none)
  *   data/nasa/derived/space-weather.json          latest 30 DONKI events
  * and copies all three into data/nasa/fixtures/ (the committed offline backup).
  *
@@ -19,6 +20,8 @@ import {
   changeFrom,
   compareTimepoints,
   dailyDoses,
+  ELEVATED_DAY_FACTOR,
+  elevatedRuns,
   mode,
   parseLabNumber,
   parseSampleName,
@@ -28,16 +31,19 @@ import {
   summarize,
   type DoseSample,
 } from "./lib/baseline-math";
-import { donkiHost, latestEvents, simplifyDonkiEvent, type DonkiType, type SpaceWeatherEvent } from "./lib/donki";
+import { donkiHost, latestEvents, simplifyDonkiEvent, type DonkiType, type SpaceWeatherEvent } from "../lib/nasa/donki";
 import {
   DERIVED,
   DONKI,
   FIXTURES_DIR,
   MANIFEST,
   OSDR,
+  PUBLISHED_DOSE_EQUIVALENT,
+  RADIATION_ENVIRONMENTS,
   RADLAB_DOCS,
   RADLAB_SOURCES,
   radlabUrl,
+  type RadiationEnvironmentDef,
   type RadlabSource,
 } from "./nasa-sources";
 
@@ -290,62 +296,145 @@ function doseStats(days: { day: string; dose: number }[]) {
   return { mean: sig4(s.mean), median: sig4(s.median), min: sig4(s.min), max: sig4(s.max) };
 }
 
-async function buildRadiationEntry(s: RadlabSource) {
+/** Absorbed dose or measured dose equivalent from one cached RadLab file. */
+async function radlabSeries(s: RadlabSource) {
   const parsed = parseRadlabCsv(await readFile(s.out, "utf8"), s.out);
-  const absorbedDays = dailyDoses(parsed.absorbed);
-  const equivalentDays = dailyDoses(parsed.equivalent);
-  if (absorbedDays.length === 0) throw new Error(`${s.id}: no complete days of absorbed_dose_rate in ${s.out}`);
-  const abs = doseStats(absorbedDays);
-  const eq = equivalentDays.length ? doseStats(equivalentDays) : null;
-
+  const days = dailyDoses(s.role === "absorbed" ? parsed.absorbed : parsed.equivalent);
+  const field = s.role === "absorbed" ? "absorbed_dose_rate" : "dose_equivalent_rate";
+  if (days.length === 0) throw new Error(`${s.id}: no complete days of ${field} in ${s.out}`);
   return {
-    environment: s.label,
-    location: s.environment,
-    spacecraft: s.spacecraft,
     instrument: s.instrument,
+    spacecraft: s.spacecraft,
     detectors: parsed.detectors,
-    date_range: { start: absorbedDays[0].day, end: absorbedDays.at(-1)!.day },
+    date_range: { start: days[0].day, end: days.at(-1)!.day },
     query_window_utc: { start: `${s.start}Z`, end: `${s.end}Z` },
-    days_used: absorbedDays.length,
-    samples: parsed.rows,
-    mGy_per_day: abs.mean,
-    median_mGy_per_day: abs.median,
-    min_mGy_per_day: abs.min,
-    max_mGy_per_day: abs.max,
-    mSv_per_day: eq?.mean ?? null,
-    median_mSv_per_day: eq?.median ?? null,
-    dose_type: eq ? "absorbed dose and dose equivalent" : "absorbed dose only",
-    ...(eq ? {} : { dose_note: "RadLab publishes no dose_equivalent_rate for this instrument in this window, so mSv/day is null." }),
-    relation_note: s.relationNote,
-    daily: absorbedDays.map((d) => ({
-      date: d.day,
-      mGy: sig4(d.dose),
-      mSv: (() => {
-        const e = equivalentDays.find((x) => x.day === d.day);
-        return e ? sig4(e.dose) : null;
-      })(),
-    })),
+    days_used: days.length,
+    stats: doseStats(days),
+    days,
+    note: s.note,
     source: "NASA OSDR RadLab",
     api_url: radlabUrl(s),
     cached_file: s.out,
   };
 }
 
+async function buildRadiationEntry(def: RadiationEnvironmentDef) {
+  const absorbedSrc = RADLAB_SOURCES.find((s) => s.environmentId === def.id && s.role === "absorbed");
+  const measuredSrc = RADLAB_SOURCES.find((s) => s.environmentId === def.id && s.role === "dose_equivalent");
+  const published = PUBLISHED_DOSE_EQUIVALENT.find((p) => p.environmentId === def.id);
+
+  const abs = absorbedSrc ? await radlabSeries(absorbedSrc) : null;
+  const measured = measuredSrc ? await radlabSeries(measuredSrc) : null;
+
+  // Spike flag on the absorbed series (e.g. a solar particle event in the window).
+  const biggest = (abs ? elevatedRuns(abs.days) : []).sort((x, y) => y.peak - x.peak)[0];
+  const notable_event = biggest
+    ? {
+        start: biggest.start,
+        end: biggest.end,
+        peak_day: biggest.peak_day,
+        peak_mGy: sig4(biggest.peak),
+        threshold_mGy: sig4(biggest.threshold),
+        description: `Likely solar particle event: daily absorbed dose above ${ELEVATED_DAY_FACTOR} × the window median. Not confirmed against an event catalogue.`,
+      }
+    : null;
+
+  // Dose equivalent: measured by RadLab first, then a published value. Never estimated.
+  const doseEquivalent = measured
+    ? {
+        basis: "measured" as const,
+        mSv_per_day: measured.stats.mean,
+        typical_mSv_per_day: measured.stats.median,
+        min_daily_mSv: measured.stats.min,
+        max_daily_mSv: measured.stats.max,
+        instrument: measured.instrument,
+        spacecraft: measured.spacecraft,
+        date_range: measured.date_range,
+        days_used: measured.days_used,
+        daily: measured.days.map((d) => ({ date: d.day, mSv: sig4(d.dose) })),
+        note: measured.note,
+        source: measured.source,
+        api_url: measured.api_url,
+        cached_file: measured.cached_file,
+      }
+    : published
+      ? {
+          basis: "published" as const,
+          mSv_per_day: published.mSv_per_day,
+          uncertainty_mSv_per_day: published.uncertainty_mSv_per_day,
+          scope: published.scope,
+          citation: published.citation,
+          quote: published.quote,
+          verified_in: published.verified_in,
+        }
+      : null;
+
+  if (!abs && !doseEquivalent) throw new Error(`${def.id}: no RadLab data and no published value`);
+  const dose_type = abs
+    ? doseEquivalent
+      ? `absorbed dose (RadLab) and dose equivalent (${doseEquivalent.basis})`
+      : "absorbed dose only"
+    : `dose equivalent only (${doseEquivalent!.basis})`;
+
+  return {
+    id: def.id,
+    environment: def.environment,
+    location: def.location,
+    instrument: abs?.instrument ?? null,
+    spacecraft: abs?.spacecraft ?? null,
+    detectors: abs?.detectors ?? [],
+    date_range: abs?.date_range ?? null,
+    query_window_utc: abs?.query_window_utc ?? null,
+    days_used: abs?.days_used ?? 0,
+    mGy_per_day: abs?.stats.mean ?? null,
+    typical_mGy_per_day: abs?.stats.median ?? null,
+    median_mGy_per_day: abs?.stats.median ?? null,
+    min_daily_mGy: abs?.stats.min ?? null,
+    max_daily_mGy: abs?.stats.max ?? null,
+    mSv_per_day: doseEquivalent?.mSv_per_day ?? null,
+    mSv_basis: doseEquivalent?.basis ?? null,
+    dose_type,
+    ...(abs ? {} : { absorbed_note: "No RadLab absorbed-dose data for this environment." }),
+    ...(doseEquivalent
+      ? {}
+      : {
+          dose_equivalent_note:
+            "No measured dose equivalent in RadLab and no published value in the sources used, so mSv/day is null.",
+        }),
+    notable_event,
+    daily: abs?.days.map((d) => ({ date: d.day, mGy: sig4(d.dose) })) ?? [],
+    dose_equivalent: doseEquivalent,
+    note: abs?.note ?? null,
+    source: abs?.source ?? null,
+    api_url: abs?.api_url ?? null,
+    cached_file: abs?.cached_file ?? null,
+  };
+}
+
 async function buildRadiation() {
-  const environments = await Promise.all(RADLAB_SOURCES.map(buildRadiationEntry));
+  const environments = [];
+  for (const def of RADIATION_ENVIRONMENTS) environments.push(await buildRadiationEntry(def));
   await writeJsonAtomic(DERIVED.radiation, {
     generated_at: new Date().toISOString(),
-    source: "NASA OSDR RadLab",
+    source: "NASA OSDR RadLab, plus published dose-equivalent values where RadLab has none",
     docs: RADLAB_DOCS,
     method:
-      "Per detector and UTC day: mean dose rate × 24 h ÷ 1000 (μGy/h → mGy/day; μSv/h → mSv/day where dose_equivalent_rate exists). Detector-days with < 90% of that detector's busiest-day sample count are dropped; detectors are averaged per day; mGy_per_day is the mean of those days and median_mGy_per_day their median. 4 significant figures.",
+      'Per detector and UTC day: mean dose rate × 24 h ÷ 1000 (μGy/h → mGy/day; μSv/h → mSv/day). Detector-days with < 90% of that detector\'s busiest-day sample count are dropped; detectors are averaged per day. mGy_per_day is the mean of the days, typical_mGy_per_day (= median_mGy_per_day) their median, max_daily_mGy the highest day. notable_event flags consecutive days above 1.5 × the median. mSv_per_day is RadLab dose_equivalent_rate where it exists (basis "measured"), otherwise a value copied from a peer-reviewed paper (basis "published"). Cosmic Shield never applies a quality factor. 4 significant figures.',
     caveat:
-      "Absorbed dose (mGy) is measured in each instrument's detector material. It is not dose equivalent or effective dose (mSv), so it cannot be compared directly with crew limits in mSv.",
+      "Absorbed dose (mGy) is measured in each instrument's detector material and is not dose equivalent (mSv). Measured and published mSv values come from different instruments, years and solar conditions than the absorbed-dose windows.",
+    not_available: [
+      "MSL-RAD cruise data (Dec 2011 - Aug 2012) is not in RadLab, so Mars transit has no absorbed dose.",
+      "IV-TEPC and TEPC are in RadLab (2014-2020) but their dose_equivalent_rate is empty, so ISS mSv/day comes from ALTEA-Survey.",
+      "No dose equivalent for lunar orbit (CRaTER reports absorbed dose only).",
+    ],
     environments,
   });
   return environments
-    .map((e) => `${e.environment} ${e.mGy_per_day} (median ${e.median_mGy_per_day}) mGy/day, ${e.dose_type}`)
-    .join("; ");
+    .map(
+      (e) =>
+        `\n    ${e.environment}: ${e.mGy_per_day ?? "-"} mGy/day (typical ${e.typical_mGy_per_day ?? "-"}, max ${e.max_daily_mGy ?? "-"}), ${e.mSv_per_day ?? "-"} mSv/day ${e.mSv_basis ?? ""}${e.notable_event ? ` [event ${e.notable_event.start}→${e.notable_event.end}]` : ""}`,
+    )
+    .join("");
 }
 
 /* ------------------------------------------------- space-weather.json */

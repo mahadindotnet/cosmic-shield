@@ -7,35 +7,41 @@
   },
   "data/nasa/donki/sep.json": {
     "source": "https://api.nasa.gov/DONKI/SEP?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
-    "fetchedAt": "2026-11-12T14:07:18.709Z",
+    "fetchedAt": "2026-11-12T15:28:32.813Z",
     "bytes": 246
   },
   "data/nasa/donki/cme.json": {
     "source": "https://api.nasa.gov/DONKI/CME?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
-    "fetchedAt": "2026-11-12T14:07:19.639Z",
+    "fetchedAt": "2026-11-12T15:28:33.930Z",
     "bytes": 487447
   },
   "data/nasa/donki/gst.json": {
     "source": "https://api.nasa.gov/DONKI/GST?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
-    "fetchedAt": "2026-11-12T14:07:20.151Z",
+    "fetchedAt": "2026-11-12T15:28:34.283Z",
     "bytes": 3253
   },
   "data/nasa/radlab/msl-rad.csv": {
     "source": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=Curiosity&instrument=MSL-RAD&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
-    "fetchedAt": "2026-11-12T14:07:21.463Z",
+    "fetchedAt": "2026-11-12T15:13:57.445Z",
     "bytes": 25835,
     "note": "Curiosity MSL-RAD, 2022-04-01T00:00 → 2022-04-08T00:00 UTC, 574 rows over 7 days"
   },
   "data/nasa/radlab/lro-crater.csv": {
     "source": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=LRO&instrument=CRaTER&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
-    "fetchedAt": "2026-11-12T14:07:22.307Z",
+    "fetchedAt": "2026-11-12T15:13:57.443Z",
     "bytes": 6887,
     "note": "LRO CRaTER, 2022-04-01T00:00 → 2022-04-08T00:00 UTC, 167 rows over 7 days"
   },
   "data/nasa/radlab/iss-dostel.csv": {
     "source": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=ISS&instrument=DosTel&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
-    "fetchedAt": "2026-11-12T14:07:22.396Z",
+    "fetchedAt": "2026-11-12T15:13:57.445Z",
     "bytes": 616075,
     "note": "ISS DosTel, 2022-04-01T00:00 → 2022-04-08T00:00 UTC, 16699 rows over 7 days"
+  },
+  "data/nasa/radlab/iss-altea.csv": {
+    "source": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=ISS&instrument=ALTEA-Survey&timestamp%3E=2011-06-01T00%3A00&timestamp%3C2011-06-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
+    "fetchedAt": "2026-11-12T15:13:57.921Z",
+    "bytes": 469159,
+    "note": "ISS ALTEA-Survey, 2011-06-01T00:00 → 2011-06-08T00:00 UTC, 9614 rows over 7 days"
   }
 }

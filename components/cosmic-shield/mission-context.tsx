@@ -13,13 +13,33 @@ import { cn } from "@/lib/utils";
  */
 export function MissionContext({
   module,
+  showPicker = true,
   className,
 }: {
   /** Omit on Overview to show the environment summary instead of a module note. */
   module?: ModuleSlug;
+  /** False where the top-bar picker is enough (Health Dashboard). */
+  showPicker?: boolean;
   className?: string;
 }) {
   const env = useMissionEnvironment();
+
+  if (!env && !showPicker) {
+    return (
+      <div
+        data-testid="mission-context"
+        className={cn(
+          "mb-4 rounded-xl border border-dashed border-primary/30 bg-background/55 p-3 pl-4 backdrop-blur-md",
+          className,
+        )}
+      >
+        <p className="text-sm font-medium text-foreground">Choose your mission environment in the top bar</p>
+        <p className="text-xs text-muted-foreground">
+          Thresholds, targets and guidance adapt to ISS, the lunar surface, Mars transit or the Mars surface.
+        </p>
+      </div>
+    );
+  }
 
   if (!env) {
     return (
@@ -32,7 +52,7 @@ export function MissionContext({
         <div>
           <p className="text-sm font-medium text-foreground">Choose your mission environment</p>
           <p className="text-xs text-muted-foreground">
-            Thresholds, targets and guidance adapt to ISS, lunar base or Mars transit.
+            Thresholds, targets and guidance adapt to ISS, the lunar surface, Mars transit or the Mars surface.
           </p>
         </div>
         <MissionPicker />
@@ -63,7 +83,7 @@ export function MissionContext({
         <Chip icon={Radiation} label="Dose" value={`${env.radiationMsvPerDay} mSv/d`} />
         <Chip icon={Orbit} label="Gravity" value={env.gravityLabel} />
         <Chip icon={SatelliteDish} label="Ground" value={env.commsDelayLabel} />
-        {!module && <MissionPicker className="md:ml-2" />}
+        {!module && showPicker && <MissionPicker className="md:ml-2" />}
       </div>
     </div>
   );

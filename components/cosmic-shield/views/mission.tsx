@@ -69,7 +69,7 @@ export function MissionView() {
               </div>
             </>
           ) : (
-            <NextStepCard title="Choose where the crew is" body="ISS, Lunar base or Mars transit. The whole app adapts to your choice." />
+            <NextStepCard title="Choose where the crew is" body="ISS, Lunar surface, Mars transit or Mars surface. The whole app adapts to your choice." />
           )
         }
       />

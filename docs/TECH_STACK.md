@@ -29,13 +29,14 @@ Optional **PostgreSQL 16** via `docker-compose.yml` for deployment experiments (
 
 ## NASA reference data
 
-Static JSON under `data/nasa/`:
+Derived JSON under `data/nasa/derived/`, with committed copies in `data/nasa/fixtures/` (built by `npm run data:build`):
 
-- Inspiration4-style baseline bands  
-- RadLab sample daily dose curve  
-- HRP risk domain index  
+- Inspiration4 metabolic panel baselines (OSDR OSD-575)
+- Daily dose per mission environment (OSDR RadLab, plus published values)
+- Recent space weather (DONKI)
+- HRP risk domain index (`data/nasa/hrp-risks.json`)
 
-Loaded by `lib/nasa/loaders.ts` — no live API dependency during demo.
+Loaded by `lib/nasa/loaders.ts` (derived, then fixtures). Space weather can also be fetched live, and falls back to the cache, so the demo works offline. See docs/nasa-data-sources.md.
 
 ## Intelligent systems (in-product)
 

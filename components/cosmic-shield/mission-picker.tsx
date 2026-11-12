@@ -12,22 +12,56 @@ import { cn } from "@/lib/utils";
  *
  * - "compact": three thumbnail pills (Overview, module banners)
  * - "full": large cards with dose / gravity / delay (Mission tab)
+ * - "bar": small pills for the top navigation bar; names hide on narrow screens
  */
 export function MissionPicker({
   variant = "compact",
   className,
 }: {
-  variant?: "compact" | "full";
+  variant?: "compact" | "full" | "bar";
   className?: string;
 }) {
   const { environmentId, setEnvironment } = useMissionStore();
+
+  if (variant === "bar") {
+    return (
+      <div role="radiogroup" aria-label="Mission environment" className={cn("flex items-center gap-1", className)}>
+        {MISSION_ENVIRONMENTS.map((m) => {
+          const selected = m.id === environmentId;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              role="radio"
+              aria-checked={selected}
+              aria-label={m.name}
+              title={`${m.name} · ${m.tagline}`}
+              data-testid={`topbar-mission-${m.id}`}
+              onClick={() => setEnvironment(m.id)}
+              className={cn(
+                "flex h-8 items-center gap-1.5 rounded-full border p-0.5 text-xs font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none xl:pr-3",
+                selected
+                  ? "border-primary/60 bg-primary/15 text-primary"
+                  : "border-border bg-background/50 text-foreground/80 hover:border-primary/35 hover:text-foreground",
+              )}
+            >
+              <span className="relative size-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/15">
+                <Image src={m.backdrop.src} alt="" fill sizes="24px" className="object-cover" />
+              </span>
+              <span className="hidden whitespace-nowrap xl:inline">{m.name}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   return (
     <div
       role="radiogroup"
       aria-label="Mission environment"
       className={cn(
-        variant === "full" ? "grid gap-3 md:grid-cols-3" : "flex flex-wrap gap-2",
+        variant === "full" ? "grid gap-3 sm:grid-cols-2 xl:grid-cols-4" : "flex flex-wrap gap-2",
         className,
       )}
     >

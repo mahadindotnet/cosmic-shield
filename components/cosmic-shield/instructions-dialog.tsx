@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { HowToMeasure } from "@/components/cosmic-shield/how-to-measure";
 import { SECTIONS, getSection, type SectionSlug } from "@/components/cosmic-shield/sections";
+import { ESCALATION_TIERS, STATUS_META, StatusBadge } from "@/components/cosmic-shield/status";
 import { INSTRUCTIONS } from "@/lib/content/instructions";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
@@ -122,6 +123,18 @@ export function InstructionsButton({
               <p className="mt-1 text-[13px] text-foreground/90">{envNote}</p>
             </div>
           )}
+
+          <div data-testid="instructions-status-levels">
+            <h3 className="console-label mb-3">Status levels</h3>
+            <ul className="flex flex-col gap-2">
+              {[...ESCALATION_TIERS, "no-data" as const].map((t) => (
+                <li key={t} className="flex items-start gap-3 rounded-xl border border-border bg-background/40 p-3">
+                  <StatusBadge status={t} className="w-24 shrink-0 justify-center" />
+                  <p className="text-xs text-muted-foreground">{STATUS_META[t].description}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {content.measure && (
             <div>

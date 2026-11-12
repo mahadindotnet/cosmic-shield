@@ -21,9 +21,9 @@ export interface PageInstructions {
  */
 export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
   overview: {
-    intro: "Start every shift here. Check your status, confirm the mission environment, then open any module that needs attention.",
+    intro: "Crew health at a glance across every module. Start every shift here. Check your status, confirm the mission environment, then open any module that needs attention.",
     sections: [
-      { title: "Mission environment", body: "Choose ISS, Lunar base or Mars transit. The background, thresholds, targets and guidance across the app change to match.", anchor: "overview-mission" },
+      { title: "Mission environment", body: "Choose ISS, Lunar surface, Mars transit or Mars surface with the buttons in the top bar. The strip under it shows the daily dose, gravity and ground delay for that environment. The background, thresholds, targets and guidance across the app change to match.", anchor: "overview-mission" },
       { title: "Body map", body: "Tap a glowing area of the body to open its module: head for Mind, eyes for Eyes, chest dosimeter for Radiation, heart for Vitals, gut for GI, wrist for Sleep & Stress, thigh for Bone Protection.", anchor: "overview-body" },
       { title: "Module cards", body: "Each card shows the latest reading and its status: Normal, Watch or Escalate. Grey means nothing has been logged yet.", anchor: "overview-modules" },
       { title: "Check-in streak", body: "Every daily check-in and exercise session earns points and keeps your streak going.", anchor: "overview-streak" },
@@ -171,7 +171,7 @@ export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
     intro: "Set where the crew is. Everything else in Cosmic Shield adapts to this choice.",
     sections: [
       { title: "Environment orb", body: "Callouts show expected daily dose, gravity, ground delay and projected mission dose.", anchor: "mission-hero" },
-      { title: "Choose environment", body: "Pick ISS, Lunar base or Mars transit. The background and every module update straight away, and the choice is remembered.", anchor: "mission-picker" },
+      { title: "Choose environment", body: "Pick ISS, Lunar surface, Mars transit or Mars surface. The background and every module update straight away, and the choice is remembered.", anchor: "mission-picker" },
       { title: "Module briefing", body: "What this environment means for each health module.", anchor: "mission-briefing" },
     ],
   },

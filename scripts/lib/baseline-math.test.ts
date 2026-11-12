@@ -3,6 +3,7 @@ import {
   changeFrom,
   compareTimepoints,
   dailyDoses,
+  elevatedRuns,
   mean,
   median,
   mode,
@@ -16,7 +17,8 @@ import {
   uSvPerHourToMSvPerDay,
   type DoseSample,
 } from "./baseline-math";
-import { latestEvents, simplifyDonkiEvent, donkiHost } from "./donki";
+import { latestEvents, simplifyDonkiEvent, donkiHost } from "../../lib/nasa/donki";
+import { PUBLISHED_DOSE_EQUIVALENT, RADLAB_SOURCES } from "../nasa-sources";
 
 describe("unit conversion", () => {
   it("μGy/h → mGy/day is × 24 ÷ 1000", () => {
@@ -188,5 +190,42 @@ describe("DONKI simplification", () => {
     expect(donkiHost("https://api.nasa.gov/DONKI/CME?api_key=***")).toBe("api.nasa.gov");
     expect(donkiHost("https://kauai.ccmc.gsfc.nasa.gov/DONKI/WS/get/FLR")).toBe("kauai.ccmc.gsfc.nasa.gov");
     expect(donkiHost("not a url")).toBe("unknown");
+  });
+});
+
+describe("elevatedRuns (notable event flag)", () => {
+  const series = (doses: number[]) => doses.map((dose, i) => ({ day: `2022-04-0${i + 1}`, dose }));
+
+  it("groups consecutive days above 1.5 × median into one run", () => {
+    // Shape of the LRO CRaTER window, 1-7 Apr 2022.
+    const runs = elevatedRuns(series([0.657, 3.243, 1.299, 0.41, 0.33, 0.29, 0.28]));
+    expect(runs).toHaveLength(1);
+    expect(runs[0]).toMatchObject({ start: "2022-04-01", end: "2022-04-03", peak_day: "2022-04-02", peak: 3.243 });
+    expect(runs[0].threshold).toBeCloseTo(1.5 * 0.41, 10);
+  });
+
+  it("splits non-consecutive spikes and returns [] for flat series", () => {
+    expect(elevatedRuns(series([1, 5, 1, 1, 5, 1, 1]))).toHaveLength(2);
+    expect(elevatedRuns(series([0.66, 0.67, 0.66, 0.68]))).toEqual([]);
+    expect(elevatedRuns([])).toEqual([]);
+  });
+});
+
+describe("published dose equivalents", () => {
+  it("are the paper values, copied as-is with a citation and a verbatim quote", () => {
+    const byEnv = Object.fromEntries(PUBLISHED_DOSE_EQUIVALENT.map((p) => [p.environmentId, p]));
+    expect(byEnv.mars_transit.mSv_per_day).toBe(1.84);
+    expect(byEnv.mars_surface.mSv_per_day).toBe(0.64);
+    expect(byEnv.lunar_surface.mSv_per_day).toBe(1.369);
+    for (const p of PUBLISHED_DOSE_EQUIVALENT) {
+      expect(p.citation.doi).toMatch(/^10\.1126\//);
+      expect(p.citation.url).toBe(`https://doi.org/${p.citation.doi}`);
+      expect(p.quote.length).toBeGreaterThan(20);
+    }
+  });
+
+  it("never duplicate an environment that has RadLab dose equivalent", () => {
+    const measured = new Set(RADLAB_SOURCES.filter((s) => s.role === "dose_equivalent").map((s) => s.environmentId));
+    for (const p of PUBLISHED_DOSE_EQUIVALENT) expect(measured.has(p.environmentId)).toBe(false);
   });
 });

@@ -3,7 +3,7 @@
   "startDate": "2026-09-13",
   "endDate": "2026-11-12",
   "source": "https://api.nasa.gov/DONKI/SEP?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
-  "fetchedAt": "2026-11-12T14:07:18.707Z",
+  "fetchedAt": "2026-11-12T15:28:32.812Z",
   "count": 0,
   "events": []
 }
