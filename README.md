@@ -53,8 +53,9 @@ See [docs/TECH_STACK.md](./docs/TECH_STACK.md) and [docs/ARCHITECTURE.md](./docs
 
 Reference data and documentation:
 
-- [OSDR / Inspiration4](https://www.nasa.gov/mission/station/research/science-360/inspiration4/) — clinical baseline bands  
-- [RadLab](https://radlab.nasa.gov/) — radiation dose sample curve  
+- [OSDR OSD-575](https://osdr.nasa.gov/bio/repo/data/studies/OSD-575) — Inspiration4 metabolic panel baselines (pre- and post-flight only; no in-flight samples)  
+- [RadLab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/) — measured daily dose for ISS, lunar orbit and the Mars surface  
+- [DONKI](https://api.nasa.gov/) — recent solar flares, SEPs, CMEs and geomagnetic storms  
 - [NASA Human Research Program risks](https://humanresearchroadmap.nasa.gov/) — escalation framework  
 
 Full mapping: [docs/nasa-data-sources.md](./docs/nasa-data-sources.md). Submission checklist: [docs/SUBMISSION.md](./docs/SUBMISSION.md).
@@ -84,10 +85,20 @@ npm run build
 npm start
 ```
 
+### NASA reference data
+
+```bash
+npm run data:fetch   # download and cache OSDR, DONKI and RadLab data (needs NASA_API_KEY in .env)
+npm run data:build   # build data/nasa/derived/*.json from the cache (no network)
+```
+
+The derived files are also committed in `data/nasa/fixtures/`, so the app works offline without running either command. See [docs/nasa-data-sources.md](./docs/nasa-data-sources.md).
+
 ### Tests
 
 ```bash
-npm run test:e2e
+npm test             # Vitest unit tests (unit conversion and statistics)
+npm run test:e2e     # Playwright end-to-end tests
 ```
 
 ---

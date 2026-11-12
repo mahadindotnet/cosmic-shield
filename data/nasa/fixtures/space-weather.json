@@ -1,0 +1,262 @@
+{
+  "generated_at": "2026-11-12T14:32:41.084Z",
+  "source": "NASA DONKI (Space Weather Database Of Notifications, Knowledge, Information)",
+  "fetched_at": "2026-11-12T14:07:18.709Z",
+  "feeds": [
+    {
+      "type": "FLR",
+      "status": "missing",
+      "cached_file": "data/nasa/donki/flr.json"
+    },
+    {
+      "type": "SEP",
+      "status": "ok",
+      "source_url": "https://api.nasa.gov/DONKI/SEP?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
+      "source_host": "api.nasa.gov",
+      "fetched_at": "2026-11-12T14:07:18.709Z",
+      "start_date": "2026-09-13",
+      "end_date": "2026-11-12",
+      "event_count": 0,
+      "cached_file": "data/nasa/donki/sep.json"
+    },
+    {
+      "type": "CME",
+      "status": "ok",
+      "source_url": "https://api.nasa.gov/DONKI/CME?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
+      "source_host": "api.nasa.gov",
+      "fetched_at": "2026-11-12T14:07:19.639Z",
+      "start_date": "2026-09-13",
+      "end_date": "2026-11-12",
+      "event_count": 175,
+      "cached_file": "data/nasa/donki/cme.json"
+    },
+    {
+      "type": "GST",
+      "status": "ok",
+      "source_url": "https://api.nasa.gov/DONKI/GST?startDate=2026-09-13&endDate=2026-11-12&api_key=***",
+      "source_host": "api.nasa.gov",
+      "fetched_at": "2026-11-12T14:07:20.151Z",
+      "start_date": "2026-09-13",
+      "end_date": "2026-11-12",
+      "event_count": 3,
+      "cached_file": "data/nasa/donki/gst.json"
+    }
+  ],
+  "total_events": 178,
+  "note": "Newest first; the latest 30 across all feeds. class_or_intensity: flare class (FLR), CME speed type and speed from the most accurate analysis (CME), maximum Kp (GST), null for SEP.",
+  "events": [
+    {
+      "type": "CME",
+      "id": "2026-11-12T01:53:00-CME-001",
+      "start_time": "2026-11-12T01:53Z",
+      "class_or_intensity": "S-type, 327 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49508/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-11T23:24:00-CME-001",
+      "start_time": "2026-11-11T23:24Z",
+      "class_or_intensity": "S-type, 367 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49505/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-10T05:30:00-CME-001",
+      "start_time": "2026-11-10T05:30Z",
+      "class_or_intensity": "C-type, 974 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49479/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-10T02:12:00-CME-001",
+      "start_time": "2026-11-10T02:12Z",
+      "class_or_intensity": "S-type, 346 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49475/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-10T02:00:00-CME-001",
+      "start_time": "2026-11-10T02:00Z",
+      "class_or_intensity": "C-type, 803 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49484/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-09T18:15:00-CME-001",
+      "start_time": "2026-11-09T18:15Z",
+      "class_or_intensity": "C-type, 726 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49468/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-09T10:53:00-CME-001",
+      "start_time": "2026-11-09T10:53Z",
+      "class_or_intensity": "S-type, 299 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49470/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-09T09:12:00-CME-001",
+      "start_time": "2026-11-09T09:12Z",
+      "class_or_intensity": "S-type, 338 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49466/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-08T08:48:00-CME-001",
+      "start_time": "2026-11-08T08:48Z",
+      "class_or_intensity": "S-type, 367 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49459/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-08T00:48:00-CME-001",
+      "start_time": "2026-11-08T00:48Z",
+      "class_or_intensity": "C-type, 591 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49454/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-07T18:30:00-CME-001",
+      "start_time": "2026-11-07T18:30Z",
+      "class_or_intensity": "S-type, 423 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49451/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-07T10:24:00-CME-001",
+      "start_time": "2026-11-07T10:24Z",
+      "class_or_intensity": "S-type, 330 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49437/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-07T09:36:00-CME-001",
+      "start_time": "2026-11-07T09:36Z",
+      "class_or_intensity": "C-type, 507 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49434/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-07T06:24:00-CME-001",
+      "start_time": "2026-11-07T06:24Z",
+      "class_or_intensity": "S-type, 245 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49445/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-06T20:24:00-CME-001",
+      "start_time": "2026-11-06T20:24Z",
+      "class_or_intensity": "S-type, 319 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49431/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-06T16:15:00-CME-001",
+      "start_time": "2026-11-06T16:15Z",
+      "class_or_intensity": "S-type, 476 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49426/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-06T13:15:00-CME-001",
+      "start_time": "2026-11-06T13:15Z",
+      "class_or_intensity": "C-type, 530 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49416/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-06T10:53:00-CME-001",
+      "start_time": "2026-11-06T10:53Z",
+      "class_or_intensity": "S-type, 368 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49405/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-06T01:26:00-CME-001",
+      "start_time": "2026-11-06T01:26Z",
+      "class_or_intensity": "S-type, 264 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49403/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-05T21:24:00-CME-001",
+      "start_time": "2026-11-05T21:24Z",
+      "class_or_intensity": "S-type, 406 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49398/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-05T20:00:00-CME-001",
+      "start_time": "2026-11-05T20:00Z",
+      "class_or_intensity": "C-type, 915 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49394/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-05T11:48:00-CME-001",
+      "start_time": "2026-11-05T11:48Z",
+      "class_or_intensity": "S-type, 404 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49389/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-05T04:24:00-CME-001",
+      "start_time": "2026-11-05T04:24Z",
+      "class_or_intensity": "S-type, 330 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49386/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-04T02:48:00-CME-001",
+      "start_time": "2026-11-04T02:48Z",
+      "class_or_intensity": "S-type, 497 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49382/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-03T09:36:00-CME-001",
+      "start_time": "2026-11-03T09:36Z",
+      "class_or_intensity": "S-type, 347 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49370/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-01T19:48:00-CME-001",
+      "start_time": "2026-11-01T19:48Z",
+      "class_or_intensity": "S-type, 309 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49361/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-01T19:00:00-CME-001",
+      "start_time": "2026-11-01T19:00Z",
+      "class_or_intensity": "S-type, 357 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49358/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-11-01T00:00:00-CME-001",
+      "start_time": "2026-11-01T00:00Z",
+      "class_or_intensity": "C-type, 894 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49353/-1"
+    },
+    {
+      "type": "GST",
+      "id": "2026-10-31T18:00:00-GST-001",
+      "start_time": "2026-10-31T18:00Z",
+      "class_or_intensity": "Kp 6",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/GST/49348/-1"
+    },
+    {
+      "type": "CME",
+      "id": "2026-10-31T05:00:00-CME-001",
+      "start_time": "2026-10-31T05:00Z",
+      "class_or_intensity": "S-type, 345 km/s",
+      "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/CME/49343/-1"
+    }
+  ],
+  "warnings": [
+    "FLR: no cached file (data/nasa/donki/flr.json); run npm run data:fetch -- --only=donki"
+  ]
+}

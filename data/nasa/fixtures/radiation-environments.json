@@ -1,0 +1,214 @@
+{
+  "generated_at": "2026-11-12T14:32:41.068Z",
+  "source": "NASA OSDR RadLab",
+  "docs": "https://visualization.osdr.nasa.gov/radlab/gui/data-api/",
+  "method": "Per detector and UTC day: mean dose rate × 24 h ÷ 1000 (μGy/h → mGy/day; μSv/h → mSv/day where dose_equivalent_rate exists). Detector-days with < 90% of that detector's busiest-day sample count are dropped; detectors are averaged per day; mGy_per_day is the mean of those days and median_mGy_per_day their median. 4 significant figures.",
+  "caveat": "Absorbed dose (mGy) is measured in each instrument's detector material. It is not dose equivalent or effective dose (mSv), so it cannot be compared directly with crew limits in mSv.",
+  "environments": [
+    {
+      "environment": "ISS",
+      "location": "ISS (low Earth orbit)",
+      "spacecraft": "ISS",
+      "instrument": "DosTel",
+      "detectors": [
+        "DosTel1",
+        "DosTel2"
+      ],
+      "date_range": {
+        "start": "2022-04-01",
+        "end": "2022-04-07"
+      },
+      "query_window_utc": {
+        "start": "2022-04-01T00:00Z",
+        "end": "2022-04-08T00:00Z"
+      },
+      "days_used": 7,
+      "samples": 16699,
+      "mGy_per_day": 0.666,
+      "median_mGy_per_day": 0.6661,
+      "min_mGy_per_day": 0.6465,
+      "max_mGy_per_day": 0.6827,
+      "mSv_per_day": null,
+      "median_mSv_per_day": null,
+      "dose_type": "absorbed dose only",
+      "dose_note": "RadLab publishes no dose_equivalent_rate for this instrument in this window, so mSv/day is null.",
+      "relation_note": "Same environment. Mean of the DosTel1 and DosTel2 detectors.",
+      "daily": [
+        {
+          "date": "2022-04-01",
+          "mGy": 0.6661,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-02",
+          "mGy": 0.6562,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-03",
+          "mGy": 0.6722,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-04",
+          "mGy": 0.6465,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-05",
+          "mGy": 0.6563,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-06",
+          "mGy": 0.6823,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-07",
+          "mGy": 0.6827,
+          "mSv": null
+        }
+      ],
+      "source": "NASA OSDR RadLab",
+      "api_url": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=ISS&instrument=DosTel&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
+      "cached_file": "data/nasa/radlab/iss-dostel.csv"
+    },
+    {
+      "environment": "Lunar",
+      "location": "Lunar orbit (LRO)",
+      "spacecraft": "LRO",
+      "instrument": "CRaTER",
+      "detectors": [
+        "CRaTER-D1D2"
+      ],
+      "date_range": {
+        "start": "2022-04-01",
+        "end": "2022-04-07"
+      },
+      "query_window_utc": {
+        "start": "2022-04-01T00:00Z",
+        "end": "2022-04-08T00:00Z"
+      },
+      "days_used": 7,
+      "samples": 167,
+      "mGy_per_day": 0.9264,
+      "median_mGy_per_day": 0.4093,
+      "min_mGy_per_day": 0.2824,
+      "max_mGy_per_day": 3.243,
+      "mSv_per_day": null,
+      "median_mSv_per_day": null,
+      "dose_type": "absorbed dose only",
+      "dose_note": "RadLab publishes no dose_equivalent_rate for this instrument in this window, so mSv/day is null.",
+      "relation_note": "Lunar orbit, not the lunar surface. The surface sees roughly half the orbital GCR flux because the Moon blocks half the sky.",
+      "daily": [
+        {
+          "date": "2022-04-01",
+          "mGy": 0.657,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-02",
+          "mGy": 3.243,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-03",
+          "mGy": 1.299,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-04",
+          "mGy": 0.4093,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-05",
+          "mGy": 0.3093,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-06",
+          "mGy": 0.2849,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-07",
+          "mGy": 0.2824,
+          "mSv": null
+        }
+      ],
+      "source": "NASA OSDR RadLab",
+      "api_url": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=LRO&instrument=CRaTER&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
+      "cached_file": "data/nasa/radlab/lro-crater.csv"
+    },
+    {
+      "environment": "Mars",
+      "location": "Mars surface (Gale crater)",
+      "spacecraft": "Curiosity",
+      "instrument": "MSL-RAD",
+      "detectors": [
+        "MSL-RAD-Surface"
+      ],
+      "date_range": {
+        "start": "2022-04-01",
+        "end": "2022-04-07"
+      },
+      "query_window_utc": {
+        "start": "2022-04-01T00:00Z",
+        "end": "2022-04-08T00:00Z"
+      },
+      "days_used": 7,
+      "samples": 574,
+      "mGy_per_day": 0.2067,
+      "median_mGy_per_day": 0.2101,
+      "min_mGy_per_day": 0.196,
+      "max_mGy_per_day": 0.212,
+      "mSv_per_day": null,
+      "median_mSv_per_day": null,
+      "dose_type": "absorbed dose only",
+      "dose_note": "RadLab publishes no dose_equivalent_rate for this instrument in this window, so mSv/day is null.",
+      "relation_note": "Mars surface, not transit. The atmosphere and planet shield the surface, so cruise doses are higher; RadLab has no MSL-RAD cruise data.",
+      "daily": [
+        {
+          "date": "2022-04-01",
+          "mGy": 0.2109,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-02",
+          "mGy": 0.2102,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-03",
+          "mGy": 0.2101,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-04",
+          "mGy": 0.212,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-05",
+          "mGy": 0.209,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-06",
+          "mGy": 0.1986,
+          "mSv": null
+        },
+        {
+          "date": "2022-04-07",
+          "mGy": 0.196,
+          "mSv": null
+        }
+      ],
+      "source": "NASA OSDR RadLab",
+      "api_url": "https://visualization.osdr.nasa.gov/radlab/api/?spacecraft=Curiosity&instrument=MSL-RAD&timestamp%3E=2022-04-01T00%3A00&timestamp%3C2022-04-08T00%3A00&absorbed_dose_rate&dose_equivalent_rate&format=csv",
+      "cached_file": "data/nasa/radlab/msl-rad.csv"
+    }
+  ]
+}

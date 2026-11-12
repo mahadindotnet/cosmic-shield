@@ -272,7 +272,7 @@ async function main() {
     console.error(`\n${failures} source(s) failed. Cached files from earlier runs were left in place.`);
     process.exitCode = 1;
   } else {
-    console.log("\nDone. Run `npm run data:baselines` to rebuild derived files.");
+    console.log("\nDone. Run `npm run data:build` to rebuild the derived files.");
   }
 }
 

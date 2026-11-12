@@ -1,6 +1,6 @@
 /**
  * Shared NASA source definitions for scripts/fetch-nasa.ts and
- * scripts/build-baselines.ts, so the URLs we download from and the URLs we
+ * scripts/build-baselines.ts (npm run data:build), so the URLs we download from and the URLs we
  * cite in derived files can't drift apart.
  */
 
@@ -39,6 +39,8 @@ export const RADLAB_MAX_BYTES = 1_000_000;
 
 export interface RadlabSource {
   id: string;
+  /** Environment key used in derived files. */
+  label: "ISS" | "Lunar" | "Mars";
   /** Human label for the radiation environment the instrument measures. */
   environment: string;
   /** Closest Cosmic Shield mission environment, and how it differs. */
@@ -53,9 +55,9 @@ export interface RadlabSource {
 }
 
 /*
- * One shared window (1–8 Apr 2022) for all three instruments so they sample
+ * One shared window (1â€“8 Apr 2022) for all three instruments so they sample
  * the same solar conditions. Instrument names come from the RadLab API
- * (spacecraft=LRO → CRaTER, spacecraft=Curiosity → MSL-RAD); the RadLab GUI's
+ * (spacecraft=LRO â†’ CRaTER, spacecraft=Curiosity â†’ MSL-RAD); the RadLab GUI's
  * BLEO page was returning HTTP 500 when this was written. RadLab has no
  * MSL-RAD cruise data, so the Mars entry is the Gale crater surface.
  */
@@ -64,6 +66,7 @@ const WINDOW = { start: "2022-04-01T00:00", end: "2022-04-08T00:00" };
 export const RADLAB_SOURCES: RadlabSource[] = [
   {
     id: "iss-dostel",
+    label: "ISS",
     environment: "ISS (low Earth orbit)",
     relatedAppEnvironment: "iss",
     relationNote: "Same environment. Mean of the DosTel1 and DosTel2 detectors.",
@@ -74,6 +77,7 @@ export const RADLAB_SOURCES: RadlabSource[] = [
   },
   {
     id: "lro-crater",
+    label: "Lunar",
     environment: "Lunar orbit (LRO)",
     relatedAppEnvironment: "lunar",
     relationNote:
@@ -85,6 +89,7 @@ export const RADLAB_SOURCES: RadlabSource[] = [
   },
   {
     id: "msl-rad",
+    label: "Mars",
     environment: "Mars surface (Gale crater)",
     relatedAppEnvironment: "mars-transit",
     relationNote:
@@ -108,8 +113,14 @@ export function radlabUrl(s: RadlabSource) {
 
 /* -------------------------------------------------------------- derived */
 
+export const DERIVED_DIR = `${NASA_DIR}/derived`;
+/** Committed offline copies of the derived files (data:build refreshes them). */
+export const FIXTURES_DIR = `${NASA_DIR}/fixtures`;
+
 export const DERIVED = {
-  radiation: `${NASA_DIR}/derived/radiation-environments.json`,
+  baselines: `${DERIVED_DIR}/baselines.json`,
+  radiation: `${DERIVED_DIR}/radiation-environments.json`,
+  spaceWeather: `${DERIVED_DIR}/space-weather.json`,
 };
 
 export const MANIFEST = `${NASA_DIR}/manifest.json`;
