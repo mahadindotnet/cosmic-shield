@@ -1,9 +1,8 @@
-import { DashboardShell } from "@/components/cosmic-shield/dashboard-shell";
+import type { Metadata } from "next";
+import { OverviewView } from "@/components/cosmic-shield/views/overview";
+
+export const metadata: Metadata = { title: "Overview" };
 
 export default function DashboardPage() {
-  return (
-    <main className="flex-1">
-      <DashboardShell />
-    </main>
-  );
+  return <OverviewView />;
 }

@@ -1,28 +1,188 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #050508;
-  --foreground: #e4e4e7;
-  --card: #0a0a0f;
-  --accent: #22d3ee;
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Cosmic Shield brand tokens: "mission console" dark theme.
+ * Deep-space navy surfaces, plasma-cyan primary, nebula-violet accent.
+ * See docs/BRAND.md for usage rules.
+ *
+ * The app is dark-only (<html class="dark">), so :root and .dark share values.
+ */
+:root,
+.dark {
+  --radius: 0.75rem;
+
+  /* Surfaces */
+  --background: oklch(0.14 0.028 262);
+  --foreground: oklch(0.95 0.012 240);
+  --card: oklch(0.18 0.032 258 / 0.72);
+  --card-foreground: oklch(0.95 0.012 240);
+  --popover: oklch(0.19 0.032 258);
+  --popover-foreground: oklch(0.95 0.012 240);
+
+  /* Brand */
+  --primary: oklch(0.82 0.12 210); /* plasma cyan */
+  --primary-foreground: oklch(0.16 0.03 258);
+  --secondary: oklch(0.24 0.035 258);
+  --secondary-foreground: oklch(0.92 0.015 240);
+  --accent: oklch(0.27 0.06 285); /* nebula violet tint */
+  --accent-foreground: oklch(0.96 0.01 280);
+  --nebula: oklch(0.66 0.17 295);
+
+  --muted: oklch(0.22 0.03 258);
+  --muted-foreground: oklch(0.72 0.03 250);
+  --border: oklch(0.78 0.08 220 / 14%);
+  --input: oklch(0.78 0.08 220 / 18%);
+  --ring: oklch(0.82 0.12 210 / 60%);
+
+  /* Status: reserved for health state, never reused as series colours.
+     Always paired with an icon + text label (see StatusBadge). */
+  --status-normal: oklch(0.72 0.17 155); /* #22c373 */
+  --status-normal-foreground: oklch(0.86 0.12 155);
+  --status-watch: oklch(0.8 0.155 80); /* #f1b12b */
+  --status-watch-foreground: oklch(0.89 0.11 85);
+  --status-escalate: oklch(0.62 0.21 25); /* #ea3c3f */
+  --status-escalate-foreground: oklch(0.8 0.13 22);
+  --destructive: var(--status-escalate);
+
+  /* Charts: categorical order, validated for dark surface (CVD ΔE ≥ 9) */
+  --chart-1: #00a4c0; /* cyan */
+  --chart-2: #8f6ce0; /* violet */
+  --chart-3: #db509c; /* magenta */
+  --chart-4: #3a81d7; /* blue */
+  --chart-5: oklch(0.55 0.03 250); /* slate, for "other" */
+  --chart-grid: oklch(0.78 0.08 220 / 9%);
+  --chart-baseline: oklch(0.72 0.17 155 / 10%);
+  --chart-baseline-edge: oklch(0.72 0.17 155 / 45%);
+
+  /* Sidebar */
+  --sidebar: oklch(0.12 0.026 262 / 0.62);
+  --sidebar-foreground: oklch(0.88 0.02 240);
+  --sidebar-primary: oklch(0.82 0.12 210);
+  --sidebar-primary-foreground: oklch(0.16 0.03 258);
+  --sidebar-accent: oklch(0.22 0.04 258);
+  --sidebar-accent-foreground: oklch(0.97 0.01 240);
+  --sidebar-border: oklch(0.78 0.08 220 / 12%);
+  --sidebar-ring: oklch(0.82 0.12 210 / 60%);
 }
 
 @theme inline {
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-space-grotesk), var(--font-geist-sans), sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-nebula: var(--nebula);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-normal: var(--status-normal);
+  --color-normal-foreground: var(--status-normal-foreground);
+  --color-watch: var(--status-watch);
+  --color-watch-foreground: var(--status-watch-foreground);
+  --color-escalate: var(--status-escalate);
+  --color-escalate-foreground: var(--status-escalate-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-body {
-  background:
-    radial-gradient(ellipse 120% 80% at 50% -20%, rgba(34, 211, 238, 0.08), transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(120, 113, 108, 0.06), transparent 40%),
-    var(--background);
-  color: var(--foreground);
-  min-height: 100vh;
+@keyframes body-scan {
+  from {
+    transform: translateY(-4rem);
+  }
+  to {
+    transform: translateY(32rem);
+  }
 }
 
-.font-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+/* Small uppercase console label used for eyebrows and panel captions. */
+@utility console-label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Faint cyan top-edge glow for HUD panels. */
+@utility hud-glow {
+  box-shadow:
+    inset 0 1px 0 0 oklch(0.82 0.12 210 / 14%),
+    0 0 0 1px var(--border),
+    0 12px 40px -24px oklch(0.82 0.12 210 / 35%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    @apply font-sans;
+    color-scheme: dark;
+  }
+  body {
+    @apply bg-background text-foreground;
+    /* Nebula glow + faint starfield over deep-space navy. */
+    background-image:
+      radial-gradient(ellipse 70% 50% at 85% -10%, oklch(0.66 0.17 295 / 16%), transparent 60%),
+      radial-gradient(ellipse 60% 45% at 10% 110%, oklch(0.82 0.12 210 / 10%), transparent 60%),
+      radial-gradient(1px 1px at 20% 30%, oklch(1 0 0 / 35%), transparent),
+      radial-gradient(1px 1px at 70% 60%, oklch(1 0 0 / 25%), transparent),
+      radial-gradient(1px 1px at 40% 80%, oklch(1 0 0 / 20%), transparent),
+      radial-gradient(1px 1px at 90% 20%, oklch(1 0 0 / 30%), transparent);
+    background-size:
+      100% 100%,
+      100% 100%,
+      340px 340px,
+      260px 260px,
+      420px 420px,
+      300px 300px;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
 }
