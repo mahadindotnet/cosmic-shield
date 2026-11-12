@@ -44,6 +44,6 @@ export default defineConfig({
     // Always start our own server so it is guaranteed to use the test database.
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { DATABASE_URL: TEST_DATABASE_URL, NEXT_DIST_DIR: ".next-test" },
+    env: { DATABASE_URL: TEST_DATABASE_URL, NEXT_DIST_DIR: ".next-test", NEXT_TSCONFIG_PATH: "tsconfig.e2e.json" },
   },
 });
