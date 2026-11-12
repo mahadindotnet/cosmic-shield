@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/cosmic-shield/app-sidebar";
+import { InstructionsButton } from "@/components/cosmic-shield/instructions-dialog";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
 import { SpaceBackdrop } from "@/components/cosmic-shield/space-backdrop";
 import { ESCALATION_TIERS, STATUS_META, StatusBadge } from "@/components/cosmic-shield/status";
@@ -35,6 +36,7 @@ export function DashboardFrame({ children }: { children: React.ReactNode }) {
             <span className="truncate font-heading text-sm font-medium">{section.title}</span>
 
             <div className="ml-auto flex items-center gap-3">
+              <InstructionsButton />
               <div className="hidden items-center gap-1.5 lg:flex" aria-label="Status legend">
                 {ESCALATION_TIERS.map((t) => (
                   <span key={t} title={STATUS_META[t].description}>

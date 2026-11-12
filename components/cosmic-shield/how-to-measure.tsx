@@ -17,6 +17,8 @@ export interface HowToMeasureProps {
   caution?: string;
   /** Hide the "built for comms delay" footer. */
   hideAutonomyNote?: boolean;
+  /** Render only the content, without the Card frame (used in the Instructions dialog). */
+  bare?: boolean;
   className?: string;
 }
 
@@ -33,8 +35,16 @@ export function HowToMeasure({
   tip,
   caution,
   hideAutonomyNote,
+  bare,
   className,
 }: HowToMeasureProps) {
+  if (bare) {
+    return (
+      <div className={cn("flex flex-col gap-4", className)}>
+        <Body steps={steps} equipment={equipment} duration={duration} tip={tip} caution={caution} hideAutonomyNote={hideAutonomyNote} />
+      </div>
+    );
+  }
   return (
     <Card className={cn("gap-3", className)}>
       <CardHeader>
@@ -45,6 +55,22 @@ export function HowToMeasure({
         {description && <CardDescription className="text-xs">{description}</CardDescription>}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <Body steps={steps} equipment={equipment} duration={duration} tip={tip} caution={caution} hideAutonomyNote={hideAutonomyNote} />
+      </CardContent>
+    </Card>
+  );
+}
+
+function Body({
+  steps,
+  equipment,
+  duration,
+  tip,
+  caution,
+  hideAutonomyNote,
+}: Pick<HowToMeasureProps, "steps" | "equipment" | "duration" | "tip" | "caution" | "hideAutonomyNote">) {
+  return (
+    <>
         {(equipment?.length || duration) && (
           <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
             {equipment?.length ? (
@@ -94,7 +120,6 @@ export function HowToMeasure({
             Built for autonomy: guidance works without waiting on ground support.
           </p>
         )}
-      </CardContent>
-    </Card>
+    </>
   );
 }

@@ -2,15 +2,13 @@
 
 import { Activity, BedDouble, Gauge, Moon } from "lucide-react";
 import { EntryField, EntryFieldGrid, EntryForm, SegmentedField } from "@/components/cosmic-shield/entry-form";
+import { SleepHologram } from "@/components/cosmic-shield/holograms";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
-import { HowToMeasure } from "@/components/cosmic-shield/how-to-measure";
-import { MissionContext } from "@/components/cosmic-shield/mission-context";
-import { SectionHeader } from "@/components/cosmic-shield/section-header";
-import { getSection } from "@/components/cosmic-shield/sections";
+import { ModuleHero, ModulePage, NextStepCard, PageSection } from "@/components/cosmic-shield/module-hero";
+import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { SleepStages } from "@/components/cosmic-shield/sleep-stages";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
-import { StatusCard } from "@/components/cosmic-shield/status-card";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
-import { ModuleGrid, ModuleRow } from "@/components/cosmic-shield/views/layout";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
 
 interface SleepEntry {
@@ -30,25 +28,37 @@ const scale = (n: number) => Array.from({ length: n }, (_, i) => ({ value: `${i 
 
 export function SleepStressView() {
   return (
-    <>
-      <SectionHeader section={getSection("sleep-stress")!} />
-      <MissionContext module="sleep-stress" />
-
-      <ModuleGrid>
-        <StatusCard title="Sleep duration" icon={Moon} unit="h" reference={`Watch below ${R.sleepHours.min} h`} />
-        <StatusCard title="Sleep quality" icon={BedDouble} unit="/5" reference="Self-rated" />
-        <StatusCard title="HRV (RMSSD)" icon={Activity} unit="ms" reference={`Watch below ${R.hrv.min} ms`} />
-        <StatusCard title="Stress" icon={Gauge} unit="/5" reference="Self-rated · HRV-informed" />
-      </ModuleGrid>
-
-      <ModuleRow
-        main={
-          <div className="grid gap-4 md:grid-cols-2">
-            <TrendChart title="Sleep duration" data={sleepTrend} unit="h" baseline={R.sleepHours} yDomain={[0, 12]} colorSlot={2} />
-            <TrendChart title="Heart-rate variability" seriesLabel="HRV" data={hrvTrend} unit="ms" baseline={R.hrv} colorSlot={1} />
-          </div>
+    <ModulePage slug="sleep-stress">
+      <ModuleHero
+        slug="sleep-stress"
+        title={
+          <>
+            Sleep &amp;
+            <br />
+            recovery
+          </>
         }
-        side={
+        stage={
+          <OrganStage
+            visual={<SleepHologram />}
+            hotspots={[
+              { id: "sleep", x: 140, y: 150, side: "left", label: "Sleep", icon: Moon, unit: "h", field: "sleepHours" },
+              { id: "quality", x: 166, y: 262, side: "left", label: "Quality", icon: BedDouble, unit: "/5", field: "quality" },
+              { id: "hrv", x: 300, y: 312, side: "right", label: "HRV", icon: Activity, unit: "ms", field: "hrvMs" },
+              { id: "stress", x: 286, y: 196, side: "right", label: "Stress", icon: Gauge, unit: "/5", field: "stress" },
+            ]}
+          />
+        }
+        aside={
+          <>
+            <TrendChart title="Sleep duration" data={sleepTrend} unit="h" baseline={R.sleepHours} yDomain={[0, 12]} colorSlot={2} height={150} emptyWindow={7} />
+            <NextStepCard title="Log last night" body="Fill this in right after waking, before coffee or exercise." />
+          </>
+        }
+      />
+
+      <PageSection id="sleep-stress-log" eyebrow="Step 1" title="Log sleep & stress" description="Hours, quality, morning HRV and how stressed you feel.">
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <EntryForm title="Log sleep & stress" description="Fill in after waking.">
             <EntryFieldGrid>
               <EntryField label="Sleep" name="sleepHours" unit="h" type="number" step="0.25" min={0} max={16} required />
@@ -57,37 +67,27 @@ export function SleepStressView() {
             <SegmentedField label="Sleep quality (1 poor – 5 great)" name="quality" options={scale(5)} required />
             <SegmentedField label="Stress (1 calm – 5 overwhelmed)" name="stress" options={scale(5)} required />
           </EntryForm>
-        }
-      />
+          <div className="grid gap-6">
+            <SleepStages />
+            <TrendChart title="Heart-rate variability" seriesLabel="HRV" data={hrvTrend} unit="ms" baseline={R.hrv} colorSlot={1} height={180} />
+          </div>
+        </div>
+      </PageSection>
 
-      <ModuleRow
-        main={
-          <HistoryTable
-            rows={entries}
-            getRowId={(r) => r.id}
-            columns={[
-              { key: "date", header: "Date", cell: (r) => r.date },
-              { key: "sleep", header: "Sleep", align: "right", cell: (r) => `${r.sleepHours} h` },
-              { key: "q", header: "Quality", align: "right", cell: (r) => `${r.quality}/5` },
-              { key: "hrv", header: "HRV", align: "right", cell: (r) => (r.hrvMs ? `${r.hrvMs} ms` : "—") },
-              { key: "stress", header: "Stress", align: "right", cell: (r) => `${r.stress}/5` },
-              { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
-            ]}
-          />
-        }
-        side={
-          <HowToMeasure
-            equipment={["Wearable / chest strap"]}
-            duration="≈ 3 min"
-            steps={[
-              { title: "Log right after waking", detail: "Before coffee, exercise or screens." },
-              { title: "Take a 2-minute HRV reading", detail: "Lie still, breathe normally; use the wearable's RMSSD value." },
-              { title: "Rate sleep quality and stress honestly", detail: "Compare against your own normal, not the crew's." },
-            ]}
-            tip="HRV is personal. The trend matters more than any single number."
-          />
-        }
-      />
-    </>
+      <PageSection id="sleep-stress-history" eyebrow="Step 2" title="History" description="Past nights, newest first.">
+        <HistoryTable
+          rows={entries}
+          getRowId={(r) => r.id}
+          columns={[
+            { key: "date", header: "Date", cell: (r) => r.date },
+            { key: "sleep", header: "Sleep", align: "right", cell: (r) => `${r.sleepHours} h` },
+            { key: "q", header: "Quality", align: "right", cell: (r) => `${r.quality}/5` },
+            { key: "hrv", header: "HRV", align: "right", cell: (r) => (r.hrvMs ? `${r.hrvMs} ms` : "—") },
+            { key: "stress", header: "Stress", align: "right", cell: (r) => `${r.stress}/5` },
+            { key: "status", header: "Status", cell: (r) => <StatusBadge status={r.status} /> },
+          ]}
+        />
+      </PageSection>
+    </ModulePage>
   );
 }

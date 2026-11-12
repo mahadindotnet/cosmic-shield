@@ -24,11 +24,13 @@ export function OverviewView() {
   return (
     <>
       <SectionHeader section={getSection("overview")!} />
-      <MissionContext />
+      <div id="overview-mission" className="scroll-mt-20">
+        <MissionContext />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(340px,400px)_minmax(0,1fr)]">
         {/* Body map: first on small screens, centre column on large */}
-        <Card className="order-first gap-2 overflow-visible lg:order-none lg:col-start-2 lg:row-start-1">
+        <Card id="overview-body" className="order-first scroll-mt-20 gap-2 overflow-visible lg:order-none lg:col-start-2 lg:row-start-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-sm">
               <ScanLine className="size-4 text-primary" aria-hidden="true" />
@@ -45,7 +47,7 @@ export function OverviewView() {
           </CardContent>
         </Card>
 
-        <div className="grid content-start gap-4 sm:grid-cols-2 lg:col-start-1 lg:row-start-1 lg:grid-cols-1">
+        <div id="overview-modules" className="grid scroll-mt-20 content-start gap-4 sm:grid-cols-2 lg:col-start-1 lg:row-start-1 lg:grid-cols-1">
           {LEFT.map((slug) => (
             <ModuleCard key={slug} slug={slug} />
           ))}
@@ -72,7 +74,7 @@ export function OverviewView() {
       </div>
 
       {/* Gamification: check-in streak */}
-      <Card className="mt-4">
+      <Card id="overview-streak" className="mt-4 scroll-mt-20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm">
             <CalendarCheck className="size-4 text-primary" aria-hidden="true" />
