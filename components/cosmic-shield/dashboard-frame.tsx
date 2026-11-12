@@ -12,10 +12,14 @@ import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
 import { SpaceBackdrop } from "@/components/cosmic-shield/space-backdrop";
 import { useMissionStore } from "@/lib/store/mission-store";
+import { ShieldPlus } from "lucide-react";
 
-export function DashboardFrame({ children }: { children: React.ReactNode }) {
+const ADMIN_SECTION = { title: "Crew admin", icon: ShieldPlus };
+
+export function DashboardFrame({ children, account }: { children: React.ReactNode; account?: React.ReactNode }) {
   const pathname = usePathname();
-  const section = SECTIONS.find((s) => s.href === pathname) ?? SECTIONS[0];
+  const isAdmin = pathname.startsWith("/dashboard/admin");
+  const section = isAdmin ? ADMIN_SECTION : (SECTIONS.find((s) => s.href === pathname) ?? SECTIONS[0]);
 
   // Restore the saved mission environment after the first client render.
   useEffect(() => {
@@ -36,7 +40,8 @@ export function DashboardFrame({ children }: { children: React.ReactNode }) {
 
             <div className="ml-auto flex items-center gap-2 md:gap-3">
               <MissionPicker variant="bar" />
-              <InstructionsButton />
+              {!isAdmin && <InstructionsButton />}
+              {account}
             </div>
           </header>
           <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 md:px-6">{children}</div>

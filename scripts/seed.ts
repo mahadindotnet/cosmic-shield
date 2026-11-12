@@ -1,8 +1,16 @@
 import { db } from "@/lib/db";
-import { crew, vitalReading, checkIn, escalationEvent } from "@/lib/db/schema";
+import { crew, vitalReading, checkIn, escalationEvent, loginAudit, users } from "@/lib/db/schema";
+import { assertAuthEnv } from "@/lib/auth/config";
+import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
+import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
 
 async function main() {
+  // Fails with a clear message if PIN_PEPPER / SESSION_SECRET are missing.
+  assertAuthEnv();
+
+  await db.delete(loginAudit);
+  await db.delete(users);
   await db.delete(escalationEvent);
   await db.delete(checkIn);
   await db.delete(vitalReading);
@@ -54,10 +62,29 @@ async function main() {
     });
   }
 
-  console.log("Seed complete:", Object.keys(dashboards).length, "crew");
+  // Login accounts: demo PINs, hashed with the pepper. Demo accounts never
+  // force a PIN change, so the README credentials keep working.
+  const createdAt = new Date().toISOString();
+  for (const a of DEMO_ACCOUNTS) {
+    await db.insert(users).values({
+      crewId: a.crewId,
+      displayName: a.displayName,
+      title: a.title,
+      role: a.role,
+      profileId: a.profileId,
+      pinHash: await hashPin(a.pin),
+      failedAttempts: 0,
+      lockedUntil: null,
+      mustChangePin: false,
+      createdAt,
+    });
+  }
+
+  console.log("Seed complete:", Object.keys(dashboards).length, "crew,", DEMO_ACCOUNTS.length, "login accounts");
 }
 
 main().catch((err) => {
-  console.error(err);
+  // Message only: never print stack data that could include secrets.
+  console.error(err instanceof Error ? err.message : "Seed failed");
   process.exit(1);
 });

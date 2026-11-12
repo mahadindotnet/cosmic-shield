@@ -1,15 +1,21 @@
 import { NextResponse } from "next/server";
+import { activeProfileId, withApiUser } from "@/lib/auth/api";
 import { runMissionCopilot } from "@/lib/ai/mission-copilot";
 
 export async function POST(req: Request) {
-  const body = (await req.json()) as { crewId?: string; message?: string };
-  const crewId = body.crewId ?? "reyes";
-  const message = body.message?.trim() ?? "";
+  return withApiUser(async (current) => {
+    const body = (await req.json()) as { message?: string };
+    const message = body.message?.trim() ?? "";
+    if (!message)
+      return NextResponse.json({ error: "Message required" }, { status: 400 });
 
-  if (!message) {
-    return NextResponse.json({ error: "Message required" }, { status: 400 });
-  }
-
-  const result = await runMissionCopilot({ crewId, message });
-  return NextResponse.json(result);
+    // The crew member comes from the session, never from the request.
+    const crewId = activeProfileId(current);
+    if (!crewId)
+      return NextResponse.json(
+        { error: "Select a crew member first" },
+        { status: 400 },
+      );
+    return NextResponse.json(await runMissionCopilot({ crewId, message }));
+  });
 }

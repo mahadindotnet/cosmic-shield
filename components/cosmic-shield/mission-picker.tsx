@@ -39,7 +39,7 @@ export function MissionPicker({
               data-testid={`topbar-mission-${m.id}`}
               onClick={() => setEnvironment(m.id)}
               className={cn(
-                "flex h-8 items-center gap-1.5 rounded-full border p-0.5 text-xs font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none xl:pr-3",
+                "flex h-8 items-center gap-1.5 rounded-full border p-0.5 text-xs font-medium transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none 2xl:pr-3",
                 selected
                   ? "border-primary/60 bg-primary/15 text-primary"
                   : "border-border bg-background/50 text-foreground/80 hover:border-primary/35 hover:text-foreground",
@@ -48,7 +48,7 @@ export function MissionPicker({
               <span className="relative size-6 shrink-0 overflow-hidden rounded-full ring-1 ring-white/15">
                 <Image src={m.backdrop.src} alt="" fill sizes="24px" className="object-cover" />
               </span>
-              <span className="hidden whitespace-nowrap xl:inline">{m.name}</span>
+              <span className="hidden whitespace-nowrap 2xl:inline">{m.name}</span>
             </button>
           );
         })}

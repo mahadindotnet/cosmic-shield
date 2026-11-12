@@ -54,3 +54,11 @@ AGENTS.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# e2e test database and test dev-server build output
+/data/cosmic-shield.test.db
+/data/cosmic-shield.test.db-*
+/.next-test/
+
+# Playwright saved sign-in state
+/e2e/.auth/

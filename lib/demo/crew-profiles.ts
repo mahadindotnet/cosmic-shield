@@ -84,7 +84,7 @@ const CREW: Record<string, CrewDashboardPayload> = {
   okafor: buildPayload(
     "okafor",
     "Dr. Amara Okafor",
-    "Flight Surgeon",
+    "Crew Medical Officer (CMO)",
     {
       heartRateBpm: 78,
       hrvMs: 29,

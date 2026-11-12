@@ -71,13 +71,40 @@ Demo crew vitals are **simulated**; NASA data drives **thresholds, baselines, an
 git clone https://github.com/mahadindotnet/cosmic-shield.git
 cd cosmic-shield
 npm install
-cp .env.example .env
+cp .env.example .env      # then set SESSION_SECRET and PIN_PEPPER (see below)
 npm run db:migrate
 npm run db:seed
 npm run dev
 ```
 
-Open **http://localhost:3000/dashboard**.
+Open **http://localhost:3000** and sign in with a demo account below.
+
+`SESSION_SECRET` and `PIN_PEPPER` are required; the server refuses to start without them. Generate each with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
+```
+
+## Login instructions
+
+Cosmic Shield uses an **assigned crew ID and a 6-digit PIN** (no email or password). Go to **/login**, enter the crew ID, then the PIN with the on-screen keypad or your keyboard. The login page also lists these accounts; tap one to fill it in.
+
+| Crew ID | PIN | Name | Role |
+|---|---|---|---|
+| `CS-001` | `472915` | Cmdr. Elena Reyes | Crew · Commander |
+| `CS-002` | `538204` | Dr. Amara Okafor | Crew · Crew Medical Officer (CMO) |
+| `CS-003` | `619473` | Lt. Sven Lindqvist | Crew · Systems |
+| `CS-004` | `705318` | Spec. Kenji Tanaka | Crew · Payload |
+| `FS-001` | `846251` | Dr. Maya Chen (fictional) | Ground flight surgeon (admin) |
+
+These are public demo values. `npm run db:seed` restores them at any time (it also clears the login audit).
+
+- **Crew** see only their own data. **The flight surgeon** opens **Crew admin** from the account menu: pick a crew member to review (escalation, latest readings, check-ins, sign-in activity), assign a new crew ID, reset a PIN (shows a one-time temporary PIN and forces a new PIN at next sign-in), unlock an account, and view the login audit.
+- **Wrong crew ID or wrong PIN** both show "Invalid crew ID or PIN". **Five failures lock the account for 5 minutes** (a countdown is shown). Unknown IDs lock the same way, so lockouts don't reveal which IDs exist.
+- **Lock** (top bar) or **15 minutes without activity** returns to the PIN screen with your crew ID pre-filled. **Log out** forgets the crew ID. Sessions end after **12 hours** regardless.
+- **Change PIN** is in the account menu and needs your current PIN. Weak PINs are refused: one digit repeated (`111111`) or a straight run (`123456`, `654321`).
+
+**How it is secured:** PINs are stored as `bcrypt(HMAC-SHA256(PIN_PEPPER, pin))`, so the database alone can't be brute-forced; **changing `PIN_PEPPER` invalidates every PIN, so re-run `npm run db:seed` afterwards**. The session is a signed (`SESSION_SECRET`), httpOnly, `Secure`, `SameSite=Lax` cookie. `proxy.ts` protects `/dashboard/*` and the data API routes, and every page, Server Action and API route re-checks the user (`requireUser()` / `requireRole("flight_surgeon")`). PINs, hashes and secrets are never logged. For plain-HTTP testing on a LAN IP (e.g. from a phone), set `COOKIE_SECURE=false`; to hide the demo box, set `SHOW_DEMO_ACCOUNTS=false`.
 
 ### Production build
 
@@ -97,9 +124,11 @@ The derived files are also committed in `data/nasa/fixtures/`, so the app works 
 
 ### Tests
 
+The e2e tests start their own dev server on port 3100 with a separate database, `data/cosmic-shield.test.db`, which is migrated and seeded fresh before every run (`npm run db:test:prepare`). The demo database is never touched.
+
 ```bash
-npm test             # Vitest unit tests (unit conversion and statistics)
-npm run test:e2e     # Playwright end-to-end tests
+npm test             # Vitest unit tests (data maths, PIN hashing, weak PINs, lockout, sessions)
+npm run test:e2e     # Playwright end-to-end tests (use PW_CHANNEL=msedge or chrome to use an installed browser)
 ```
 
 ---
