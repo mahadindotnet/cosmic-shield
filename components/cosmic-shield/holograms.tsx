@@ -3,7 +3,8 @@
 import { useId } from "react";
 
 /*
- * Holographic organ visuals for each module page. All drawn in a 400 × 400
+ * Drawn holographic visuals for the modules without a feature image (Sleep &
+ * Stress, Radiation). Feature images live in public/organs. All drawn in a 400 × 400
  * viewBox so OrganStage can place hotspots in the same coordinate space.
  * Style: blurred cyan glow + crisp edge + deep-blue volumetric fill on top
  * (so only the silhouette edge glows), then fine detail lines.
@@ -11,7 +12,6 @@ import { useId } from "react";
 
 const CYAN = "#5ee3f5";
 const VIOLET = "#a78bfa";
-const TUBE = "#0e3457";
 
 type Mode = "edge" | "fill";
 interface Ids {
@@ -69,22 +69,6 @@ function Blob({ d, m, ids }: { d: string; m: Mode; ids: Ids }) {
   );
 }
 
-function Tube({ d, w, m }: { d: string; w: number; m: Mode }) {
-  return (
-    <path
-      d={d}
-      fill="none"
-      stroke={m === "edge" ? CYAN : TUBE}
-      strokeWidth={m === "edge" ? w + 3 : w}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  );
-}
-
-const ellipse = (cx: number, cy: number, rx: number, ry: number) =>
-  `M${cx - rx} ${cy} a${rx} ${ry} 0 1 0 ${rx * 2} 0 a${rx} ${ry} 0 1 0 ${-rx * 2} 0 Z`;
-
 function Detail({ children, opacity = 0.55, width = 1.2, color = CYAN }: { children: React.ReactNode; opacity?: number; width?: number; color?: string }) {
   return (
     <g fill="none" stroke={color} strokeOpacity={opacity} strokeWidth={width} strokeLinecap="round">
@@ -102,254 +86,6 @@ function Svg({ children, label }: { children: React.ReactNode; label: string }) 
     <svg viewBox="0 0 400 400" className="size-full overflow-visible" role="img" aria-label={label}>
       {children}
     </svg>
-  );
-}
-
-/* ------------------------------------------------------------------ heart */
-
-const HEART_BODY =
-  "M152 150 C118 172 108 232 138 282 C162 322 198 346 214 352 C240 332 282 292 292 240 C302 190 282 152 252 142 C226 134 204 142 194 152 C182 142 166 141 152 150 Z";
-
-export function HeartHologram() {
-  const ids = useIds();
-  return (
-    <Svg label="Holographic heart">
-      <Defs ids={ids} />
-      <Layered
-        ids={ids}
-        render={(m) => (
-          <>
-            <Tube m={m} w={9} d="M226 92 L222 58" />
-            <Tube m={m} w={9} d="M246 87 L247 54" />
-            <Tube m={m} w={9} d="M266 92 L272 60" />
-            <Tube m={m} w={20} d="M204 156 C200 118 214 90 244 88 C270 86 282 102 280 128" />
-            <Tube m={m} w={16} d="M166 156 L162 92" />
-            <Tube m={m} w={16} d="M186 166 C176 134 160 120 130 118" />
-            <Blob m={m} ids={ids} d={ellipse(146, 180, 28, 32)} />
-            <Blob m={m} ids={ids} d={ellipse(268, 164, 26, 21)} />
-            <Blob m={m} ids={ids} d={HEART_BODY} />
-          </>
-        )}
-      />
-      <Detail>
-        <path d="M206 172 C200 212 206 262 216 330" />
-        <path d="M206 205 C232 218 252 242 262 276" />
-        <path d="M204 236 C178 252 162 272 152 290" />
-        <path d="M222 262 C236 270 246 290 244 314" />
-        <path d="M170 210 C160 232 156 252 160 272" />
-        <path d="M212 112 C224 100 244 96 262 102" strokeOpacity={0.35} />
-      </Detail>
-      <Detail color={VIOLET} opacity={0.5}>
-        <path d="M234 196 C246 206 258 222 266 240" />
-        <path d="M188 268 C196 290 204 310 212 326" />
-      </Detail>
-      <Gloss cx={190} cy={205} rx={36} ry={22} />
-    </Svg>
-  );
-}
-
-/* ------------------------------------------------------------------ brain */
-
-const BRAIN_OUTER =
-  "M108 222 C94 170 120 116 176 100 C212 86 262 90 292 116 C322 138 332 178 316 212 C306 240 282 256 252 258 C236 276 206 282 186 272 C160 278 124 262 108 222 Z";
-const BRAIN_NODES: [number, number][] = [
-  [150, 150], [198, 132], [250, 128], [288, 166], [236, 200], [182, 190], [142, 212], [272, 214], [210, 240],
-];
-const BRAIN_LINKS: [number, number][] = [
-  [0, 1], [1, 2], [2, 3], [3, 7], [7, 4], [4, 5], [5, 0], [5, 6], [4, 8], [8, 6], [1, 5], [2, 4],
-];
-
-export function BrainHologram() {
-  const ids = useIds();
-  return (
-    <Svg label="Holographic brain">
-      <Defs ids={ids} />
-      <Layered
-        ids={ids}
-        render={(m) => (
-          <>
-            <Tube m={m} w={24} d="M238 262 C238 290 234 312 230 340" />
-            <Blob m={m} ids={ids} d={ellipse(270, 268, 42, 25)} />
-            <Blob m={m} ids={ids} d={BRAIN_OUTER} />
-          </>
-        )}
-      />
-      <Detail>
-        <path d="M128 200 C140 180 152 196 164 178 C176 160 190 176 200 160" />
-        <path d="M124 170 C140 150 156 166 168 146 C180 128 196 140 210 124" />
-        <path d="M150 122 C166 134 178 118 194 126" />
-        <path d="M222 108 C234 124 248 110 264 122 C278 132 290 124 302 138" />
-        <path d="M222 140 C238 156 252 140 268 154 C282 166 296 156 308 170" />
-        <path d="M226 176 C240 190 258 176 272 192 C286 206 300 196 310 206" />
-        <path d="M160 240 C180 232 200 248 222 236 C238 228 252 240 266 232" />
-        <path d="M140 246 C150 256 168 262 186 262" />
-        <path d="M236 268 C254 262 282 262 302 270" strokeOpacity={0.4} />
-        <path d="M240 280 C258 276 280 276 298 282" strokeOpacity={0.4} />
-      </Detail>
-      <Detail opacity={0.8} width={1.6}>
-        <path d="M146 222 C180 206 214 204 258 190" />
-        <path d="M214 98 C204 136 222 168 204 206" />
-      </Detail>
-      <g stroke={VIOLET} strokeOpacity={0.55} strokeWidth={1}>
-        {BRAIN_LINKS.map(([a, b], i) => (
-          <line key={i} x1={BRAIN_NODES[a][0]} y1={BRAIN_NODES[a][1]} x2={BRAIN_NODES[b][0]} y2={BRAIN_NODES[b][1]} />
-        ))}
-      </g>
-      <g fill={VIOLET}>
-        {BRAIN_NODES.map(([x, y], i) => (
-          <g key={i}>
-            <circle cx={x} cy={y} r={7} opacity={0.3} filter={`url(#${ids.glow})`} />
-            <circle cx={x} cy={y} r={2.8} />
-          </g>
-        ))}
-      </g>
-      <Gloss cx={190} cy={140} rx={60} ry={24} />
-    </Svg>
-  );
-}
-
-/* -------------------------------------------------------------------- eye */
-
-export function EyeHologram() {
-  const ids = useIds();
-  return (
-    <Svg label="Holographic eye with optic nerve">
-      <Defs ids={ids} />
-      <g fill="none" stroke={VIOLET} strokeLinecap="round" opacity={0.35}>
-        <path d="M128 108 C190 70 272 78 332 122" strokeWidth={18} />
-        <path d="M128 292 C190 330 272 322 332 278" strokeWidth={18} />
-      </g>
-      <Layered
-        ids={ids}
-        render={(m) => (
-          <>
-            <Tube m={m} w={26} d="M308 214 C330 222 352 232 374 238" />
-            <Blob m={m} ids={ids} d={ellipse(205, 200, 112, 112)} />
-            <Blob m={m} ids={ids} d={ellipse(98, 200, 24, 64)} />
-          </>
-        )}
-      />
-      <Detail opacity={0.22} width={1}>
-        <ellipse cx={205} cy={200} rx={112} ry={40} />
-        <ellipse cx={205} cy={200} rx={112} ry={80} />
-        <ellipse cx={205} cy={200} rx={45} ry={112} />
-        <ellipse cx={205} cy={200} rx={85} ry={112} />
-      </Detail>
-      <Detail opacity={0.7}>
-        <path d="M266 108 A104 104 0 0 1 266 292" strokeDasharray="4 5" />
-        <path d="M304 210 C290 180 280 160 262 140" />
-        <path d="M304 210 C290 240 282 258 262 276" />
-        <path d="M304 210 C285 205 270 198 250 190" />
-        <path d="M304 210 C286 222 272 230 252 238" />
-        <ellipse cx={122} cy={200} rx={10} ry={38} strokeOpacity={0.4} />
-      </Detail>
-      <circle cx={304} cy={210} r={11} fill={CYAN} opacity={0.3} filter={`url(#${ids.glow})`} />
-      <circle cx={304} cy={210} r={6} fill={CYAN} opacity={0.85} />
-      <ellipse cx={96} cy={200} rx={13} ry={48} fill={`url(#${ids.violet})`} />
-      <ellipse cx={94} cy={200} rx={5} ry={19} fill="#050b16" />
-      <Gloss cx={170} cy={140} rx={50} ry={22} />
-    </Svg>
-  );
-}
-
-/* -------------------------------------------------------------------- gut */
-
-const COLON = "M122 312 L122 150 C122 122 138 108 164 108 L248 108 C274 108 288 122 288 150 L288 296 C288 320 272 330 248 330 L222 330 C208 334 202 350 202 374";
-const SMALL_INTESTINE =
-  "M168 152 C206 140 246 150 250 170 C254 192 172 182 168 204 C164 226 250 214 250 236 C250 258 168 248 168 270 C168 292 232 294 246 286";
-
-export function GutHologram() {
-  const ids = useIds();
-  const left = Array.from({ length: 8 }, (_, i) => 168 + i * 18);
-  const top = Array.from({ length: 4 }, (_, i) => 176 + i * 22);
-  const right = Array.from({ length: 8 }, (_, i) => 160 + i * 18);
-  return (
-    <Svg label="Holographic intestines">
-      <Defs ids={ids} />
-      <Layered
-        ids={ids}
-        render={(m) => (
-          <>
-            <Tube m={m} w={34} d={COLON} />
-            <Tube m={m} w={8} d="M122 318 C118 336 108 344 98 348" />
-            <Tube m={m} w={17} d={SMALL_INTESTINE} />
-          </>
-        )}
-      />
-      <Detail opacity={0.45}>
-        {left.map((y) => (
-          <path key={`l${y}`} d={`M106 ${y} Q122 ${y + 6} 138 ${y}`} />
-        ))}
-        {top.map((x) => (
-          <path key={`t${x}`} d={`M${x} 92 Q${x + 6} 108 ${x} 124`} />
-        ))}
-        {right.map((y) => (
-          <path key={`r${y}`} d={`M272 ${y} Q288 ${y + 6} 304 ${y}`} />
-        ))}
-      </Detail>
-      <Detail opacity={0.7} width={1}>
-        <path d={SMALL_INTESTINE} strokeDasharray="2 6" />
-      </Detail>
-      <Detail color={VIOLET} opacity={0.5}>
-        <path d="M150 140 C140 200 142 260 150 300" strokeDasharray="1 7" strokeWidth={3} />
-        <path d="M260 140 C270 200 268 260 262 300" strokeDasharray="1 7" strokeWidth={3} />
-      </Detail>
-      <Gloss cx={205} cy={180} rx={46} ry={20} />
-    </Svg>
-  );
-}
-
-/* ------------------------------------------------------------------- bone */
-
-export function BoneHologram() {
-  const ids = useIds();
-  return (
-    <Svg label="Holographic leg bones and knee">
-      <Defs ids={ids} />
-      <g fill={VIOLET} fillOpacity={0.08} stroke={VIOLET} strokeOpacity={0.35} strokeWidth={1.2}>
-        <path d="M146 100 C134 160 156 220 170 254 L242 254 C254 204 254 142 240 96 Z" />
-        <path d="M176 294 C160 324 176 362 192 384 L228 384 C248 352 252 320 236 294 Z" />
-      </g>
-      <Layered
-        ids={ids}
-        render={(m) => (
-          <>
-            <Tube m={m} w={30} d="M178 86 C190 100 196 112 198 130 L204 236" />
-            <Blob m={m} ids={ids} d={ellipse(168, 74, 24, 24)} />
-            <Blob m={m} ids={ids} d={ellipse(222, 112, 14, 18)} />
-            <Blob m={m} ids={ids} d="M174 236 C174 224 234 224 234 236 C238 258 226 272 204 272 C182 272 170 258 174 236 Z" />
-            <Tube m={m} w={9} d="M230 292 L232 368" />
-            <Tube m={m} w={28} d="M200 276 L206 372" />
-            <Blob m={m} ids={ids} d="M178 278 C178 268 230 268 232 278 C232 292 220 298 204 298 C188 298 178 292 178 278 Z" />
-            <Blob m={m} ids={ids} d={ellipse(208, 380, 24, 10)} />
-          </>
-        )}
-      />
-      <Detail opacity={0.6} width={1}>
-        <path d="M197 140 L202 226" strokeDasharray="3 5" />
-        <path d="M206 300 L208 362" strokeDasharray="3 5" />
-        <path d="M156 66 C166 76 176 78 184 70" />
-        <path d="M160 82 C168 88 178 88 186 82" />
-        <path d="M184 244 C196 252 214 252 226 244" />
-        <path d="M188 256 C198 262 212 262 222 256" />
-      </Detail>
-      <ellipse cx={242} cy={252} rx={10} ry={15} fill="none" stroke={CYAN} strokeOpacity={0.8} strokeWidth={1.5} />
-      <g fill={CYAN}>
-        {[[168, 74], [204, 252], [208, 380]].map(([x, y]) => (
-          <g key={`${x}-${y}`}>
-            <circle cx={x} cy={y} r={10} opacity={0.3} filter={`url(#${ids.glow})`} />
-            <circle cx={x} cy={y} r={3} />
-          </g>
-        ))}
-      </g>
-      {/* Density scan bar */}
-      <g transform="translate(300 90)">
-        <rect width={10} height={240} rx={5} fill="none" stroke={CYAN} strokeOpacity={0.4} />
-        {Array.from({ length: 9 }, (_, i) => (
-          <line key={i} x1={14} x2={20} y1={i * 30} y2={i * 30} stroke={CYAN} strokeOpacity={0.4} />
-        ))}
-      </g>
-    </Svg>
   );
 }
 

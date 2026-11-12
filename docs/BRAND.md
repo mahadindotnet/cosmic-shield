@@ -57,9 +57,11 @@ The dashboard background is a full-screen image (`SpaceBackdrop`) with a light s
 
 The astronaut picks an environment with `MissionPicker` (on Overview, the Mission tab, and in every module banner when none is set). The choice is saved in localStorage. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
 
-## Body map
+## Body map and feature images
 
-`BodyMap` on Overview is a hand-drawn SVG hologram with clickable callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist wearable → Sleep & Stress, femur → Bone Protection. Hotspot positions use the SVG's 200 × 440 coordinate space, in `HOTSPOTS`.
+`BodyMap` on Overview uses `public/organs/body-front.webp`, `body-left.webp` and `body-right.webp`. All three are cropped to the same 305 × 461 box so the poses line up. Hovering plays one turn (front, left, front, right, front) and settles on the front view, where the callouts are placed. Reduced motion keeps it on the front view. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection.
+
+Feature pages show transparent images from `public/organs/` (heart, bone, eye, gi, mind) through `OrganImage`. Callout positions are fractions of each image, converted with `onImage(fx, fy, aspect)`; if an image is replaced, update its aspect constant in the view. Sources are in `feature_img/`. `bone.webp` is recoloured to light cyan so it shows on dark backgrounds. Sleep & Stress and Radiation keep drawn SVG holograms (`holograms.tsx`).
 
 ## Navigation
 

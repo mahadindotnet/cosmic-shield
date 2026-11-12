@@ -43,7 +43,7 @@ export function OverviewView() {
               aria-hidden="true"
               className="pointer-events-none absolute inset-x-6 top-1/4 bottom-1/4 rounded-full bg-primary/10 blur-3xl"
             />
-            <BodyMap className="max-w-[210px] lg:max-w-[230px]" />
+            <BodyMap className="max-w-[250px] xl:max-w-[270px]" />
           </CardContent>
         </Card>
 

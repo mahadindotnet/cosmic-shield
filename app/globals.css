@@ -125,15 +125,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-@keyframes body-scan {
-  from {
-    transform: translateY(-4rem);
-  }
-  to {
-    transform: translateY(32rem);
-  }
-}
-
 /* Small uppercase console label used for eyebrows and panel captions. */
 @utility console-label {
   font-family: var(--font-mono);

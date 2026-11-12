@@ -1,12 +1,12 @@
 "use client";
 
-import { CalendarClock, Camera, Eye, Grid3x3, ScanEye } from "lucide-react";
+import { CalendarClock, Camera, Grid3x3, ScanEye } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { EntryField, EntryForm, SegmentedField } from "@/components/cosmic-shield/entry-form";
-import { EyeHologram } from "@/components/cosmic-shield/holograms";
+import { AmslerTest } from "@/components/cosmic-shield/amsler-test";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { ModuleHero, ModulePage, PageSection } from "@/components/cosmic-shield/module-hero";
-import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/organ-stage";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 
@@ -42,12 +42,12 @@ export function EyesView() {
         primaryAction={{ label: "Start a test", anchor: "eyes-log" }}
         stage={
           <OrganStage
-            visual={<EyeHologram />}
+            visual={<OrganImage src="/organs/eye.webp" alt="Eye" />}
             hotspots={[
-              { id: "sans", x: 304, y: 210, side: "right", label: "SANS screen", icon: ScanEye, field: "image" },
-              { id: "capture", x: 262, y: 120, side: "right", label: "Last capture", icon: Camera, anchor: "eyes-history" },
-              { id: "amsler-l", x: 104, y: 160, side: "left", label: "Amsler · L", icon: Grid3x3, field: "lines" },
-              { id: "amsler-r", x: 104, y: 244, side: "left", label: "Amsler · R", icon: Grid3x3, field: "lines" },
+              { id: "amsler-l", ...onImage(0.2, 0.36, 1), side: "left", label: "Amsler · L", icon: Grid3x3, anchor: "eyes-amsler" },
+              { id: "amsler-r", ...onImage(0.2, 0.64, 1), side: "left", label: "Amsler · R", icon: Grid3x3, anchor: "eyes-amsler" },
+              { id: "sans", ...onImage(0.5, 0.5, 1), side: "right", label: "SANS screen", icon: ScanEye, field: "image" },
+              { id: "capture", ...onImage(0.74, 0.22, 1), side: "right", label: "Last capture", icon: Camera, anchor: "eyes-history" },
             ]}
           />
         }
@@ -87,7 +87,9 @@ export function EyesView() {
             <SegmentedField label="Eye" name="captureEye" options={EYE_OPTIONS} required />
             <EntryField label="Image" name="image" type="file" accept="image/*" required className="[&_input]:pt-1" />
           </EntryForm>
-          <AmslerGridCard />
+          <div id="eyes-amsler" className="scroll-mt-24">
+            <AmslerTest />
+          </div>
           <EntryForm title="Amsler result" description="Record what you saw for one eye.">
             <SegmentedField label="Eye tested" name="eye" options={EYE_OPTIONS} required />
             <SegmentedField
@@ -121,35 +123,3 @@ export function EyesView() {
   );
 }
 
-function AmslerGridCard() {
-  const n = 20;
-  const cell = 10;
-  const size = n * cell;
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-sm">
-          <Eye className="size-4 text-primary" aria-hidden="true" />
-          Amsler grid
-        </CardTitle>
-        <CardDescription className="text-xs">Hold ~35 cm away and look at the centre dot with one eye covered.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex justify-center">
-        <svg
-          viewBox={`0 0 ${size} ${size}`}
-          className="aspect-square w-full max-w-64 rounded-md bg-white"
-          role="img"
-          aria-label="Amsler grid: 20 by 20 black grid with a centre dot"
-        >
-          {Array.from({ length: n + 1 }, (_, i) => (
-            <g key={i} stroke="#111" strokeWidth={0.6}>
-              <line x1={i * cell} y1={0} x2={i * cell} y2={size} />
-              <line x1={0} y1={i * cell} x2={size} y2={i * cell} />
-            </g>
-          ))}
-          <circle cx={size / 2} cy={size / 2} r={2.4} fill="#111" />
-        </svg>
-      </CardContent>
-    </Card>
-  );
-}

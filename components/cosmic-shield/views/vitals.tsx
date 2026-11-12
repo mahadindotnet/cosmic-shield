@@ -2,10 +2,9 @@
 
 import { Activity, Droplet, HeartPulse, Wind } from "lucide-react";
 import { EntryField, EntryFieldGrid, EntryForm } from "@/components/cosmic-shield/entry-form";
-import { HeartHologram } from "@/components/cosmic-shield/holograms";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { ModuleHero, ModulePage, NextStepCard, PageSection } from "@/components/cosmic-shield/module-hero";
-import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/organ-stage";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
@@ -20,6 +19,9 @@ interface VitalsEntry {
   glucose: number | null;
   status: HealthStatus;
 }
+
+/** public/organs/heart.webp is 739 × 900. */
+const HEART_ASPECT = 739 / 900;
 
 const entries: VitalsEntry[] = [];
 const hrTrend: TrendPoint[] = [];
@@ -39,12 +41,12 @@ export function VitalsView() {
         }
         stage={
           <OrganStage
-            visual={<HeartHologram />}
+            visual={<OrganImage src="/organs/heart.webp" alt="Anatomical heart" />}
             hotspots={[
-              { id: "hr", x: 252, y: 252, side: "right", label: "Heart rate", icon: HeartPulse, unit: "bpm", field: "heartRate" },
-              { id: "bp", x: 248, y: 88, side: "right", label: "Blood pressure", icon: Activity, unit: "mmHg", field: "systolic" },
-              { id: "spo2", x: 132, y: 118, side: "left", label: "SpO₂", icon: Wind, unit: "%", field: "spo2" },
-              { id: "glucose", x: 146, y: 262, side: "left", label: "Glucose", icon: Droplet, unit: "mg/dL", field: "glucose" },
+              { id: "hr", ...onImage(0.66, 0.72, HEART_ASPECT), side: "right", label: "Heart rate", icon: HeartPulse, unit: "bpm", field: "heartRate" },
+              { id: "bp", ...onImage(0.6, 0.2, HEART_ASPECT), side: "right", label: "Blood pressure", icon: Activity, unit: "mmHg", field: "systolic" },
+              { id: "spo2", ...onImage(0.27, 0.17, HEART_ASPECT), side: "left", label: "SpO₂", icon: Wind, unit: "%", field: "spo2" },
+              { id: "glucose", ...onImage(0.22, 0.6, HEART_ASPECT), side: "left", label: "Glucose", icon: Droplet, unit: "mg/dL", field: "glucose" },
             ]}
           />
         }

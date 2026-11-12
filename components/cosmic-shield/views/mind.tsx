@@ -5,10 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { EntryField, EntryForm, SegmentedField } from "@/components/cosmic-shield/entry-form";
-import { BrainHologram } from "@/components/cosmic-shield/holograms";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { ModuleHero, ModulePage, NextStepCard, PageSection } from "@/components/cosmic-shield/module-hero";
-import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/organ-stage";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 
 interface MindEntry {
@@ -19,6 +18,9 @@ interface MindEntry {
   note: string;
   status: HealthStatus;
 }
+
+/** public/organs/mind.webp is 142 × 121. */
+const MIND_ASPECT = 142 / 121;
 
 const entries: MindEntry[] = [];
 const scale = (n: number) => Array.from({ length: n }, (_, i) => ({ value: `${i + 1}`, label: `${i + 1}` }));
@@ -39,12 +41,12 @@ export function MindView() {
         primaryAction={{ label: "Check in now", anchor: "mind-log" }}
         stage={
           <OrganStage
-            visual={<BrainHologram />}
+            visual={<OrganImage src="/organs/mind.webp" alt="Brain" />}
             hotspots={[
-              { id: "mood", x: 150, y: 150, side: "left", label: "Mood", icon: Smile, unit: "/5", field: "mood" },
-              { id: "stress", x: 288, y: 166, side: "right", label: "Stress", icon: Activity, unit: "/5", field: "stress" },
-              { id: "checkins", x: 272, y: 214, side: "right", label: "Check-ins", icon: MessageCircleHeart, anchor: "mind-history" },
-              { id: "talk", x: 142, y: 212, side: "left", label: "Conversations", icon: Bot, field: "message" },
+              { id: "mood", ...onImage(0.24, 0.32, MIND_ASPECT), side: "left", label: "Mood", icon: Smile, unit: "/5", field: "mood" },
+              { id: "talk", ...onImage(0.34, 0.62, MIND_ASPECT), side: "left", label: "Conversations", icon: Bot, field: "message" },
+              { id: "stress", ...onImage(0.7, 0.3, MIND_ASPECT), side: "right", label: "Stress", icon: Activity, unit: "/5", field: "stress" },
+              { id: "checkins", ...onImage(0.74, 0.62, MIND_ASPECT), side: "right", label: "Check-ins", icon: MessageCircleHeart, anchor: "mind-history" },
             ]}
           />
         }

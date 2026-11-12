@@ -2,10 +2,9 @@
 
 import { Dumbbell, Milk, Sun, Timer } from "lucide-react";
 import { EntryField, EntryFieldGrid, EntryForm } from "@/components/cosmic-shield/entry-form";
-import { BoneHologram } from "@/components/cosmic-shield/holograms";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { ModuleHero, ModulePage, NextStepCard, PageSection } from "@/components/cosmic-shield/module-hero";
-import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/organ-stage";
 import { RingGauge } from "@/components/cosmic-shield/ring-gauge";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
@@ -20,6 +19,9 @@ interface BoneEntry {
   calciumMg: number;
   vitaminDIu: number;
 }
+
+/** public/organs/bone.webp is 1100 × 921 (front and back skeletons). */
+const BONE_ASPECT = 1100 / 921;
 
 const entries: BoneEntry[] = [];
 const exerciseTrend: TrendPoint[] = [];
@@ -44,12 +46,12 @@ export function BoneView() {
         }
         stage={
           <OrganStage
-            visual={<BoneHologram />}
+            visual={<OrganImage src="/organs/bone.webp" alt="Human skeleton, front and back views" />}
             hotspots={[
-              { id: "exercise", x: 156, y: 170, side: "left", label: "Exercise", icon: Timer, unit: "min", field: "aerobicMin" },
-              { id: "load", x: 242, y: 252, side: "right", label: "Peak load", icon: Dumbbell, unit: "kg", field: "loadKg" },
-              { id: "calcium", x: 202, y: 190, side: "right", label: "Calcium", icon: Milk, unit: "mg", field: "calciumMg" },
-              { id: "vitd", x: 204, y: 336, side: "left", label: "Vitamin D", icon: Sun, unit: "IU", field: "vitaminDIu" },
+              { id: "exercise", ...onImage(0.21, 0.6, BONE_ASPECT), side: "left", label: "Exercise", icon: Timer, unit: "min", field: "aerobicMin" },
+              { id: "vitd", ...onImage(0.26, 0.84, BONE_ASPECT), side: "left", label: "Vitamin D", icon: Sun, unit: "IU", field: "vitaminDIu" },
+              { id: "calcium", ...onImage(0.76, 0.32, BONE_ASPECT), side: "right", label: "Calcium", icon: Milk, unit: "mg", field: "calciumMg" },
+              { id: "load", ...onImage(0.83, 0.71, BONE_ASPECT), side: "right", label: "Peak load", icon: Dumbbell, unit: "kg", field: "loadKg" },
             ]}
           />
         }

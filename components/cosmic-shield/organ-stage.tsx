@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { LucideIcon } from "lucide-react";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 import { cn } from "@/lib/utils";
@@ -130,5 +131,38 @@ function Dot() {
       <span className="absolute inset-0 rounded-full bg-primary/30 motion-safe:animate-ping" />
       <span className="relative size-2.5 rounded-full border border-white/70 bg-primary shadow-[0_0_10px_2px_oklch(0.82_0.12_210/70%)]" />
     </span>
+  );
+}
+
+/* Images fill the stage's visual box with this much padding on each side. */
+const IMAGE_PAD = 0.06;
+
+/**
+ * Converts a point given as fractions of an image (0–1) into the stage's
+ * 400 × 400 hotspot space, for an image of `aspect` (width / height) drawn
+ * with object-contain inside OrganImage.
+ */
+export function onImage(fx: number, fy: number, aspect: number) {
+  const box = 400 * (1 - 2 * IMAGE_PAD);
+  const w = aspect >= 1 ? box : box * aspect;
+  const h = aspect >= 1 ? box / aspect : box;
+  return { x: 400 * IMAGE_PAD + (box - w) / 2 + fx * w, y: 400 * IMAGE_PAD + (box - h) / 2 + fy * h };
+}
+
+/** A feature image (transparent PNG/WebP) presented as the stage visual. */
+export function OrganImage({ src, alt }: { src: string; alt: string }) {
+  return (
+    <div className="absolute inset-0" style={{ padding: `${IMAGE_PAD * 100}%` }}>
+      <div className="relative size-full">
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          priority
+          sizes="(min-width: 1024px) 480px, 85vw"
+          className="object-contain drop-shadow-[0_0_26px_oklch(0.82_0.12_210/45%)]"
+        />
+      </div>
+    </div>
   );
 }

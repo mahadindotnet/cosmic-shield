@@ -3,10 +3,9 @@
 import { Camera, Droplets, ListOrdered, Utensils } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EntryField, EntryFieldGrid, EntryForm, SegmentedField } from "@/components/cosmic-shield/entry-form";
-import { GutHologram } from "@/components/cosmic-shield/holograms";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { ModuleHero, ModulePage, PageSection } from "@/components/cosmic-shield/module-hero";
-import { OrganStage } from "@/components/cosmic-shield/organ-stage";
+import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/organ-stage";
 import { RingGauge } from "@/components/cosmic-shield/ring-gauge";
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
@@ -20,6 +19,9 @@ interface GiEntry {
   meals: number | null;
   status: HealthStatus;
 }
+
+/** public/organs/gi.webp is 416 × 398. */
+const GI_ASPECT = 416 / 398;
 
 const entries: GiEntry[] = [];
 const hydrationTrend: TrendPoint[] = [];
@@ -49,12 +51,12 @@ export function GiView() {
         }
         stage={
           <OrganStage
-            visual={<GutHologram />}
+            visual={<OrganImage src="/organs/gi.webp" alt="Intestines" />}
             hotspots={[
-              { id: "bristol", x: 204, y: 356, side: "right", label: "Bristol type", icon: ListOrdered, unit: "/7", field: "bristol" },
-              { id: "fluids", x: 288, y: 200, side: "right", label: "Fluids", icon: Droplets, unit: "L", field: "hydrationL" },
-              { id: "meals", x: 170, y: 204, side: "left", label: "Meals", icon: Utensils, field: "meals" },
-              { id: "photo", x: 122, y: 262, side: "left", label: "AI photo check", icon: Camera, field: "image" },
+              { id: "bristol", ...onImage(0.52, 0.86, GI_ASPECT), side: "right", label: "Bristol type", icon: ListOrdered, unit: "/7", field: "bristol" },
+              { id: "fluids", ...onImage(0.74, 0.42, GI_ASPECT), side: "right", label: "Fluids", icon: Droplets, unit: "L", field: "hydrationL" },
+              { id: "meals", ...onImage(0.42, 0.46, GI_ASPECT), side: "left", label: "Meals", icon: Utensils, field: "meals" },
+              { id: "photo", ...onImage(0.3, 0.66, GI_ASPECT), side: "left", label: "AI photo check", icon: Camera, field: "image" },
             ]}
           />
         }

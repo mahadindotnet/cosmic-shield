@@ -106,3 +106,25 @@ test.describe("with reduced motion", () => {
   });
 });
 
+
+test("Amsler grid opens full screen and closes with Esc", async ({ page }) => {
+  await page.goto("/dashboard/eyes");
+  await page.getByTestId("amsler-open").click();
+  const overlay = page.getByTestId("amsler-fullscreen");
+  await expect(overlay).toBeVisible();
+  const box = await overlay.boundingBox();
+  const viewport = page.viewportSize()!;
+  expect(box!.width).toBeGreaterThanOrEqual(viewport.width - 1);
+  expect(box!.height).toBeGreaterThanOrEqual(viewport.height - 1);
+  await page.keyboard.press("Escape");
+  await expect(overlay).toBeHidden();
+});
+
+test("body map turns on hover and settles on the front view", async ({ page }) => {
+  await page.goto("/dashboard");
+  const body = page.getByTestId("body-map");
+  await expect(body).toHaveAttribute("data-pose", "front");
+  await body.hover({ position: { x: 20, y: 20 } });
+  await expect(body).not.toHaveAttribute("data-pose", "front");
+  await expect(body).toHaveAttribute("data-pose", "front", { timeout: 5_000 });
+});
