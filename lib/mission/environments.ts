@@ -48,9 +48,6 @@ export interface MissionEnvironment {
   sources: string;
 }
 
-/** Background before a mission environment is chosen. */
-export const DEFAULT_BACKDROP: Backdrop = { src: "/backgrounds/default.webp", position: "50% 45%" };
-
 /**
  * Daily dose equivalents come from data/nasa/fixtures/radiation-environments.json
  * (built by `npm run data:build`): ISS measured by ALTEA via NASA RadLab;

@@ -1,23 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { DEFAULT_BACKDROP, MISSION_ENVIRONMENTS } from "@/lib/mission/environments";
+import { MISSION_ENVIRONMENTS } from "@/lib/mission/environments";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
 
-const BACKDROPS = [
-  { id: "default", ...DEFAULT_BACKDROP },
-  ...MISSION_ENVIRONMENTS.map((m) => ({ id: m.id, ...m.backdrop })),
-];
-
 /**
- * Full-screen background behind the dashboard. Shows the default forest until a
- * mission environment is chosen, then cross-fades to that environment's image.
- * A scrim keeps panels readable on bright images.
+ * Full-screen background behind the dashboard: the chosen mission
+ * environment's image, cross-faded on change. Before an environment is chosen
+ * (or while the saved choice loads) it is a plain dark space gradient, so no
+ * unrelated image flashes on first load. A scrim keeps panels readable.
  */
 export function SpaceBackdrop() {
   const env = useMissionEnvironment();
-  const active = env?.id ?? "default";
+  const active = env?.id ?? "none";
 
   return (
     <div
@@ -26,20 +22,21 @@ export function SpaceBackdrop() {
       data-environment={active}
       className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-background"
     >
-      {BACKDROPS.map((b) => (
+      <div className="absolute inset-0 bg-[radial-gradient(120%_80%_at_70%_10%,oklch(0.24_0.06_262/70%),transparent_60%),radial-gradient(90%_70%_at_10%_100%,oklch(0.22_0.07_290/45%),transparent_60%)]" />
+      {MISSION_ENVIRONMENTS.map((m) => (
         <Image
-          key={b.id}
-          src={b.src}
+          key={m.id}
+          src={m.backdrop.src}
           alt=""
           fill
           sizes="100vw"
           loading="eager"
-          fetchPriority={b.id === active ? "high" : "low"}
+          fetchPriority={m.id === active ? "high" : "low"}
           className={cn(
-            "object-cover transition-opacity duration-1000 ease-out",
-            b.id === active ? "opacity-100" : "opacity-0",
+            "object-cover transition-opacity duration-700 ease-out",
+            m.id === active ? "opacity-100" : "opacity-0",
           )}
-          style={{ objectPosition: b.position }}
+          style={{ objectPosition: m.backdrop.position }}
         />
       ))}
       {/* Readability scrim: darker behind the sidebar and along the bottom. */}

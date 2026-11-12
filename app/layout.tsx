@@ -35,7 +35,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
-        <Toaster theme="dark" position="bottom-right" />
+        {/* Offset keeps toasts above the floating co-pilot button. */}
+        <Toaster theme="dark" position="bottom-right" offset={{ bottom: 104, right: 24 }} mobileOffset={{ bottom: 96 }} />
       </body>
     </html>
   );

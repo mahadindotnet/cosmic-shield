@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/cosmic-shield/app-sidebar";
+import { CopilotButton } from "@/components/cosmic-shield/copilot-button";
 import { InstructionsButton } from "@/components/cosmic-shield/instructions-dialog";
 import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
@@ -38,9 +39,10 @@ export function DashboardFrame({ children }: { children: React.ReactNode }) {
               <InstructionsButton />
             </div>
           </header>
-          <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 md:px-6">{children}</div>
+          <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 md:px-6">{children}</div>
         </SidebarInset>
       </SidebarProvider>
+      <CopilotButton />
     </TooltipProvider>
   );
 }

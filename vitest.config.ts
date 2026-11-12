@@ -5,7 +5,7 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./", import.meta.url)) } },
   test: {
     // Unit tests only; Playwright owns e2e/*.spec.ts.
-    include: ["scripts/**/*.test.ts", "lib/**/*.test.ts"],
+    include: ["scripts/**/*.test.ts", "lib/**/*.test.ts", "components/**/*.test.ts"],
     environment: "node",
   },
 });

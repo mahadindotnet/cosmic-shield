@@ -25,8 +25,9 @@ export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
     sections: [
       { title: "Mission environment", body: "Choose ISS, Lunar surface, Mars transit or Mars surface with the buttons in the top bar. The strip under it shows the daily dose, gravity and ground delay for that environment. The background, thresholds, targets and guidance across the app change to match.", anchor: "overview-mission" },
       { title: "Body map", body: "Tap a glowing area of the body to open its module: head for Mind, eyes for Eyes, chest dosimeter for Radiation, heart for Vitals, gut for GI, wrist for Sleep & Stress, thigh for Bone Protection.", anchor: "overview-body" },
-      { title: "Module cards", body: "Each card shows the latest reading and its status: Normal, Watch or Escalate. Grey means nothing has been logged yet.", anchor: "overview-modules" },
-      { title: "Check-in streak", body: "Every daily check-in and exercise session earns points and keeps your streak going.", anchor: "overview-streak" },
+      { title: "Module cards", body: "Each tile shows one key reading and its status: Normal, Watch or Escalate. Grey means nothing has been logged yet.", anchor: "overview-modules" },
+      { title: "Statistics", body: "Small charts for each module: heart rate, sleep, exercise, hydration and mood fill in as you log entries. Career dose, daily dose by environment (NASA RadLab and published values) and space weather (NASA DONKI) use NASA reference data.", anchor: "overview-stats" },
+      { title: "Streak", body: "The flame counts consecutive days with a check-in. The hourglass reminds you to check in before midnight, and milestones unlock at 3, 7, 30 and 100 days. The calendar shows your check-ins for the current month; today is outlined.", anchor: "overview-streak" },
     ],
   },
   vitals: {

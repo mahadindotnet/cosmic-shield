@@ -46,11 +46,11 @@ Baseline bands live in `lib/health/reference-ranges.ts` and read the Watch thres
 
 ## Backgrounds and mission environment
 
-The dashboard background is a full-screen image (`SpaceBackdrop`) with a light scrim. Cards keep their own frosted backing for readability.
+The dashboard background is the chosen mission environment's image (`SpaceBackdrop`) with a light scrim. There is no default image, so nothing unrelated flashes before the saved environment loads. Cards keep their own frosted backing for readability.
 
 | Environment | Image |
 |---|---|
-| None selected | `public/backgrounds/default.webp` (purple forest) |
+| None selected | Plain dark space gradient (no image) |
 | ISS | `public/backgrounds/iss.webp` |
 | Lunar surface | `public/backgrounds/lunar.webp` |
 | Mars transit | `public/backgrounds/mars-transit.webp` |
@@ -60,7 +60,9 @@ The astronaut picks an environment with `MissionPicker`: always in the top navig
 
 ## Body map and feature images
 
-`BodyMap` on the Health Dashboard uses `public/organs/body-front.webp`, `body-left.webp` and `body-right.webp`. All three are cropped to the same 305 × 461 box so the poses line up. Hovering plays one turn (front, left, front, right, front) and settles on the front view, where the callouts are placed. Reduced motion keeps it on the front view. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection.
+`BodyMap` on the Health Dashboard uses `public/organs/anatomy.webp`, made from `feature_img/anatomy1.jpg`: cropped to the figure, with the black background keyed to transparency. Motion is kept subtle: a slow float, a breathing glow and a scan band masked to the figure. All three stop under reduced motion. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection. Positions are fractions of the image, so update `HOTSPOTS` if the image changes.
+
+The Health Dashboard shows one key reading per module tile, a statistics grid (`dashboard-stats.tsx`: crew charts plus NASA reference charts), and `StreakPanel`: a Snapchat-style flame counter with an hourglass warning and milestones, beside a LeetCode-style calendar of the current month in a single-hue cyan scale. A round floating co-pilot button (`CopilotButton`, `CopilotMark` logo: an AI spark inside an orbit) sits in the bottom-right corner on every page.
 
 Feature pages show transparent images from `public/organs/` (heart, bone, eye, gi, mind) through `OrganImage`. Callout positions are fractions of each image, converted with `onImage(fx, fy, aspect)`; if an image is replaced, update its aspect constant in the view. Sources are in `feature_img/`. `bone.webp` is recoloured to light cyan so it shows on dark backgrounds. Sleep & Stress and Radiation keep drawn SVG holograms (`holograms.tsx`).
 

@@ -41,6 +41,8 @@ test("sidebar navigates all nine tabs", async ({ page }) => {
 });
 
 test("body map hotspots open their module", async ({ page }) => {
+  // The figure floats slowly; Playwright waits for elements to stop moving, so freeze it.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   for (const [slug, title] of BODY_SPOTS) {
     await page.goto("/dashboard");
     await page.getByTestId(`body-${slug}`).click();
@@ -55,7 +57,8 @@ test("mission environment switches background and info, and is remembered", asyn
 
   await page.goto("/dashboard");
   const backdrop = page.getByTestId("space-backdrop");
-  await expect(backdrop).toHaveAttribute("data-environment", "default");
+  // No default image: plain background until an environment is chosen.
+  await expect(backdrop).toHaveAttribute("data-environment", "none");
 
   // The environment buttons live in the top navigation bar.
   await page.getByTestId("topbar-mission-mars-transit").click();
@@ -124,11 +127,33 @@ test("Amsler grid opens full screen and closes with Esc", async ({ page }) => {
   await expect(overlay).toBeHidden();
 });
 
-test("body map turns on hover and settles on the front view", async ({ page }) => {
+test("health dashboard shows the anatomy body map, statistics and streak", async ({ page }) => {
   await page.goto("/dashboard");
-  const body = page.getByTestId("body-map");
-  await expect(body).toHaveAttribute("data-pose", "front");
-  await body.hover({ position: { x: 20, y: 20 } });
-  await expect(body).not.toHaveAttribute("data-pose", "front");
-  await expect(body).toHaveAttribute("data-pose", "front", { timeout: 5_000 });
+  await expect(page.getByTestId("body-map").getByRole("img", { name: "Human anatomy, front view" })).toBeVisible();
+  for (const slug of ["vitals", "sleep-stress", "radiation", "bone", "eyes", "gi", "mind"]) {
+    await expect(page.getByTestId(`tile-${slug}`).filter({ visible: true })).toBeVisible();
+  }
+  // Reference charts use NASA data from the committed fixtures.
+  await expect(page.getByTestId("stat-env-dose")).toContainText("Mars transit");
+  await expect(page.getByTestId("stat-env-dose")).toContainText("1.84");
+  await expect(page.getByTestId("stat-space-weather")).toContainText("CMEs");
+  await expect(page.getByTestId("streak-panel")).toContainText("day streak");
+  await expect(page.getByTestId("streak-panel")).toContainText("check-ins in");
+});
+
+test("floating co-pilot button explains itself on hover and opens on click", async ({ page }) => {
+  // The button floats; freeze motion so Playwright can hover it.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/dashboard/vitals");
+  const button = page.getByTestId("copilot-button");
+  await expect(button).toBeVisible();
+  const tip = page.locator('[data-slot="tooltip-content"]');
+  // Re-hover until hydration has attached the tooltip handlers.
+  await expect(async () => {
+    await page.mouse.move(0, 0);
+    await button.hover();
+    await expect(tip).toHaveText("Ask your mission co-pilot", { timeout: 1_000 });
+  }).toPass({ timeout: 15_000 });
+  await button.click();
+  await expect(page.getByText("AI co-pilot is coming soon")).toBeVisible();
 });

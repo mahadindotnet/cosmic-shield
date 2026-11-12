@@ -188,6 +188,35 @@
   }
 }
 
+/* Scan band that sweeps down the body map (masked to the figure). */
+@keyframes body-scan {
+  0% {
+    transform: translateY(-30%);
+    opacity: 0;
+  }
+  12%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(330%);
+    opacity: 0;
+  }
+}
+
+/* Slow breathing glow behind the body map. */
+@keyframes holo-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.97);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.03);
+  }
+}
+
 /* Dark halo so headings stay legible directly on bright backdrops. */
 @utility text-halo {
   text-shadow:
