@@ -16,6 +16,12 @@
     "spo2Pct": { "baseline": 97, "watchLow": 94, "basis": "app default" },
     "systolicBp": { "baseline": 118, "watchHigh": 135, "watchLow": 100, "basis": "app default" },
     "diastolicBp": { "baseline": 72, "watchHigh": 88, "basis": "app default" },
+    "glucoseMgDl": {
+      "watchLow": 70,
+      "watchHigh": 140,
+      "basis": "app default",
+      "note": "Display band and Watch bounds only, not a diagnostic cut-off. Fasting status is not recorded with the reading."
+    },
     "sleepHours": { "baseline": 7.2, "watchLow": 5.5, "basis": "app default" },
     "stressIndex": { "baseline": 35, "watchHigh": 65, "basis": "app default" },
     "radiationMsvDay": {

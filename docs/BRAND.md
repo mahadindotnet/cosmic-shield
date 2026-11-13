@@ -65,7 +65,7 @@ With `prefers-reduced-transparency: reduce`, panels become solid and the backdro
 
 Thumbnails (top bar, sidebar, banners, Mission page) use the same file without blur. When replacing an image, use a new filename so cached copies of the old one are never served, then re-check text contrast in that environment.
 
-The astronaut picks an environment with `MissionPicker`: always in the top navigation bar (`variant="bar"`), on the Mission tab, and in module banners when none is set. The choice is saved in localStorage. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose (from `data/nasa`, see docs/nasa-data-sources.md) and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
+The astronaut picks an environment with `MissionPicker`: always in the top navigation bar (`variant="bar"`), on the Mission tab, and in module banners when none is set. The choice is saved on the user's account (`users.environment`, via a Server Action), so it follows them across devices; a localStorage copy only avoids a flash while the account loads. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose (from `data/nasa`, see docs/nasa-data-sources.md) and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
 
 ## Body map and feature images
 

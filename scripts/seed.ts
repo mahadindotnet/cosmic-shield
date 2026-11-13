@@ -1,15 +1,35 @@
 import { db } from "@/lib/db";
-import { alertAck, crew, vitalReading, checkIn, escalationEvent, loginAudit, users } from "@/lib/db/schema";
+import {
+  alertAck,
+  checkIn,
+  checkin,
+  countermeasureEntry,
+  crew,
+  doseEntry,
+  escalationEvent,
+  eyeScreening,
+  giEntry,
+  loginAudit,
+  sleepEntry,
+  users,
+  vitalReading,
+  vitalsEntry,
+} from "@/lib/db/schema";
 import { demoNightlySeries, NIGHTLY_METRICS } from "@/lib/demo/nightly";
 import { assertAuthEnv } from "@/lib/auth/config";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
+import { seedVitalsSeries } from "@/lib/vitals/seed-data";
 
 async function main() {
   // Fails with a clear message if PIN_PEPPER / SESSION_SECRET are missing.
   assertAuthEnv();
 
+  // Typed health entries (all rows, including manual ones: the seed resets the demo).
+  for (const t of [vitalsEntry, sleepEntry, doseEntry, countermeasureEntry, giEntry, eyeScreening, checkin]) {
+    await db.delete(t);
+  }
   await db.delete(alertAck);
   await db.delete(loginAudit);
   await db.delete(users);
@@ -98,7 +118,33 @@ async function main() {
     });
   }
 
-  console.log("Seed complete:", Object.keys(dashboards).length, "crew,", DEMO_ACCOUNTS.length, "login accounts");
+  // 14 days of morning vitals per crew member, ending yesterday (UTC), so
+  // today is free for a real entry. Deterministic, all inside the Normal band.
+  const today = new Date().toISOString().slice(0, 10);
+  const crewUsers = db.select().from(users).all().filter((u) => u.role === "crew").sort((a, b) => a.crewId.localeCompare(b.crewId));
+  let vitalsRows = 0;
+  crewUsers.forEach((u, i) => {
+    const rows = seedVitalsSeries(i, today).map(({ recordedAt, ...v }) => ({
+      ...v,
+      userId: u.id,
+      enteredBy: u.id,
+      source: "seed" as const,
+      recordedAt,
+      createdAt: createdAt,
+    }));
+    db.insert(vitalsEntry).values(rows).run();
+    vitalsRows += rows.length;
+  });
+
+  console.log(
+    "Seed complete:",
+    Object.keys(dashboards).length,
+    "crew,",
+    DEMO_ACCOUNTS.length,
+    "login accounts,",
+    vitalsRows,
+    "vitals entries",
+  );
 }
 
 main().catch((err) => {

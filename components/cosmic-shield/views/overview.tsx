@@ -15,11 +15,13 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import spaceWeather from "@/data/nasa/fixtures/space-weather.json";
+import { Await } from "@/components/cosmic-shield/await";
 import { BodyMap } from "@/components/cosmic-shield/body-map";
 import {
   HBars,
   MiniChart,
   StatPanel,
+  type MiniPoint,
 } from "@/components/cosmic-shield/dashboard-stats";
 import { MissionContext } from "@/components/cosmic-shield/mission-context";
 import {
@@ -42,6 +44,18 @@ import {
 } from "@/lib/mission/environments";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
+import type { TileReading } from "@/lib/vitals/summary";
+
+/** Server data for the signed-in crew member (null for a flight surgeon or while loading). */
+export interface OverviewData {
+  vitals: {
+    tile: TileReading | null;
+    /** Daily mean heart rate, last 7 days, oldest first. */
+    heartRateWeek: (number | null)[];
+  };
+}
+
+const NO_DATA: Promise<OverviewData | null> = Promise.resolve(null);
 
 /** Key point shown on each module tile: one reading, nothing else. */
 interface TileDef {
@@ -69,9 +83,34 @@ const FORTNIGHT = Array.from({ length: 14 }, (_, i) =>
   i === 13 ? "Today" : i % 3 === 1 ? `${13 - i}d` : "",
 );
 
-/** `earlyWarning`: server-rendered pattern alerts for the signed-in crew member (shown first). */
-export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode }) {
+/**
+ * `earlyWarning`: server-rendered pattern alerts for the signed-in crew member (shown first).
+ * `data`: the crew member's latest readings, read on the server. Only the
+ * blocks that show them wait for it; the body map and layout render at once.
+ */
+export function OverviewView({
+  earlyWarning,
+  data = NO_DATA,
+}: {
+  earlyWarning?: React.ReactNode;
+  data?: Promise<OverviewData | null>;
+}) {
   const env = useMissionEnvironment();
+  const withData = (t: TileDef) =>
+    t.slug === "vitals" ? (
+      <Await key={t.slug} promise={data}>
+        {(d) => {
+          const tile = d?.vitals.tile;
+          return (
+            <ModuleTile
+              {...(tile ? { ...t, metric: tile.metric, value: tile.value, unit: tile.unit, status: tile.status } : t)}
+            />
+          );
+        }}
+      </Await>
+    ) : (
+      <ModuleTile key={t.slug} {...t} />
+    );
 
   return (
     <div className="flex flex-col gap-10 pb-6">
@@ -104,9 +143,7 @@ export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode 
           id="overview-modules"
           className="grid scroll-mt-20 gap-3 sm:grid-cols-2 lg:col-start-1 lg:row-start-1 lg:auto-rows-fr lg:grid-cols-1"
         >
-          {LEFT.map((t) => (
-            <ModuleTile key={t.slug} {...t} />
-          ))}
+          {LEFT.map(withData)}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:col-start-3 lg:row-start-1 lg:auto-rows-fr lg:grid-cols-1">
@@ -131,7 +168,7 @@ export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode 
         </div>
       </section>
 
-      <Statistics env={env} />
+      <Statistics env={env} data={data} />
 
       <section aria-labelledby="streak-heading" className="flex flex-col gap-4">
         <SectionTitle
@@ -145,7 +182,9 @@ export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode 
   );
 }
 
-function Statistics({ env }: { env: MissionEnvironment | null }) {
+function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promise<OverviewData | null> }) {
+  const hrData = (d: OverviewData | null): MiniPoint[] =>
+    (d?.vitals.heartRateWeek ?? []).map((value, i) => ({ label: WEEK[i] ?? "", value }));
   const hrDomain: [number, number] = [
     Math.floor((R.heartRate.min * 0.8) / 10) * 10,
     Math.ceil((R.heartRate.max * 1.15) / 10) * 10,
@@ -175,16 +214,20 @@ function Statistics({ env }: { env: MissionEnvironment | null }) {
           keyPoint={`7 days · normal ${R.heartRate.min}–${R.heartRate.max} bpm`}
           href="/dashboard/vitals"
         >
-          <MiniChart
-            kind="line"
-            data={[]}
-            window={WEEK}
-            unit="bpm"
-            seriesLabel="Heart rate"
-            colorSlot={1}
-            band={R.heartRate}
-            yDomain={hrDomain}
-          />
+          <Await promise={data}>
+            {(d) => (
+              <MiniChart
+                kind="line"
+                data={hrData(d)}
+                window={WEEK}
+                unit="bpm"
+                seriesLabel="Heart rate"
+                colorSlot={1}
+                band={R.heartRate}
+                yDomain={hrDomain}
+              />
+            )}
+          </Await>
         </StatPanel>
 
         <StatPanel
@@ -400,6 +443,7 @@ function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
     <Link
       href={s.href}
       data-testid={`tile-${slug}`}
+      data-status={has ? (status ?? "normal") : "no-data"}
       className="group flex items-center gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur) transition-colors hover:border-primary/40 hover:bg-card/85 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 transition-colors group-hover:border-primary/50">

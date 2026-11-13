@@ -26,6 +26,12 @@ export interface TrendChartProps {
   unit: string;
   /** Shaded band for the expected range (e.g. rules-engine thresholds). */
   baseline?: Pick<ReferenceRange, "min" | "max" | "label">;
+  /**
+   * Optional second band for an external reference population (e.g. the
+   * Inspiration4 crew). Drawn as a violet outline so it never reads as the
+   * normal band.
+   */
+  reference?: { min: number; max: number; label: string };
   /** Categorical slot 1–4. Status colours are reserved and not allowed here. */
   colorSlot?: 1 | 2 | 3 | 4;
   /** Fixed y-domain; defaults to the baseline padded by 20%. */
@@ -48,37 +54,52 @@ export function TrendChart({
   data,
   unit,
   baseline,
+  reference,
   colorSlot = 1,
   yDomain,
   emptyWindow = 14,
   height = 200,
   className,
-}: TrendChartProps) {
+  testId,
+}: TrendChartProps & { testId?: string }) {
   const isEmpty = data.every((d) => d.value === null);
   const rows: TrendPoint[] = isEmpty
     ? Array.from({ length: emptyWindow }, (_, i) => ({ label: `${i + 1}`, value: null }))
     : data;
 
-  const domain: [number, number] = yDomain ?? (baseline ? niceDomain(baseline.min, baseline.max) : [0, 100]);
+  const lo = Math.min(...[baseline?.min, reference?.min].filter((n): n is number => n !== undefined));
+  const hi = Math.max(...[baseline?.max, reference?.max].filter((n): n is number => n !== undefined));
+  const domain: [number, number] = yDomain ?? (Number.isFinite(lo) && Number.isFinite(hi) ? niceDomain(lo, hi) : [0, 100]);
 
   const config = {
     value: { label: seriesLabel ?? title, color: `var(--chart-${colorSlot})` },
   } satisfies ChartConfig;
 
   return (
-    <Card className={cn("gap-3", className)}>
+    <Card className={cn("gap-3", className)} data-testid={testId}>
       <CardHeader>
         <CardTitle className="text-sm">{title}</CardTitle>
         {description && <CardDescription className="text-xs">{description}</CardDescription>}
-        {baseline && (
-          <CardAction>
-            <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-              <span
-                aria-hidden="true"
-                className="inline-block h-2.5 w-4 rounded-[3px] border border-dashed border-(--chart-baseline-edge) bg-(--chart-baseline)"
-              />
-              {baseline.label} {formatNum(baseline.min)}–{formatNum(baseline.max)} {unit}
-            </span>
+        {(baseline || reference) && (
+          <CardAction className="flex flex-col items-end gap-1">
+            {baseline && (
+              <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2.5 w-4 rounded-[3px] border border-dashed border-(--chart-baseline-edge) bg-(--chart-baseline)"
+                />
+                {baseline.label} {formatNum(baseline.min)}–{formatNum(baseline.max)} {unit}
+              </span>
+            )}
+            {reference && (
+              <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground" data-testid="trend-reference-legend">
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-2.5 w-4 rounded-[3px] border border-(--chart-2) bg-(--chart-2)/15"
+                />
+                {reference.label} {formatNum(reference.min)}–{formatNum(reference.max)} {unit}
+              </span>
+            )}
           </CardAction>
         )}
       </CardHeader>
@@ -116,6 +137,18 @@ export function TrendChart({
                 fill="var(--chart-baseline)"
                 stroke="var(--chart-baseline-edge)"
                 strokeDasharray="3 4"
+                strokeWidth={1}
+                ifOverflow="extendDomain"
+              />
+            )}
+            {reference && (
+              <ReferenceArea
+                y1={reference.min}
+                y2={reference.max}
+                fill="var(--chart-2)"
+                fillOpacity={0.08}
+                stroke="var(--chart-2)"
+                strokeOpacity={0.7}
                 strokeWidth={1}
                 ifOverflow="extendDomain"
               />
@@ -160,7 +193,10 @@ export function TrendChart({
         )}
       </div>
       <p className="px-4 text-[11px] text-muted-foreground">
-        {isEmpty ? `${emptyWindow}-day window` : `${rows.length} readings`} · {unit}
+        {isEmpty
+          ? `${emptyWindow}-day window`
+          : `${rows.length}-day window · ${rows.filter((r) => r.value !== null).length} days with readings`}{" "}
+        · {unit}
       </p>
     </Card>
   );

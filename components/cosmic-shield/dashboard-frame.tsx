@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { useMissionStore } from "@/lib/store/mission-store";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,7 +12,6 @@ import { InstructionsButton } from "@/components/cosmic-shield/instructions-dial
 import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
 import { SpaceBackdrop } from "@/components/cosmic-shield/space-backdrop";
-import { useMissionStore } from "@/lib/store/mission-store";
 import { ShieldPlus } from "lucide-react";
 
 const ADMIN_SECTION = { title: "Crew admin", icon: ShieldPlus };
@@ -21,7 +21,7 @@ export function DashboardFrame({ children, account }: { children: React.ReactNod
   const isAdmin = pathname.startsWith("/dashboard/admin");
   const section = isAdmin ? ADMIN_SECTION : (SECTIONS.find((s) => s.href === pathname) ?? SECTIONS[0]);
 
-  // Restore the saved mission environment after the first client render.
+  // Fast first paint from the local copy; the account value (EnvironmentHydrator) then wins.
   useEffect(() => {
     void useMissionStore.persist.rehydrate();
   }, []);

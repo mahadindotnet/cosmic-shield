@@ -26,6 +26,9 @@ export interface HistoryTableProps<T> {
   getRowId: (row: T) => string;
   emptyMessage?: string;
   className?: string;
+  testId?: string;
+  /** Optional per-row attributes (e.g. data-status). */
+  rowProps?: (row: T) => React.ComponentProps<"tr">;
 }
 
 /** Log of previous entries for a module. Newest first is the caller's job. */
@@ -37,9 +40,11 @@ export function HistoryTable<T>({
   getRowId,
   emptyMessage = "No entries yet. Your logged readings will appear here.",
   className,
+  testId,
+  rowProps,
 }: HistoryTableProps<T>) {
   return (
-    <Card className={cn("gap-2", className)}>
+    <Card className={cn("gap-2", className)} data-testid={testId}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
           <History className="size-4 text-primary/80" aria-hidden="true" />
@@ -83,7 +88,7 @@ export function HistoryTable<T>({
               </TableRow>
             ) : (
               rows.map((row) => (
-                <TableRow key={getRowId(row)}>
+                <TableRow key={getRowId(row)} {...rowProps?.(row)}>
                   {columns.map((c) => (
                     <TableCell
                       key={c.key}

@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { signInOk } from "./helpers";
 
 const TABS = [
   ["overview", "Health Dashboard"],
@@ -51,7 +52,12 @@ test("body map hotspots open their module", async ({ page }) => {
   }
 });
 
-test("mission environment switches background and info, and is remembered", async ({ page }) => {
+test("mission environment switches background and info, and is saved to the account", async ({ browser }) => {
+  // Its own account (CS-002): the choice is stored per user, and the other
+  // dashboard tests share CS-001's session.
+  const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+  const page = await context.newPage();
+  await signInOk(page, "CS-002");
   // Next keeps previously visited routes mounted but hidden, so scope to visible elements.
   const visible = (testId: string) => page.getByTestId(testId).filter({ visible: true });
 
@@ -76,6 +82,14 @@ test("mission environment switches background and info, and is remembered", asyn
 
   await page.reload();
   await expect(backdrop).toHaveAttribute("data-environment", "lunar");
+
+  // Saved on the account, not just this browser: a fresh browser gets it too.
+  const other = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+  const page2 = await other.newPage();
+  await signInOk(page2, "CS-002");
+  await expect(page2.getByTestId("space-backdrop")).toHaveAttribute("data-environment", "lunar");
+  await other.close();
+  await context.close();
 });
 
 test("sidebar collapses to icons and expands again", async ({ page }) => {

@@ -32,7 +32,13 @@ export const REFERENCE_RANGES = {
     provenance: { basis: "app default", note: "Lower bound 60 mmHg is an app default." },
   },
   spo2: { min: v.spo2Pct.watchLow, max: 100, unit: "%", label: "Normal band", provenance: APP_DEFAULT },
-  glucose: { min: 70, max: 140, unit: "mg/dL", label: "Reference", provenance: { basis: "app default", note: "Unsourced display band." } },
+  glucose: {
+    min: v.glucoseMgDl.watchLow,
+    max: v.glucoseMgDl.watchHigh,
+    unit: "mg/dL",
+    label: "Normal band",
+    provenance: { basis: "app default", note: v.glucoseMgDl.note },
+  },
   sleepHours: {
     min: v.sleepHours.watchLow,
     max: 9,

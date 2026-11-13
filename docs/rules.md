@@ -20,6 +20,20 @@ Each number in `data/rules/thresholds.json`, `lib/health/reference-ranges.ts` an
 | Mars transit 180 days, Mars surface 500 days | sourced | Hassler et al., *Science* 2014: one NASA design reference mission |
 | ISS 180-day increment, lunar 30-day stay, ISS "0 g" and "< 1 s" | app default | Scenario values |
 | Vital-sign baselines and Watch bands (HR, HRV, SpO₂, BP, sleep, stress), glucose 70–140, exercise 120–180 min, hydration 2–3 L, SANS cadence, Bristol and SANS settings, mission day 42 | app default | Not clinical cut-offs |
+| Glucose "Inspiration4 crew reference (n=4)" 56–100 mg/dL | sourced | NASA OSDR OSD-575 (Inspiration4 metabolic panel): min–max of all 12 pre-flight samples (L-92, L-44, L-3) from the 4 crew, `data/nasa/derived/baselines.json`. Fasting status not stated in the source. Shown for context only; it does not set the Watch bounds. |
+
+## Vitals (`lib/vitals/rules.ts`)
+
+Runs every time vitals are read (statuses are never stored), so a changed threshold applies to old readings too. Each measure of a reading is checked against its Watch bounds in `data/rules/thresholds.json` (all **app default**); the reading's status is the worst of its measures. Vitals rules raise **Watch** only, never Escalate.
+
+| Measure | Watch when | Basis |
+|---|---|---|
+| Heart rate | ≥ 88 or ≤ 52 bpm | app default |
+| Blood pressure | systolic ≥ 135 or ≤ 100 mmHg, or diastolic ≥ 88 mmHg | app default |
+| SpO₂ | ≤ 94 % | app default |
+| Glucose (optional) | ≥ 140 or ≤ 70 mg/dL | app default |
+
+Bounds are inclusive: the band drawn on charts is where readings count as Normal, and Watch begins at its edge. Example: 150/95 → Watch ("Systolic 150 mmHg is at or above the Watch level (135 mmHg)", and the same for diastolic 95). The Health Dashboard tile shows the first flagged measure of the latest reading (heart rate when nothing is flagged), so a Watch badge never sits next to an unrelated number. Tests: `lib/vitals/rules.test.ts`.
 
 ## `hrv_sleep_decline` (early warning)
 

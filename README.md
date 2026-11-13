@@ -77,6 +77,8 @@ npm run db:seed
 npm run dev
 ```
 
+`npm run db:migrate` applies the SQL migrations in `drizzle/` (generated with `npm run db:generate` after editing `lib/db/schema.ts`). A database created earlier with `drizzle-kit push` is adopted automatically. `npm run db:seed` resets the demo: accounts, 14 days of morning vitals per crew member (source "seed", ending yesterday so today is free for a real entry), and the simulated nights for the early-warning demo.
+
 Open **http://localhost:3000** and sign in with a demo account below.
 
 `SESSION_SECRET` and `PIN_PEPPER` are required; the server refuses to start without them. Generate each with:

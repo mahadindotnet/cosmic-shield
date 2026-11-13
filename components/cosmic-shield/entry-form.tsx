@@ -15,8 +15,17 @@ export interface EntryFormProps {
   title: string;
   description?: string;
   submitLabel?: string;
-  /** Called with the form's values. Without it, the entry is validated but not stored. */
+  /** Called with the form's values. Without it (and without `action`), the entry is validated but not stored. */
   onSubmit?: (values: EntryValues) => void | Promise<void>;
+  /** Server Action (e.g. from useActionState). Takes precedence over onSubmit. */
+  action?: (formData: FormData) => void;
+  /** Pending state when `action` is used. */
+  pending?: boolean;
+  /** Shown above the submit button, e.g. the saved reading's status or an error. */
+  message?: React.ReactNode;
+  /** Shown instead of the fields when entries can't be made (e.g. view-only). */
+  disabledNote?: React.ReactNode;
+  testId?: string;
   /** Small print under the submit button. */
   footnote?: string;
   className?: string;
@@ -33,11 +42,17 @@ export function EntryForm({
   description,
   submitLabel = "Log entry",
   onSubmit,
+  action,
+  pending: actionPending,
+  message,
+  disabledNote,
+  testId,
   footnote,
   className,
   children,
 }: EntryFormProps) {
-  const [pending, setPending] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const pending = action ? Boolean(actionPending) : submitting;
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -49,17 +64,17 @@ export function EntryForm({
       });
       return;
     }
-    setPending(true);
+    setSubmitting(true);
     try {
       await onSubmit(values);
       form.reset();
     } finally {
-      setPending(false);
+      setSubmitting(false);
     }
   }
 
   return (
-    <Card className={cn("gap-3", className)}>
+    <Card className={cn("gap-3", className)} data-testid={testId}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-sm">
           <Plus className="size-4 text-primary" aria-hidden="true" />
@@ -67,15 +82,24 @@ export function EntryForm({
         </CardTitle>
         {description && <CardDescription className="text-xs">{description}</CardDescription>}
       </CardHeader>
-      <form onSubmit={handleSubmit} className="flex flex-1 flex-col gap-3">
+      {disabledNote ? (
+        <CardContent className="text-xs text-muted-foreground">{disabledNote}</CardContent>
+      ) : (
+      <form
+        {...(action ? { action } : { onSubmit: handleSubmit })}
+        className="flex flex-1 flex-col gap-3"
+        noValidate={Boolean(action)}
+      >
         <CardContent className="flex flex-col gap-3">{children}</CardContent>
         <CardFooter className="mt-auto flex-col items-stretch gap-2 bg-transparent">
+          {message}
           <Button type="submit" disabled={pending} className="w-full">
             {pending ? "Saving…" : submitLabel}
           </Button>
           {footnote && <p className="text-center text-[11px] text-muted-foreground">{footnote}</p>}
         </CardFooter>
       </form>
+      )}
     </Card>
   );
 }
@@ -86,6 +110,7 @@ export function EntryField({
   name,
   unit,
   hint,
+  error,
   className,
   ...inputProps
 }: {
@@ -93,9 +118,12 @@ export function EntryField({
   name: string;
   unit?: string;
   hint?: string;
+  /** Validation message from the server; marks the input invalid. */
+  error?: string;
   className?: string;
 } & Omit<React.ComponentProps<"input">, "name" | "className">) {
   const id = `entry-${name}`;
+  const errorId = `${id}-error`;
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <Label htmlFor={id} className="text-xs text-muted-foreground">
@@ -106,6 +134,8 @@ export function EntryField({
           id={id}
           name={name}
           className={cn(inputProps.type === "number" && "font-mono tabular-nums", unit && "pr-14")}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? errorId : undefined}
           {...inputProps}
         />
         {unit && (
@@ -114,7 +144,13 @@ export function EntryField({
           </span>
         )}
       </div>
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {error ? (
+        <p id={errorId} className="text-[11px] text-escalate-foreground" data-testid={`${id}-error`}>
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-[11px] text-muted-foreground">{hint}</p>
+      )}
     </div>
   );
 }
