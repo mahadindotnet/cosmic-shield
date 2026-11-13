@@ -1,23 +1,59 @@
 {
+  "_about": "Rule thresholds. Every entry has a basis: \"sourced\" (see its source key in `sources`) or \"app default\" (a Cosmic Shield setting, not a NASA standard or clinical cut-off). See docs/rules.md.",
+  "sources": {
+    "nasa-std-3001-career": "NASA-STD-3001 Volume 1 (NASA Space Flight Human-System Standard, Crew Health): universal career effective-dose limit of 600 mSv. Confirmed via Zanon C et al., Tomography 2026;12(7):106 (doi:10.3390/tomography12070106), which cites the NASA-STD-3001 Technical Brief; NASA's own PDF links returned 404 when checked (2026-11-13).",
+    "radlab-iss-altea": "NASA OSDR RadLab, ISS ALTEA-Survey dose_equivalent_rate, 1–7 Jun 2011: 0.717 mSv/day (data/nasa/derived/radiation-environments.json).",
+    "nasa-mars-factsheet": "NASA Mars Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html): Earth–Mars distance 54.6–401.4 × 10^6 km; maximum one-way light time = 401.4e6 km ÷ 299,792.458 km/s ≈ 22.3 min."
+  },
   "missionDay": 42,
+  "missionDayBasis": "app default",
   "commsDelayMinutes": 22,
+  "commsDelayMinutesBasis": "sourced",
+  "commsDelayMinutesSource": "nasa-mars-factsheet",
   "vitals": {
-    "heartRateBpm": { "baseline": 68, "watchHigh": 88, "watchLow": 52 },
-    "hrvMs": { "baseline": 42, "watchLow": 28 },
-    "spo2Pct": { "baseline": 97, "watchLow": 94 },
-    "systolicBp": { "baseline": 118, "watchHigh": 135, "watchLow": 100 },
-    "diastolicBp": { "baseline": 72, "watchHigh": 88 },
-    "sleepHours": { "baseline": 7.2, "watchLow": 5.5 },
-    "stressIndex": { "baseline": 35, "watchHigh": 65 },
-    "radiationMsvDay": { "baseline": 0.18, "watchHigh": 0.35, "cumulativeWatchMsv": 8.5 }
+    "heartRateBpm": { "baseline": 68, "watchHigh": 88, "watchLow": 52, "basis": "app default" },
+    "hrvMs": { "baseline": 42, "watchLow": 28, "basis": "app default" },
+    "spo2Pct": { "baseline": 97, "watchLow": 94, "basis": "app default" },
+    "systolicBp": { "baseline": 118, "watchHigh": 135, "watchLow": 100, "basis": "app default" },
+    "diastolicBp": { "baseline": 72, "watchHigh": 88, "basis": "app default" },
+    "sleepHours": { "baseline": 7.2, "watchLow": 5.5, "basis": "app default" },
+    "stressIndex": { "baseline": 35, "watchHigh": 65, "basis": "app default" },
+    "radiationMsvDay": {
+      "baseline": 0.717,
+      "baselineBasis": "sourced",
+      "baselineSource": "radlab-iss-altea",
+      "watchHigh": 1.4,
+      "watchHighBasis": "app default",
+      "watchHighNote": "2 × the measured ISS daily dose, rounded to 0.1 (the same heuristic as each mission environment's Watch threshold).",
+      "careerLimitMsv": 600,
+      "careerLimitBasis": "sourced",
+      "careerLimitSource": "nasa-std-3001-career",
+      "cumulativeWatchMsv": 300,
+      "cumulativeWatchBasis": "app default",
+      "cumulativeWatchNote": "Half of the 600 mSv career limit."
+    }
   },
   "trends": {
     "hrDriftDays": 14,
-    "hrDriftBpm": 6
+    "hrDriftBpm": 6,
+    "basis": "app default"
+  },
+  "patterns": {
+    "hrvSleepDecline": {
+      "basis": "app heuristic; see docs/rules.md",
+      "baselineDays": 14,
+      "minBaselineNights": 7,
+      "flaggedNights": 3,
+      "hrvDropPct": 10,
+      "sleepDropHours": 0.5,
+      "sleepFloorHours": 6,
+      "maxNightAgeDays": 2
+    }
   },
   "modules": {
     "bristolEscalateTypes": [6, 7],
     "sansConfidenceWatch": 0.72,
-    "sansConfidenceEscalate": 0.88
+    "sansConfidenceEscalate": 0.88,
+    "basis": "app default"
   }
 }

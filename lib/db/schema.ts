@@ -63,3 +63,19 @@ export const loginAudit = sqliteTable("login_audit", {
   success: integer("success", { mode: "boolean" }).notNull(),
   reason: text("reason").notNull(),
 });
+
+/* ----------------------------------------------------------- alerts */
+
+/** "Dismiss for today" acknowledgements of pattern alerts (one row per dismissal). */
+export const alertAck = sqliteTable("alert_ack", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  /** users.id of the person who acknowledged. */
+  userId: integer("user_id").notNull(),
+  /** Crew ID at the time of acknowledgement, e.g. "CS-003". */
+  crewId: text("crew_id").notNull(),
+  ruleId: text("rule_id").notNull(),
+  /** UTC day the alert is dismissed for (YYYY-MM-DD; the ISS runs on UTC). */
+  day: text("day").notNull(),
+  /** Epoch ms. */
+  acknowledgedAt: integer("acknowledged_at").notNull(),
+});

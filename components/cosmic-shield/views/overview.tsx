@@ -69,13 +69,16 @@ const FORTNIGHT = Array.from({ length: 14 }, (_, i) =>
   i === 13 ? "Today" : i % 3 === 1 ? `${13 - i}d` : "",
 );
 
-export function OverviewView() {
+/** `earlyWarning`: server-rendered pattern alerts for the signed-in crew member (shown first). */
+export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode }) {
   const env = useMissionEnvironment();
 
   return (
     <div className="flex flex-col gap-10 pb-6">
       {/* Title lives in the top bar and the Instructions popup. */}
       <h1 className="sr-only">{getSection("overview")!.title}</h1>
+
+      {earlyWarning}
 
       <div id="overview-mission" className="-mb-6 scroll-mt-20">
         <MissionContext showPicker={false} />
@@ -120,7 +123,8 @@ export function OverviewView() {
             <div className="min-w-0">
               <p className="text-[13px] font-medium text-foreground">Alerts</p>
               <p className="text-[11px] text-muted-foreground">
-                No active Watch or Escalate
+                <span aria-hidden="true">—</span>
+                <span className="sr-only">Alert summary not available yet</span>
               </p>
             </div>
           </div>

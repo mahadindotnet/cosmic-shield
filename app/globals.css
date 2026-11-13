@@ -217,6 +217,18 @@
   }
 }
 
+/* Gentle entrance for the early-warning card (no flashing). */
+@keyframes ew-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* Dark halo so headings stay legible directly on bright backdrops. */
 @utility text-halo {
   text-shadow:

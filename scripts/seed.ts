@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
-import { crew, vitalReading, checkIn, escalationEvent, loginAudit, users } from "@/lib/db/schema";
+import { alertAck, crew, vitalReading, checkIn, escalationEvent, loginAudit, users } from "@/lib/db/schema";
+import { demoNightlySeries, NIGHTLY_METRICS } from "@/lib/demo/nightly";
 import { assertAuthEnv } from "@/lib/auth/config";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
@@ -9,6 +10,7 @@ async function main() {
   // Fails with a clear message if PIN_PEPPER / SESSION_SECRET are missing.
   assertAuthEnv();
 
+  await db.delete(alertAck);
   await db.delete(loginAudit);
   await db.delete(users);
   await db.delete(escalationEvent);
@@ -43,6 +45,22 @@ async function main() {
         recordedAt: now,
       });
     }
+
+    // 14 nights of simulated HRV (RMSSD) and sleep, ending last night (UTC).
+    const today = new Date().toISOString().slice(0, 10);
+    const nights = demoNightlySeries(payload.id, today);
+    nights.forEach((n, i) => {
+      const missionDay = payload.missionDay - (nights.length - i);
+      const recordedAt = `${n.night}T22:00:00.000Z`; // sleep period start
+      if (n.hrvMs !== null) {
+        db.insert(vitalReading).values({ crewId: payload.id, metric: NIGHTLY_METRICS.hrv, value: n.hrvMs, missionDay, recordedAt }).run();
+      }
+      if (n.sleepHours !== null) {
+        db.insert(vitalReading)
+          .values({ crewId: payload.id, metric: NIGHTLY_METRICS.sleep, value: n.sleepHours, missionDay, recordedAt })
+          .run();
+      }
+    });
 
     for (const log of payload.behavioralLog) {
       await db.insert(checkIn).values({

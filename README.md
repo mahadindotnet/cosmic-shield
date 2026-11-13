@@ -99,6 +99,8 @@ Cosmic Shield uses an **assigned crew ID and a 6-digit PIN** (no email or passwo
 
 These are public demo values. `npm run db:seed` restores them at any time (it also clears the login audit).
 
+**Run `npm run db:seed` before a demo: alerts only use the last 2 nights.** The seed writes 14 nights of simulated HRV (RMSSD) and sleep ending last night; signing in as **CS-003** shows the "Early warning" card (rule `hrv_sleep_decline`, see [docs/rules.md](./docs/rules.md)). Other crew see no card.
+
 - **Crew** see only their own data. **The flight surgeon** opens **Crew admin** from the account menu: pick a crew member to review (escalation, latest readings, check-ins, sign-in activity), assign a new crew ID, reset a PIN (shows a one-time temporary PIN and forces a new PIN at next sign-in), unlock an account, and view the login audit.
 - **Wrong crew ID or wrong PIN** both show "Invalid crew ID or PIN". **Five failures lock the account for 5 minutes** (a countdown is shown). Unknown IDs lock the same way, so lockouts don't reveal which IDs exist.
 - **Lock** (top bar) or **15 minutes without activity** returns to the PIN screen with your crew ID pre-filled. **Log out** forgets the crew ID. Sessions end after **12 hours** regardless.

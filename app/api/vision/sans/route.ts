@@ -1,25 +1,18 @@
 import { NextResponse } from "next/server";
 import { withApiUser } from "@/lib/auth/api";
 
+/**
+ * Fundus (SANS) screening: prototype placeholder. No model is connected, so
+ * it never returns a health status or confidence; it says so plainly.
+ */
 export async function POST() {
-  return withApiUser(async () => {
-    const confidence = Math.round((0.55 + Math.random() * 0.35) * 100) / 100;
-    const status =
-      confidence >= 0.88
-        ? "escalate"
-        : confidence >= 0.72
-          ? "watch"
-          : "nominal";
-
-    return NextResponse.json({
-      model: "sans-fundus-stub-v0",
-      sansConfidence: confidence,
-      status,
-      finding:
-        status === "nominal"
-          ? "No SANS pattern above watch threshold"
-          : "Repeat capture recommended",
-      note: "Prototype SANS ocular screening — not iris biometrics. HRP SANS risk reference.",
-    });
-  });
+  return withApiUser(async () =>
+    NextResponse.json({
+      model: "sans-fundus-prototype",
+      status: "not_analysed",
+      sansConfidence: null,
+      finding: "Not analysed: prototype",
+      note: "No screening model is connected yet. The image was not analysed and no health status was produced. HRP SANS risk reference.",
+    }),
+  );
 }

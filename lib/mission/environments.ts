@@ -1,4 +1,5 @@
 import type { SectionSlug } from "@/components/cosmic-shield/sections";
+import type { Basis } from "@/lib/health/reference-ranges";
 import { radiationReference, type RadiationReference } from "@/lib/nasa/radiation";
 
 export type MissionEnvironmentId = "iss" | "lunar" | "mars-transit" | "mars-surface";
@@ -46,14 +47,30 @@ export interface MissionEnvironment {
 
   notes: Record<ModuleSlug, string>;
   sources: string;
+  /** Where each number above comes from: a cited source or an app default. */
+  provenance: Record<"missionDays" | "gravity" | "commsDelay" | "exerciseTarget" | "sansCadence" | "radiationWatch", Basis>;
 }
+
+/** Sources for the physical values (checked 2026-11-13). */
+const SRC = {
+  moon: "NASA Moon Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html): surface gravity 1.62 m/s² = 0.165 × Earth; semimajor axis 384,400 km → ≈ 1.28 s one-way light time; synodic period 29.53 days.",
+  mars: "NASA Mars Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html): surface gravity 3.73 m/s² = 0.380 × Earth; Earth–Mars 54.6–401.4 × 10⁶ km → ≈ 3.0–22.3 min one-way light time; day 24.66 h.",
+  drm: "Hassler DM et al., Science 2014;343:1244797: one NASA design reference mission with 180-day transits each way and a 500-day surface stay.",
+} as const;
+
+const APP: Basis = { basis: "app default" };
+const COMMON_PROVENANCE = {
+  exerciseTarget: APP,
+  sansCadence: APP,
+  radiationWatch: { basis: "app default", note: "2 × the environment's daily dose, rounded to 0.1 mSv." },
+} satisfies Partial<MissionEnvironment["provenance"]>;
 
 /**
  * Daily dose equivalents come from data/nasa/fixtures/radiation-environments.json
  * (built by `npm run data:build`): ISS measured by ALTEA via NASA RadLab;
  * lunar surface, Mars transit and Mars surface from peer-reviewed papers.
- * Thresholds, targets and cadences marked "app default" are Cosmic Shield
- * settings, not NASA standards.
+ * Every other number is labelled in `provenance`: sourced (NASA fact sheets,
+ * Hassler 2014) or "app default" (a Cosmic Shield setting, not a NASA standard).
  */
 function dose(id: Parameters<typeof radiationReference>[0]) {
   const ref = radiationReference(id);
@@ -85,14 +102,20 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     shelter: "During a solar particle event, move to the most shielded module as directed by Mission Control.",
     notes: {
       vitals: "Fluids shift toward the head in microgravity. A puffy face and a slightly lower resting heart rate are common, so log at the same time each day.",
-      "sleep-stress": "16 sunrises a day on 90-minute orbits. Follow the station lighting schedule and close the sleep-station shade.",
+      "sleep-stress": "The Sun rises and sets on every orbit. Follow the station lighting schedule and close the sleep-station shade.",
       radiation: "Earth's magnetic field blocks much of the radiation. Doses spike briefly on passes through the South Atlantic Anomaly.",
-      bone: "Without loading, weight-bearing bones lose about 1–1.5% density per month. Aim for 2 h of exercise daily.",
+      bone: "Without loading, weight-bearing bones lose density. Keep up your daily exercise target.",
       eyes: "Most long-duration ISS crew show some signs of SANS, likely driven by fluid shifting toward the head. Screen on schedule.",
       gi: "Thirst is blunted when fluids shift headward. Drink on a schedule rather than waiting until you feel thirsty.",
       mind: "Earth is in view and live calls home are possible. Use them; they help protect mood over long increments.",
     },
     sources: "ALTEA-Survey dose equivalent via NASA OSDR RadLab",
+    provenance: {
+      ...COMMON_PROVENANCE,
+      missionDays: { basis: "app default", note: "Typical 6-month increment, used as a scenario." },
+      gravity: { basis: "app default", note: "Microgravity shown as 0 g." },
+      commsDelay: { basis: "app default", note: "Near-real-time link; not computed from a source." },
+    },
   },
   {
     id: "lunar",
@@ -103,7 +126,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     ...dose("lunar_surface"),
     missionDays: 30,
     missionDaysLabel: "30-day surface stay",
-    gravityG: 0.166,
+    gravityG: 0.165,
     gravityLabel: "0.17 g",
     commsDelayLabel: "≈ 1.3 s",
     commsRoundTripLabel: "≈ 2.6 s",
@@ -114,7 +137,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     shelter: "Enter the habitat storm shelter, and abort or postpone EVAs until the event passes.",
     notes: {
       vitals: "Partial gravity brings back some load on the cardiovascular system. Log any light-headedness when you stand up.",
-      "sleep-stress": "A lunar day lasts about 29 Earth days. Rely on the habitat lighting schedule, not the sun, to set your sleep cycle.",
+      "sleep-stress": "A lunar day lasts about 29.5 Earth days. Rely on the habitat lighting schedule, not the sun, to set your sleep cycle.",
       radiation: "About twice the ISS dose, measured on the lunar far side by Chang'E-4. EVAs add exposure, so log a dosimeter reading after every EVA.",
       bone: "One-sixth gravity gives some loading, but how well it protects bone is still unknown. Keep up resistance training.",
       eyes: "SANS risk in partial gravity is not yet known. Lunar dust is abrasive, so log any eye irritation after EVA.",
@@ -122,6 +145,12 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
       mind: "Earth is always in the sky and calls are near-live, but the crew is small and confined. Daily check-ins catch problems early.",
     },
     sources: "Chang'E-4 LND (Zhang et al., Science Advances 2020)",
+    provenance: {
+      ...COMMON_PROVENANCE,
+      missionDays: { basis: "app default", note: "30-day surface stay, used as a scenario." },
+      gravity: { basis: "sourced", source: SRC.moon },
+      commsDelay: { basis: "sourced", source: SRC.moon },
+    },
   },
   {
     id: "mars-transit",
@@ -144,13 +173,19 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     notes: {
       vitals: "Same microgravity physiology as on the ISS, but with no live ground link. Out-of-range readings are escalated by the onboard rules engine first.",
       "sleep-stress": "There is no natural day or night. The ship's lighting schedule is your only clock, so keep sleep and wake times fixed.",
-      radiation: "There is no protection from Earth's magnetic field for the whole cruise. Six months out is about 0.3 Sv, over half the career limit.",
-      bone: "Months of microgravity come before landing in 0.38 g. Exercise is what keeps you able to walk on arrival; aim for 2 h daily.",
+      radiation: "There is no protection from Earth's magnetic field for the whole cruise. At the published cruise rate, six months adds up to about 330 mSv, over half the 600 mSv career limit.",
+      bone: "Months of microgravity come before landing in 0.38 g. Exercise is what keeps you able to walk on arrival; keep up your daily target.",
       eyes: "Long microgravity exposure raises SANS risk, and no eye specialist is reachable in real time. Screen on schedule.",
       gi: "Stored food slowly loses some vitamins. Log fluids and meals so any shortfall shows up early.",
       mind: "Earth shrinks to a bright dot and live calls are impossible. Isolation is the biggest behavioural risk, so check in every day.",
     },
     sources: "MSL-RAD cruise (Zeitlin et al., Science 2013)",
+    provenance: {
+      ...COMMON_PROVENANCE,
+      missionDays: { basis: "sourced", source: SRC.drm },
+      gravity: { basis: "app default", note: "Microgravity shown as 0 g." },
+      commsDelay: { basis: "sourced", source: SRC.mars },
+    },
   },
   {
     id: "mars-surface",
@@ -180,6 +215,12 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
       mind: "Earth is a bright point in the sky and live calls are impossible. Small-crew isolation is the main behavioural risk, so check in every day.",
     },
     sources: "MSL-RAD surface (Hassler et al., Science 2014)",
+    provenance: {
+      ...COMMON_PROVENANCE,
+      missionDays: { basis: "sourced", source: SRC.drm },
+      gravity: { basis: "sourced", source: SRC.mars },
+      commsDelay: { basis: "sourced", source: SRC.mars },
+    },
   },
 ];
 

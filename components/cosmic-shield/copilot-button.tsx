@@ -5,6 +5,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { CopilotMark } from "@/components/cosmic-shield/logo";
 import { cn } from "@/lib/utils";
 
+/** Placeholder until the AI co-pilot exists (shared by every "Ask co-pilot" entry point). */
+export function showCopilotComingSoon() {
+  toast("AI co-pilot is coming soon", {
+    description: "It will answer questions about your readings and onboard guidance. It won't diagnose.",
+  });
+}
+
 /** Hover text: what the co-pilot does, in a few words. */
 export const COPILOT_HINT = "Ask your mission co-pilot";
 
@@ -16,9 +23,7 @@ export const COPILOT_HINT = "Ask your mission co-pilot";
 export function CopilotButton({ onOpen, className }: { onOpen?: () => void; className?: string }) {
   function open() {
     if (onOpen) return onOpen();
-    toast("AI co-pilot is coming soon", {
-      description: "It will answer questions about your readings and onboard guidance. It won't diagnose.",
-    });
+    showCopilotComingSoon();
   }
 
   return (
