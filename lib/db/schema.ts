@@ -161,7 +161,7 @@ export const countermeasureEntry = sqliteTable(
   (t) => [index("countermeasure_entry_user_time").on(t.userId, t.recordedAt)],
 );
 
-/** Gastrointestinal log: stool type, hydration and symptoms. */
+/** Gastrointestinal log: Bristol stool type, fluid intake, an optional note and photo. */
 export const giEntry = sqliteTable(
   "gi_entry",
   {
@@ -172,6 +172,13 @@ export const giEntry = sqliteTable(
     /** Comma-separated symptom keys, e.g. "nausea,bloating". */
     symptoms: text("symptoms"),
     note: text("note"),
+    /**
+     * Optional stool photo: path under the uploads folder (never served by
+     * path; only via /api/photos/gi/[id] to the owner or the flight surgeon).
+     */
+    photoPath: text("photo_path"),
+    /** Classifier result for the photo; the prototype never analyses ("not_analysed"). */
+    photoAnalysis: text("photo_analysis"),
   },
   (t) => [index("gi_entry_user_time").on(t.userId, t.recordedAt)],
 );

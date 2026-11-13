@@ -18,11 +18,17 @@ const day = (d: string, totalMinutes: number): BoneDay => ({
   vitaminDIu: 0,
 });
 
-describe("targets (all app defaults)", () => {
-  it("the daily exercise target is the environment's, or 120 min without one", () => {
-    expect(dailyExerciseTarget("lunar")).toEqual({ minutes: 90, environmentName: "Lunar surface" });
-    expect(dailyExerciseTarget(null)).toEqual({ minutes: BONE_LIMITS.defaultDailyExerciseMin, environmentName: null });
+describe("targets", () => {
+  it("the daily exercise target is the environment's (ISS sourced from NASA), or 120 min without one", () => {
+    expect(dailyExerciseTarget("iss")).toEqual({ minutes: 120, environmentName: "ISS", basis: "sourced: NASA" });
+    expect(dailyExerciseTarget("lunar")).toEqual({ minutes: 90, environmentName: "Lunar surface", basis: "app default" });
+    expect(dailyExerciseTarget(null)).toEqual({ minutes: BONE_LIMITS.defaultDailyExerciseMin, environmentName: null, basis: "app default" });
+  });
+
+  it("calcium and vitamin D targets are sourced from NASA's nutrition requirements", () => {
     expect(BONE_LIMITS).toMatchObject({ calciumMgPerDay: 1000, vitaminDIuPerDay: 800 });
+    expect(BONE_LIMITS.calciumBasis).toMatch(/^sourced/);
+    expect(BONE_LIMITS.vitaminDBasis).toMatch(/^sourced/);
   });
 });
 

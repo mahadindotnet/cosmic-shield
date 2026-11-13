@@ -1,3 +1,5 @@
+import { rmSync } from "node:fs";
+import path from "node:path";
 import { db } from "@/lib/db";
 import {
   alertAck,
@@ -24,6 +26,7 @@ import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
 import { seedCheckinSeries } from "@/lib/mind/seed-data";
 import { seedBoneSeries } from "@/lib/bone/seed-data";
+import { seedGiSeries } from "@/lib/gi/seed-data";
 import { seedDoseSeries } from "@/lib/radiation/seed-data";
 import { seedVitalsSeries } from "@/lib/vitals/seed-data";
 
@@ -35,6 +38,9 @@ async function main() {
   for (const t of [vitalsEntry, sleepEntry, doseEntry, countermeasureEntry, giEntry, eyeScreening, checkin, escalation]) {
     await db.delete(t);
   }
+  // Their photos too (same folder as lib/uploads/photos.ts: UPLOADS_DIR, default ./uploads).
+  const uploads = path.resolve(process.env.UPLOADS_DIR || path.join(process.cwd(), "uploads"));
+  for (const kind of ["gi", "eye"]) rmSync(path.join(uploads, kind), { recursive: true, force: true });
   await db.delete(alertAck);
   await db.delete(notificationRead);
   await db.delete(loginAudit);
@@ -178,6 +184,14 @@ async function main() {
     boneRows += rows.length;
   });
 
+  // 14 days of GI entries (Bristol types 3–5, 2.2–2.8 L of fluid), ending yesterday. No photos.
+  let giRows = 0;
+  crewUsers.forEach((u, i) => {
+    const rows = seedGiSeries(i, today).map((g) => ({ ...g, userId: u.id, enteredBy: u.id, source: "seed" as const, createdAt }));
+    db.insert(giEntry).values(rows).run();
+    giRows += rows.length;
+  });
+
   console.log(
     "Seed complete:",
     Object.keys(dashboards).length,
@@ -193,7 +207,9 @@ async function main() {
     checkinRows,
     "check-ins,",
     boneRows,
-    "bone logs",
+    "bone logs,",
+    giRows,
+    "GI entries",
   );
 }
 

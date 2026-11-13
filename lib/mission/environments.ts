@@ -67,6 +67,8 @@ const SRC = {
   moon: "NASA Moon Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html): surface gravity 1.62 m/s² = 0.165 × Earth; semimajor axis 384,400 km → ≈ 1.28 s one-way light time; synodic period 29.53 days.",
   mars: "NASA Mars Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html): surface gravity 3.73 m/s² = 0.380 × Earth; Earth–Mars 54.6–401.4 × 10⁶ km → ≈ 3.0–22.3 min one-way light time; day 24.66 h.",
   drm: "Hassler DM et al., Science 2014;343:1244797: one NASA design reference mission with 180-day transits each way and a 500-day surface stay.",
+  issExercise:
+    "NASA, “Astronaut Exercise” (Science in Space, May 20, 2024; page last updated Feb 3, 2025), https://www.nasa.gov/missions/station/iss-research/astronaut-exercise/: “crew members now averaging two hours of exercise per day.”",
 } as const;
 
 const APP: Basis = { basis: "app default" };
@@ -123,6 +125,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     sources: "ALTEA-Survey dose equivalent via NASA OSDR RadLab",
     provenance: {
       ...COMMON_PROVENANCE,
+      exerciseTarget: { basis: "sourced", source: SRC.issExercise },
       missionDays: { basis: "app default", note: "Typical 6-month increment, used as a scenario." },
       gravity: { basis: "app default", note: "Microgravity shown as 0 g." },
       commsDelay: { basis: "app default", note: "Near-real-time link; not computed from a source." },

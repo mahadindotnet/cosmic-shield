@@ -36,10 +36,14 @@ const n = (v: number | null, unit: string) => (v === null ? "—" : `${v} ${unit
 /**
  * Bone protection: exercise (aerobic, resistance with load) and calcium /
  * vitamin D per day, against the environment's exercise target. All targets
- * are app defaults. The frame renders at once; crew data streams in.
+ * are labelled with their basis: the ISS exercise target and the calcium and
+ * vitamin D targets are sourced (NASA), the rest are app defaults. The frame
+ * renders at once; crew data streams in.
  */
 export function BoneView({ data }: { data: Promise<BonePageData> }) {
   const env = useMissionEnvironment();
+  /** "NASA" for the ISS target (about two hours a day), otherwise "app default". */
+  const exerciseBasis = env?.provenance.exerciseTarget.basis === "sourced" ? "NASA" : "app default";
   return (
     <ModulePage slug="bone">
       <ModuleHero
@@ -83,7 +87,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                     unit="min"
                     caption={
                       env
-                        ? `Daily target on ${env.name}: ${s?.dailyTargetMin ?? env.exerciseTargetMin} min (app default).`
+                        ? `Daily target on ${env.name}: ${s?.dailyTargetMin ?? env.exerciseTargetMin} min (${exerciseBasis}).`
                         : `Daily target ${BONE_LIMITS.defaultDailyExerciseMin} min (app default) until you choose an environment.`
                     }
                   />
@@ -96,7 +100,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
         }
       />
 
-      <PageSection id="bone-status" eyebrow="Now" title="Today and this week" description="Exercise against your environment's target, and calcium and vitamin D against their daily targets. All targets are app defaults.">
+      <PageSection id="bone-status" eyebrow="Now" title="Today and this week" description="Exercise against your environment's target, and calcium and vitamin D against their daily targets. Each target shows its source: NASA where one was found, otherwise app default.">
         <Await promise={data}>
           {(d) => {
             const s = d?.summary;
@@ -111,7 +115,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                   unit="min"
                   neutral
                   caption={today ? `${today.aerobicMinutes} aerobic · ${today.resistanceMinutes} resistance` : s ? "Nothing logged today yet" : empty}
-                  reference={`Target ${s?.dailyTargetMin ?? BONE_LIMITS.defaultDailyExerciseMin} min/day · app default`}
+                  reference={`Target ${s?.dailyTargetMin ?? BONE_LIMITS.defaultDailyExerciseMin} min/day · ${exerciseBasis}`}
                 />
                 <StatusCard
                   title="Last 7 days"
@@ -131,7 +135,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                   unit="mg"
                   neutral
                   caption={today ? `${Math.round((today.calciumMg / BONE_LIMITS.calciumMgPerDay) * 100)} % of the daily target` : s ? "Nothing logged today yet" : empty}
-                  reference={`Target ${BONE_LIMITS.calciumMgPerDay} mg/day · app default`}
+                  reference={`Target ${BONE_LIMITS.calciumMgPerDay} mg/day · NASA`}
                 />
                 <StatusCard
                   title="Vitamin D today"
@@ -140,7 +144,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                   unit="IU"
                   neutral
                   caption={today ? `${Math.round((today.vitaminDIu / BONE_LIMITS.vitaminDIuPerDay) * 100)} % of the daily target` : s ? "Nothing logged today yet" : empty}
-                  reference={`Target ${BONE_LIMITS.vitaminDIuPerDay} IU/day · app default`}
+                  reference={`Target ${BONE_LIMITS.vitaminDIuPerDay} IU/day · NASA`}
                 />
               </div>
             );
@@ -160,7 +164,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                   description="Total per day (aerobic + resistance), last 14 days."
                   data={toTrend(d?.summary?.trends.exercise)}
                   unit="min"
-                  baseline={{ min: target, max: target + 60, label: "Target (app default)" }}
+                  baseline={{ min: target, max: target + 60, label: `Target (${exerciseBasis})` }}
                   yDomain={[0, 240]}
                   colorSlot={2}
                   height={260}
@@ -172,7 +176,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
         </div>
       </PageSection>
 
-      <PageSection id="bone-trends" eyebrow="Trends" title="Calcium and vitamin D" description="Daily intake, last 14 days. The band starts at the daily target (app default).">
+      <PageSection id="bone-trends" eyebrow="Trends" title="Calcium and vitamin D" description="Daily intake, last 14 days. The band starts at the daily target: calcium 1000 mg (lower bound of NASA's 2020 exploration requirement), vitamin D 800 IU (NASA in-flight evidence; the 2020 requirement is 1000 IU).">
         <Await promise={data}>
           {(d) => (
             <div className="grid gap-4 lg:grid-cols-2">
@@ -180,7 +184,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                 title="Calcium"
                 data={toTrend(d?.summary?.trends.calcium)}
                 unit="mg"
-                baseline={{ min: BONE_LIMITS.calciumMgPerDay, max: BONE_LIMITS.calciumMgPerDay * 1.5, label: "Target (app default)" }}
+                baseline={{ min: BONE_LIMITS.calciumMgPerDay, max: BONE_LIMITS.calciumMgPerDay * 1.5, label: "Target (NASA)" }}
                 yDomain={[0, 2000]}
                 colorSlot={1}
                 height={180}
@@ -189,7 +193,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
                 title="Vitamin D"
                 data={toTrend(d?.summary?.trends.vitaminD)}
                 unit="IU"
-                baseline={{ min: BONE_LIMITS.vitaminDIuPerDay, max: BONE_LIMITS.vitaminDIuPerDay * 1.5, label: "Target (app default)" }}
+                baseline={{ min: BONE_LIMITS.vitaminDIuPerDay, max: BONE_LIMITS.vitaminDIuPerDay * 1.5, label: "Target (NASA)" }}
                 yDomain={[0, 2000]}
                 colorSlot={4}
                 height={180}

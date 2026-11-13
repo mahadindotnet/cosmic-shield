@@ -3,8 +3,10 @@ import { getMissionEnvironment, type MissionEnvironmentId } from "@/lib/mission/
 import { addDays } from "@/lib/vitals/summary";
 
 /**
- * Bone protection rules (pure). All targets are app defaults: none has a
- * verified source (thresholds.json `bone`, docs/rules.md).
+ * Bone protection rules (pure). Targets: the ISS exercise target (120 min,
+ * NASA) and the calcium and vitamin D targets (NASA nutrition requirements)
+ * are sourced; the other environments' exercise targets and the rule's 50 %
+ * threshold are app defaults (thresholds.json `bone`, docs/rules.md).
  *
  * Rule `bone_exercise` (Watch only): over the last 7 days ending today, if
  * anything was logged, total exercise below 50 % of the weekly target
@@ -22,14 +24,20 @@ export const BONE_LIMITS = {
   vitaminDIuPerDay: b.vitaminDIuPerDay,
   windowDays: b.windowDays,
   weeklyWatchFraction: b.weeklyWatchFraction,
+  calciumBasis: "sourced: NASA nutrition requirements (Smith et al. 2021)",
+  vitaminDBasis: "sourced: NASA nutrition requirements (Smith et al. 2021)",
 } as const;
 
 /** The daily exercise target for an environment (app default), and whether it came from the environment. */
 export function dailyExerciseTarget(environment: string | null) {
   const env = getMissionEnvironment((environment as MissionEnvironmentId | null) ?? null);
   return env
-    ? { minutes: env.exerciseTargetMin, environmentName: env.name as string | null }
-    : { minutes: BONE_LIMITS.defaultDailyExerciseMin, environmentName: null };
+    ? {
+        minutes: env.exerciseTargetMin,
+        environmentName: env.name as string | null,
+        basis: env.provenance.exerciseTarget.basis === "sourced" ? ("sourced: NASA" as const) : ("app default" as const),
+      }
+    : { minutes: BONE_LIMITS.defaultDailyExerciseMin, environmentName: null, basis: "app default" as const };
 }
 
 /** Totals for one UTC day. */

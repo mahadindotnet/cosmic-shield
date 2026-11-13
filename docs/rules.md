@@ -79,18 +79,54 @@ Tests: `lib/mind/mind.test.ts`, `lib/mind/mind-db.test.ts`; Playwright `e2e/mind
 
 ## Bone protection (`lib/bone/rules.ts`)
 
-One log per day or several (they add up): aerobic and resistance minutes, resistance load (kg, with reps: volume = kg × reps), calcium (mg) and vitamin D (IU), stored in `countermeasure_entry`. **No target here has a verified source: all are app defaults** (`thresholds.json` `bone`).
+One log per day or several (they add up): aerobic and resistance minutes, resistance load (kg, with reps: volume = kg × reps), calcium (mg) and vitamin D (IU), stored in `countermeasure_entry`. Each target is labelled with its basis in the UI (`thresholds.json` `bone`, `lib/mission/environments.ts`).
 
 | Target | Value | Basis |
 |---|---|---|
-| Daily exercise | The mission environment's target: ISS 120, Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen | app default |
+| Daily exercise, ISS | 120 min | **sourced**: NASA, "Astronaut Exercise" (2024, updated 2025): "crew members now averaging two hours of exercise per day." |
+| Daily exercise, other environments | Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen | app default |
 | Weekly exercise | 7 × the daily target | app default |
-| Calcium | 1000 mg/day | app default |
-| Vitamin D | 800 IU/day | app default |
+| Calcium | 1000 mg/day | **sourced**: lower bound of NASA's 2020 exploration requirement, 1,000–1,200 mg/day (Smith et al., *Human Adaptation to Spaceflight: The Role of Food and Nutrition*, NASA 2021, Table 1). The 1996 ISS requirement was higher, 1,200–2,000 mg. |
+| Vitamin D | 800 IU/day | **sourced**: same book: in-flight data "provide evidence that 800 IU vitamin D/d is enough to maintain vitamin D status during long-duration spaceflight". NASA's 2020 exploration requirement is 1000 IU/day; we use the 800 IU the evidence supports. |
+| Watch below 50 % of the weekly target | 50 % | app default |
 
 **Rule `bone_exercise`** (Watch only, evaluated on read): if anything was logged in the 7 days ending today, total exercise below 50 % of the weekly target is Watch (e.g. under 420 min against 840). No logs in the window means no status, not Watch. Calcium and vitamin D are shown against their targets but never raise a status. The alert goes through `lib/alerts/active.ts` (bell, dashboard summary, co-pilot). Days with exercise minutes count as exercise days for points.
 
 Tests: `lib/bone/bone.test.ts`; Playwright `e2e/bone.spec.ts`.
+
+## GI (`lib/gi/rules.ts`)
+
+One entry per bowel movement (several a day are fine): the Bristol type (1–7, required), optional fluid intake (L) and a note, and an optional photo, stored in `gi_entry`.
+
+**Type meanings are sourced:** the seven types and their descriptions follow the Bristol Stool Form Scale (Lewis SJ, Heaton KW, *Scand J Gastroenterol* 1997;32(9):920–924). The picker shows each type's standard description and a simple drawn pictogram. The app never labels a type as a condition.
+
+| Type | Description (Lewis & Heaton 1997) |
+|---|---|
+| 1 | Separate hard lumps, like nuts (hard to pass) |
+| 2 | Sausage-shaped but lumpy |
+| 3 | Like a sausage but with cracks on its surface |
+| 4 | Like a sausage or snake, smooth and soft |
+| 5 | Soft blobs with clear-cut edges (passed easily) |
+| 6 | Fluffy pieces with ragged edges, a mushy stool |
+| 7 | Watery, no solid pieces, entirely liquid |
+
+**Rules (Watch only, evaluated on read; app defaults in `thresholds.json` `gi`):**
+
+| Rule | Watch when | Message |
+|---|---|---|
+| `gi_hard` | Types 1–2 on 2 or more of the last 3 UTC days (ending today) | "Possible dehydration / constipation pattern: … Increase fluids and fibre." |
+| `gi_loose` | Types 6–7 on 2 or more of the last 3 UTC days | "Loose stools: … Hydrate, and contact the CMO if it continues." |
+
+Several entries on one day count as one day. Fluid intake is shown against a **2–3 L/day band (app default)** but never raises a status. Alerts go through `lib/alerts/active.ts` (bell, dashboard summary, co-pilot guidance `gi_hard` / `gi_loose`). Each day with a GI entry earns 5 points (app default).
+
+**Photos (labelled prototype).** The photo is stored but **not analysed**: the classifier (`lib/gi/classifier.ts`, also `POST /api/vision/bristol`) always returns "Not analysed: prototype" and never suggests a type or a status. The type the crew member chooses is what gets logged. Photo handling (`lib/uploads/photos.ts`):
+
+- JPEG, PNG or WebP only, recognised by the file's first bytes; at most 5 MB (checked in the browser and again on the server).
+- Decoded and re-encoded with sharp: orientation applied, **all metadata removed** (EXIF incl. GPS and camera, XMP, ICC); longest side at most 2048 px.
+- Stored under `uploads/gi/<userId>/<random>.<ext>` (`uploads/` is gitignored; e2e uses `uploads-test/`; the seed clears both).
+- Served only by `GET /api/photos/gi/[id]` to the **owner or the flight surgeon** (`Cache-Control: private, no-store`); anyone else gets 404, signed out 401. The stored path never leaves the server.
+
+Tests: `lib/gi/gi.test.ts`, `lib/uploads/photos.test.ts`; Playwright `e2e/gi.spec.ts`.
 
 ## Gamification (`lib/gamification/rules.ts`)
 
@@ -103,11 +139,12 @@ Motivation only: points and streaks never change a health status. All values are
 | Sleep entry (the night it covers) | 10 |
 | Dosimeter reading | 5 |
 | Exercise (a Bone log with exercise minutes) | 10 |
+| GI entry | 5 |
 
 - Each activity earns its points **once per UTC day**: logging the same thing again that day earns nothing more.
 - **Streak** = consecutive UTC days with a daily check-in. The current streak counts back from today, or from yesterday while today's check-in is still open; **best streak** is the longest run in all history.
 - **Streak bonuses:** every run that reaches 7 days earns +20 once, and 30 days +50.
-- The month calendar is coloured by how many of the five activities were logged that day.
+- The month calendar is coloured by how many of the six activities were logged that day.
 - Demo seed entries count: they stand in for the demo crew's past logging.
 - The bell's reminder names the current streak: "Daily check-in due: keep your 5-day streak" (or "start a streak today").
 

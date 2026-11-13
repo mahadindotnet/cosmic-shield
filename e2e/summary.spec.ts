@@ -9,21 +9,18 @@ import { signInOk } from "./helpers";
 
 const visible = (page: Page, testId: string) => page.getByTestId(testId).filter({ visible: true });
 
-test("CS-004: All clear, real tiles, and a clear empty state on modules without entries (Eyes, GI)", async ({ page }) => {
+test("CS-004: All clear, real tiles, and a clear empty state on the module without entries (Eyes)", async ({ page }) => {
   await signInOk(page, "CS-004");
   const card = visible(page, "alerts-summary");
   await expect(card).toHaveAttribute("data-state", "clear");
   await expect(card).toContainText("All clear");
 
-  // Real data (seeded vitals and bone logs): a number and a status, no empty text.
-  await expect(visible(page, "tile-vitals")).toHaveAttribute("data-status", "normal");
-  await expect(visible(page, "tile-bone")).toHaveAttribute("data-status", "normal");
-  // Modules without entries say so plainly; no number, no made-up status.
-  for (const slug of ["eyes", "gi"]) {
-    const tile = visible(page, `tile-${slug}`);
-    await expect(tile).toHaveAttribute("data-status", "no-data");
-    await expect(tile.getByTestId("tile-empty")).toHaveText("No entries yet: log your first reading");
-  }
+  // Real data (seeded vitals, bone and GI logs): a number and a status, no empty text.
+  for (const slug of ["vitals", "bone", "gi"]) await expect(visible(page, `tile-${slug}`)).toHaveAttribute("data-status", "normal");
+  // A module without entries says so plainly; no number, no made-up status.
+  const eyes = visible(page, "tile-eyes");
+  await expect(eyes).toHaveAttribute("data-status", "no-data");
+  await expect(eyes.getByTestId("tile-empty")).toHaveText("No entries yet: log your first reading");
   await expect(visible(page, "stat-eyes")).toContainText("No screening logged yet");
   // Points aren't computed yet: no fake 0.
   await expect(visible(page, "streak-panel")).not.toContainText(/Points\s*0/);

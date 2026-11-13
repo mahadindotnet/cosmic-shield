@@ -277,6 +277,8 @@ export const GUIDANCE_IDS = [
   "mind_pattern",
   "mind_safety",
   "bone_exercise",
+  "gi_hard",
+  "gi_loose",
 ] as const;
 export type GuidanceId = (typeof GUIDANCE_IDS)[number];
 
@@ -336,7 +338,19 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
         "Log each session on the Bone protection page so the weekly total is complete.",
       ],
       whenToContact: `If you can't keep up the schedule, ask for a workload adjustment, or ${contact}.`,
-      citation: `${RULES_DOC}. Exercise target is the mission environment's (app default).`,
+      citation: `${RULES_DOC}. Exercise target is the mission environment's (ISS 120 min/day: NASA, about two hours a day; other environments: app default).`,
+      label: "Rules engine",
+    },
+    gi_hard: {
+      steps: ["Increase fluids through the day, toward the 2–3 L daily band.", "Add fibre-rich foods from the menu where you can.", "Keep logging each entry on the GI page."],
+      whenToContact: `If it continues or you feel unwell, talk to your Crew Medical Officer, or ${contact}.`,
+      citation: `${RULES_DOC}. Bristol types per Lewis & Heaton 1997; the 3-day pattern rule and the fluid band are app defaults (Watch only).`,
+      label: "Rules engine",
+    },
+    gi_loose: {
+      steps: ["Hydrate: sip fluids steadily through the day.", "Keep logging each entry on the GI page."],
+      whenToContact: `If it continues, contact your Crew Medical Officer, or ${contact}.`,
+      citation: `${RULES_DOC}. Bristol types per Lewis & Heaton 1997; the 3-day pattern rule is an app default (Watch only).`,
       label: "Rules engine",
     },
     mind_safety: {

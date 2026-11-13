@@ -6,6 +6,7 @@ import { boneSummaryFor } from "@/lib/bone/data";
 import { BONE_EXERCISE_ID } from "@/lib/bone/rules";
 import { db } from "@/lib/db";
 import { escalation } from "@/lib/db/schema";
+import { giSummaryFor } from "@/lib/gi/data";
 import { mindSummaryFor } from "@/lib/mind/data";
 import { MIND_PATTERN_ID } from "@/lib/mind/rules";
 import { radiationSummaryFor } from "@/lib/radiation/data";
@@ -119,6 +120,19 @@ export function activeAlertsFor(userId: number, today = utcToday()): ActiveAlert
       href: "/dashboard/bone",
       key: `alert:${BONE_EXERCISE_ID}:${today}`,
     });
+
+  // GI 3-day patterns (Watch only; app default rules, Bristol types per Lewis & Heaton 1997).
+  const gi = giSummaryFor(userId).evaluation;
+  for (const p of [gi.hard, gi.loose])
+    if (p.status === "watch")
+      alerts.push({
+        ruleId: p.ruleId,
+        level: "watch",
+        title: p.ruleId === "gi_hard" ? "GI: possible dehydration / constipation pattern" : "GI: loose stools",
+        detail: p.reason ?? "",
+        href: "/dashboard/gi",
+        key: `alert:${p.ruleId}:${p.days.at(-1)}`,
+      });
 
   const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const openEscalations = db

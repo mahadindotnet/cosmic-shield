@@ -20,6 +20,8 @@ Last checked: 2026-11-13.
 | NASA **Mars Fact Sheet** | Gravity 0.38 g, Earth–Mars distance → light delay 3–22 min, sol ≈ 24.66 h | `lib/mission/environments.ts`; `commsDelayMinutes` in `thresholds.json` | [nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html) |
 | **NASA-STD-3001** Volume 1 (Crew Health) | Career effective-dose limit, 600 mSv | Career-dose meter; `careerLimitMsv` | NASA's own PDF links returned 404 when checked; confirmed via Zanon et al. 2026 (section 3) |
 | NASA OSDR **OSD-630**: Inspiration4 stool | Named as a validity reference for the Bristol (GI) module; not downloaded | GI module notes | [osdr.nasa.gov](https://osdr.nasa.gov/) (OSD-630) |
+| NASA, **"Astronaut Exercise"** (Science in Space, 20 May 2024; updated 3 Feb 2025) | "crew members now averaging two hours of exercise per day." → the ISS daily exercise target, 120 min (sourced) | `lib/mission/environments.ts` (ISS `exerciseTarget`); Bone protection page | [nasa.gov](https://www.nasa.gov/missions/station/iss-research/astronaut-exercise/) |
+| Smith SM, Zwart SR, Douglas GL, Heer M. ***Human Adaptation to Spaceflight: The Role of Food and Nutrition***, 2nd ed. NASA, 2021 | Table 1: calcium 1,000–1,200 mg/day (exploration, 2020) → calcium target 1000 mg; in-flight evidence that 800 IU vitamin D/day maintains status → vitamin D target 800 IU (the 2020 requirement is 1000 IU) | `thresholds.json` `bone`; Bone protection page | [PDF (nasa.gov)](https://www.nasa.gov/wp-content/uploads/2015/02/human_adaptation_2021_final.pdf) |
 
 ## 2. Other agencies' instruments and data
 
@@ -47,6 +49,7 @@ We did not download anything directly from another agency. These instruments' da
 |---|---|---|
 | World Health Organization. *Pulse Oximetry Training Manual*. WHO Patient Safety, 2011. ISBN 978 92 4 150113 2. | SpO₂ < 90 % → Escalate ("A saturation of less than 90% is a clinical emergency"). Written for anaesthesia providers. | [PDF (who.int)](https://cdn.who.int/media/docs/default-source/patient-safety/pulse-oximetry/who-ps-pulse-oxymetry-training-manual-en.pdf) |
 | American Diabetes Association. *Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose)*, patient version, based on the Standards of Care in Diabetes—2025. | Glucose < 70 mg/dL → Watch (level 1), < 54 mg/dL → Escalate (level 2) | [PDF (professional.diabetes.org)](https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf) |
+| Lewis SJ, Heaton KW. Stool form scale as a useful guide to intestinal transit time. *Scand J Gastroenterol* 1997;32(9):920–924. | The seven Bristol stool types and their descriptions (GI picker, scale, history). Type meanings only: the GI pattern rules are app defaults. The DOI was found through a search index; PubMed's page could not be read by automated fetch, so the citation details were not checked there. | [doi:10.3109/00365529709011203](https://doi.org/10.3109/00365529709011203) |
 | American Heart Association. *Understanding Blood Pressure Readings* ("HYPERTENSIVE CRISIS (consult your doctor immediately)": "HIGHER THAN 180 and/or HIGHER THAN 120"). | Blood pressure: systolic > 180 or diastolic > 120 mmHg → Escalate; the "wait five minutes, measure again, then contact" steps in the guidance. Read on the AHA's own Go Red for Women mirror, because heart.org returned 403 to automated fetches; the wording was read from the page by the project team (2026-11-13). | [goredforwomen.org (AHA)](https://goredforwomen.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings) |
 
 ### Tools used to find and check the papers
@@ -65,9 +68,9 @@ These are Cosmic Shield settings, labelled **app default** in the code and UI an
 - Vital-sign Watch bands (heart rate, blood pressure, SpO₂ ≤ 94 %, glucose ≥ 140 mg/dL, HRV, sleep, self-rated stress ≥ 4/5).
 - Radiation Watch levels (2 × the daily dose; 300 mSv cumulative = half the career limit).
 - The `hrv_sleep_decline` pattern settings.
-- Exercise and hydration targets, SANS cadence, Bristol and SANS settings, mission day 42, ISS increment and lunar stay lengths.
+- Exercise targets other than the ISS's (Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen), the `bone_exercise` 50 % rule, the 2–3 L hydration band, the GI pattern rules (types 1–2 or 6–7 on 2 of 3 days), points for GI entries, SANS cadence and settings, mission day 42, ISS increment and lunar stay lengths.
 
-**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), bone protection logs (`lib/bone/seed-data.ts`; exercise, load, calcium and vitamin D), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
+**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), bone protection logs (`lib/bone/seed-data.ts`; exercise, load, calcium and vitamin D), GI entries (`lib/gi/seed-data.ts`; Bristol types 3–5, 2.2–2.8 L of fluid, no photos), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
 
 ## 5. Libraries
 
@@ -96,6 +99,7 @@ Versions are from `package.json`.
 | Zod | ^4.6.7 | Input validation | [zod.dev](https://zod.dev/) |
 | Drizzle ORM | ^0.44.6 | Database access and migrations | [orm.drizzle.team](https://orm.drizzle.team/) |
 | better-sqlite3 | ^12.4.1 | SQLite driver | [github.com/WiseLibs/better-sqlite3](https://github.com/WiseLibs/better-sqlite3) |
+| sharp | ^0.35.5 | Re-encodes uploaded photos without metadata (EXIF, GPS) | [sharp.pixelplumbing.com](https://sharp.pixelplumbing.com/) |
 | jose | ^6.2.17 | Signed session tokens (JWT, HS256) | [github.com/panva/jose](https://github.com/panva/jose) |
 | bcryptjs | ^3.0.3 | PIN hashing | [github.com/dcodeIO/bcrypt.js](https://github.com/dcodeIO/bcrypt.js) |
 | server-only | ^0.0.1 | Keeps server modules out of client bundles | [npmjs.com/package/server-only](https://www.npmjs.com/package/server-only) |

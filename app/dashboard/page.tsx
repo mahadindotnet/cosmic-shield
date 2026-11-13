@@ -7,6 +7,7 @@ import { activeAlertsFor } from "@/lib/alerts/active";
 import { dashboardAlertSummary } from "@/lib/alerts/summary";
 import { gamificationFor } from "@/lib/gamification/data";
 import { boneSummaryFor } from "@/lib/bone/data";
+import { giSummaryFor } from "@/lib/gi/data";
 import { mindSummaryFor } from "@/lib/mind/data";
 import { radiationSummaryFor } from "@/lib/radiation/data";
 import { sleepSummaryFor } from "@/lib/sleep/data";
@@ -38,6 +39,7 @@ const SURGEON_OVERVIEW: OverviewData = {
   sleep: { tile: null, week: [] },
   radiation: { tile: null, careerMsv: null, careerStatus: null },
   bone: { tile: null, exerciseWeek: [], dailyTargetMin: null },
+  gi: { tile: null, fluidWeek: [] },
   mind: { tile: null, moodFortnight: [], checkinsByDay: {} },
 };
 
@@ -55,6 +57,7 @@ async function loadOverview(): Promise<OverviewData> {
   const radiation = radiationSummaryFor(crew.id, 7);
   const mind = mindSummaryFor(crew.id, 14);
   const bone = boneSummaryFor(crew, 7);
+  const gi = giSummaryFor(crew.id, 7);
   const lastNight = addDays(utcToday(), -1);
   return {
     viewer: "crew",
@@ -76,6 +79,7 @@ async function loadOverview(): Promise<OverviewData> {
       careerStatus: radiation.career.status,
     },
     bone: { tile: bone.tile, exerciseWeek: bone.trends.exercise.map((p) => p.value), dailyTargetMin: bone.dailyTargetMin },
+    gi: { tile: gi.tile && { metric: gi.tile.metric, value: gi.tile.value, unit: gi.tile.unit, status: gi.tile.status }, fluidWeek: gi.trends.fluid.map((p) => p.value) },
     mind: {
       tile: mind.tile,
       moodFortnight: mind.trends.mood.map((p) => p.value),

@@ -66,3 +66,7 @@ next-env.d.ts
 # Design inspiration and source photos (not used by the app; never commit them)
 design-ref/
 feature_img/
+
+# Uploaded photos (private health data; never commit)
+/uploads/
+/uploads-test/

@@ -83,6 +83,12 @@ export interface OverviewData {
     /** Daily exercise target (app default). */
     dailyTargetMin: number | null;
   };
+  gi: {
+    /** Latest Bristol type and the 3-day pattern status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Fluid logged per day (L), last 7 days, oldest first. */
+    fluidWeek: (number | null)[];
+  };
   mind: {
     /** Latest mood and the 3-day pattern status. */
     tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
@@ -112,7 +118,7 @@ const LEFT: TileDef[] = [
 ];
 const RIGHT: TileDef[] = [
   { slug: "eyes", metric: "Last screening" },
-  { slug: "gi", metric: "Hydration today", unit: "L" },
+  { slug: "gi", metric: "Bristol type (latest)", unit: "/7" },
   { slug: "mind", metric: "Mood", unit: "/5" },
 ];
 
@@ -148,7 +154,9 @@ export function OverviewView({
                   ? d?.radiation.tile
                   : t.slug === "bone"
                     ? d?.bone.tile
-                    : null; // Eyes and GI have no entries yet.
+                    : t.slug === "gi"
+                      ? d?.gi.tile
+                      : null; // Eyes has no entries yet.
         // Empty states say why there's no number: loading, the flight surgeon's view, or nothing logged yet.
         const empty = !d ? "Loading…" : d.viewer === "flight_surgeon" ? "Crew data is in Crew admin" : EMPTY_TILE;
         return tile ? (
@@ -287,7 +295,12 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           {(d) => {
             const target = d?.bone.dailyTargetMin ?? env?.exerciseTargetMin ?? R.exerciseMinutes.min;
             return (
-              <StatPanel icon={Dumbbell} title="Exercise" keyPoint={`7 days · target ${target} min/day (app default)`} href="/dashboard/bone">
+              <StatPanel
+                icon={Dumbbell}
+                title="Exercise"
+                keyPoint={`7 days · target ${target} min/day (${env?.provenance.exerciseTarget.basis === "sourced" ? "NASA" : "app default"})`}
+                href="/dashboard/bone"
+              >
                 <MiniChart
                   kind="bar"
                   data={(d?.bone.exerciseWeek ?? []).map((value, i) => ({ label: WEEK[i] ?? "", value }))}
@@ -306,19 +319,23 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
         <StatPanel
           icon={Droplets}
           title="Hydration"
-          keyPoint={`7 days · target ${R.hydration.min}–${R.hydration.max} L`}
+          keyPoint={`7 days · target ${R.hydration.min}–${R.hydration.max} L (app default)`}
           href="/dashboard/gi"
         >
-          <MiniChart
-            kind="bar"
-            data={[]}
-            window={WEEK}
-            unit="L"
-            seriesLabel="Hydration"
-            colorSlot={1}
-            band={R.hydration}
-            yDomain={[0, 4]}
-          />
+          <Await promise={data}>
+            {(d) => (
+              <MiniChart
+                kind="bar"
+                data={(d?.gi.fluidWeek ?? []).map((value, i) => ({ label: WEEK[i] ?? "", value }))}
+                window={WEEK}
+                unit="L"
+                seriesLabel="Hydration"
+                colorSlot={1}
+                band={R.hydration}
+                yDomain={[0, 4]}
+              />
+            )}
+          </Await>
         </StatPanel>
 
         <StatPanel

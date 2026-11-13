@@ -8,6 +8,10 @@ import { signInOk } from "./helpers";
 
 const visible = (page: Page, testId: string) => page.getByTestId(testId).filter({ visible: true });
 
+// All three tests use CS-004, and the first one saves an environment (which
+// ends the dialog for every session): run them in order, in one worker.
+test.describe.configure({ mode: "default" });
+
 async function logOutAndIn(page: Page) {
   await page.getByTestId("logout-button").click();
   await expect(page).toHaveURL(/\/login$/);
@@ -24,9 +28,12 @@ test("environment dialog: Esc means Choose later (back at the next login); choos
   // Focus starts inside the dialog, on the first card.
   await expect(dialog.getByTestId("env-dialog-iss")).toBeFocused();
 
-  // Esc = Choose later: gone for this session…
+  // Esc = Choose later: gone for this session… (saved in the background: wait
+  // for that Server Action before reloading, as chooseEnvironmentLater does)
+  const saved = page.waitForResponse((r) => r.request().method() === "POST" && Boolean(r.request().headers()["next-action"]));
   await page.keyboard.press("Escape");
   await expect(dialog).toHaveCount(0);
+  await saved;
   await page.reload();
   await expect(page.getByTestId("account-crew-id")).toHaveText("CS-004");
   await expect(page.getByTestId("env-dialog")).toHaveCount(0);

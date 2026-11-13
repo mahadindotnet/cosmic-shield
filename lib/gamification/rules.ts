@@ -13,7 +13,7 @@ import { addDays } from "@/lib/vitals/summary";
  * - Streak bonuses: every run that reaches 7 days earns +20 once, 30 days +50.
  */
 
-export const ACTIVITIES = ["checkin", "vitals", "sleep", "dose", "exercise"] as const;
+export const ACTIVITIES = ["checkin", "vitals", "sleep", "dose", "exercise", "gi"] as const;
 export type Activity = (typeof ACTIVITIES)[number];
 
 const g = thresholds.gamification;
@@ -41,7 +41,7 @@ export interface GamificationSummary {
   checkedInToday: boolean;
   /** Check-ins per day (for the streak calendar). */
   checkinsByDay: Record<string, number>;
-  /** How many different activities were logged each day (0–5), for the calendar's colour. */
+  /** How many different activities were logged each day (0–6), for the calendar's colour. */
   activitiesByDay: Record<string, number>;
   /** Days with an exercise session in the current UTC month. */
   exerciseDaysThisMonth: number;

@@ -43,6 +43,13 @@
       "when": 1794594920623,
       "tag": "0005_bone_log",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1794596486481,
+      "tag": "0006_gi_photo",
+      "breakpoints": true
     }
   ]
 }

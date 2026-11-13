@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   typescript: { tsconfigPath: process.env.NEXT_TSCONFIG_PATH || "tsconfig.json" },
   allowedDevOrigins: ["127.0.0.1"],
   cacheComponents: true,
+  experimental: {
+    // GI (and later fundus) photos are up to 5 MB; leave room for the
+    // multipart overhead. The action itself rejects anything over 5 MB.
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   // Dev-only badge: kept off the sidebar footer (collapse button) and the
   // floating co-pilot button in the bottom-right corner.
   devIndicators: { position: "top-left" },

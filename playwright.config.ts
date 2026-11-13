@@ -11,11 +11,15 @@ import { defineConfig, devices } from "@playwright/test";
 const PORT = 3100;
 const baseURL = `http://localhost:${PORT}`;
 const TEST_DATABASE_URL = "file:./data/cosmic-shield.test.db";
+const TEST_UPLOADS_DIR = "uploads-test";
 
 export default defineConfig({
   testDir: "./e2e",
   globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
+  // One dev server serves every worker: more than 4 at once made it slow
+  // enough for clicks to land mid-render (flaky), without finishing sooner.
+  workers: 4,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   timeout: 60_000,
@@ -40,7 +44,7 @@ export default defineConfig({
     },
     // Changes CS-001's sleep data (the early-warning card appears), so it runs
     // after the dashboard tests that share CS-001's session.
-    { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind|bone)\.spec\.ts/, dependencies: ["dashboard"] },
+    { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind|bone|gi)\.spec\.ts/, dependencies: ["dashboard"] },
     // Runs last: uses CS-004 (after the lockout test) and the alerts other specs created.
     { name: "final", testMatch: /(onboarding|summary|gamification)\.spec\.ts/, dependencies: ["auth", "after-dashboard"] },
     // Deletes and changes demo accounts in the test database: after everything else.
@@ -58,6 +62,8 @@ export default defineConfig({
       NEXT_TSCONFIG_PATH: "tsconfig.e2e.json",
       // The co-pilot always runs offline in tests, whatever .env says.
       AI_PROVIDER: "mock",
+      // Uploaded test photos go to their own gitignored folder (cleared by the seed).
+      UPLOADS_DIR: TEST_UPLOADS_DIR,
     },
   },
 });

@@ -13,7 +13,7 @@ NASA Space Apps projects that use AI should describe **what runs in the product*
 
 | Module | Endpoint | Output |
 |--------|----------|--------|
-| Bristol stool classification | `POST /api/vision/bristol` | Bristol type 1–7, status hint for GI monitoring |
+| Bristol stool classification | `POST /api/vision/bristol` | Prototype stub: always "Not analysed: prototype", never a type or a status. The crew member confirms the Bristol type manually; photos are stored privately with metadata removed (see rules.md → GI). |
 | SANS ocular screening | `POST /api/vision/sans` | Confidence score, nominal / watch / escalate band |
 
 Hackathon builds use **deterministic prototype classifiers** so judges can reproduce results offline. Production deployments would attach trained models (e.g. ONNX) to the same API contract.

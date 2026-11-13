@@ -62,7 +62,7 @@ Chat panel (useChat)                POST /api/assistant/chat
 ### Health Dashboard summary
 
 - **Alerts card:** every active Watch/Escalate across modules (vitals, sleep/HRV, radiation, `mind_pattern`), Escalate first, each linking to its module; "All clear" when there are none. Built by `dashboardAlertSummary()` (`lib/alerts/summary.ts`) from `activeAlertsFor()` (`lib/alerts/active.ts`), the single source also used by the bell and the co-pilot. An open `mind_safety` escalation appears to the crew member only as "Support follow-up open" (no reason, no excerpt). The flight surgeon gets a pointer to Crew admin.
-- **No fake numbers:** module tiles show a real reading and its status, or "No entries yet: log your first reading" (Bone, Eyes, GI until built), "Loading…" while data streams in, or "Crew data is in Crew admin" for the flight surgeon. The streak panel's points, current and best streak, exercise days and month calendar all come from real entries (`lib/gamification`, see rules.md).
+- **No fake numbers:** module tiles show a real reading and its status, or "No entries yet: log your first reading" (Eyes until built), "Loading…" while data streams in, or "Crew data is in Crew admin" for the flight surgeon. The streak panel's points, current and best streak, exercise days and month calendar all come from real entries (`lib/gamification`, see rules.md).
 
 ### Stale sessions
 
