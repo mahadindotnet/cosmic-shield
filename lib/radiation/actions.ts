@@ -44,7 +44,7 @@ export async function logDoseAction(_prev: LogDoseState, formData: FormData): Pr
 
   const { dose, career, escalationId } = recordDose(crew, current.user.id, parsed.data);
   revalidatePath("/dashboard/radiation");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 
   return {
     ok: true,

@@ -13,11 +13,20 @@ import { InstructionsButton } from "@/components/cosmic-shield/instructions-dial
 import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
 import { SpaceBackdrop } from "@/components/cosmic-shield/space-backdrop";
+import { BackButton, NavigationTracker } from "@/components/cosmic-shield/back-button";
 import { ShieldPlus } from "lucide-react";
 
 const ADMIN_SECTION = { title: "Crew admin", icon: ShieldPlus };
 
-export function DashboardFrame({ children, account }: { children: React.ReactNode; account?: React.ReactNode }) {
+export function DashboardFrame({
+  children,
+  account,
+  notifications,
+}: {
+  children: React.ReactNode;
+  account?: React.ReactNode;
+  notifications?: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isAdmin = pathname.startsWith("/dashboard/admin");
   const section = isAdmin ? ADMIN_SECTION : (SECTIONS.find((s) => s.href === pathname) ?? SECTIONS[0]);
@@ -29,6 +38,7 @@ export function DashboardFrame({ children, account }: { children: React.ReactNod
 
   return (
     <TooltipProvider>
+      <NavigationTracker />
       <SpaceBackdrop />
       <SidebarProvider className="relative z-[1]">
         <AppSidebar />
@@ -42,10 +52,14 @@ export function DashboardFrame({ children, account }: { children: React.ReactNod
             <div className="ml-auto flex items-center gap-2 md:gap-3">
               <MissionPicker variant="bar" />
               {!isAdmin && <InstructionsButton />}
+              {notifications}
               {account}
             </div>
           </header>
-          <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 md:px-6">{children}</div>
+          <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 pt-6 pb-28 md:px-6">
+            {pathname !== "/dashboard" && <BackButton className="mb-4" />}
+            {children}
+          </div>
         </SidebarInset>
       </SidebarProvider>
       <CopilotButton />

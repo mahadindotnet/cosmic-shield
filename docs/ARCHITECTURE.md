@@ -53,6 +53,12 @@ Chat panel (useChat)                POST /api/assistant/chat
 - **Mock mode** (`lib/ai/mock-model.ts`, `lib/ai/intents.ts`): a real AI SDK `LanguageModelV4`. Step 1 matches the question to an intent and returns tool calls; the AI SDK runs the real tools; later steps read the results from the prompt and return follow-up calls or a filled template. So mock, Claude and Ollama share the same loop, tools, step limit and post-check.
 - **Safety and disclosure:** [ai-disclosure.md](./ai-disclosure.md).
 
+## Navigation, onboarding and notifications
+
+- **Environment dialog** (`components/mission/environment-dialog.tsx`): crew with no mission environment see "Choose your mission environment" after login. Confirm saves it to the account (same Server Action as the top-bar picker). "Choose later" or Esc hides it for that login session only: the dismissal is stored per session in `notification_read` (key `env-prompt-later:<session issuedAt>`), so it shows again at the next login, and concurrent sessions don't affect each other. Never shown to the flight surgeon.
+- **Back button** (`components/cosmic-shield/back-button.tsx`): on every page except the Health Dashboard home and `/login`. A small tracker records client-side page changes in this tab; with in-app history Back goes back, otherwise (a page opened from a link or a fresh tab) it goes to the Health Dashboard.
+- **Notification bell** (`lib/notifications/`): items are computed on each request and never stored: daily check-in due, morning vitals not logged, every active Watch/Escalate (from `lib/alerts/active.ts`, the same source as the co-pilot), and a DONKI event from the last 24 h. The flight surgeon instead sees new escalations for crew (no excerpts). Only read state is stored (`notification_read`, per user); read items stay visible, greyed. Done tasks disappear by themselves, and module saves refresh the layout so the badge updates at once. The bell never waits on NASA: it uses the last live DONKI result while fresh (15 min) or the cached file, refreshing in the background. In-app only, no browser push.
+
 ## Crew demo scenarios
 
 Four seeded crew profiles (`lib/demo/crew-profiles.ts`):

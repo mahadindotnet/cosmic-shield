@@ -46,7 +46,7 @@ export async function logVitalsAction(_prev: LogVitalsState, formData: FormData)
 
   const { evaluation: e, escalationId } = recordVitals(crew, current.user.id, parsed.data);
   revalidatePath("/dashboard/vitals");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 
   return { ok: true, status: e.status, reasons: e.reasons, guidance: escalateGuidance(e), escalationId, savedAt: Date.now() };
 }

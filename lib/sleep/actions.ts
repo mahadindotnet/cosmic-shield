@@ -45,7 +45,7 @@ export async function logSleepAction(_prev: LogSleepState, formData: FormData): 
 
   insertSleep(crew.id, parsed.data, current.user.id);
   revalidatePath("/dashboard/sleep-stress");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
 
   const e = evaluateSleep(parsed.data);
   return { ok: true, status: e.status, reasons: e.reasons, night: parsed.data.night, savedAt: Date.now() };

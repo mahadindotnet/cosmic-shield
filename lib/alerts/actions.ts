@@ -16,6 +16,6 @@ export async function dismissAlertAction(
   const day = utcToday();
   if (!isAcknowledged(user.id, ruleId, day))
     acknowledge(user.id, user.crewId, ruleId, day);
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
   return { ok: true };
 }

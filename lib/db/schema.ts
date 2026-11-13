@@ -1,4 +1,4 @@
-import { index, integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const crew = sqliteTable("crew", {
   id: text("id").primaryKey(),
@@ -238,6 +238,27 @@ export const escalation = sqliteTable(
     reviewedBy: integer("reviewed_by"),
   },
   (t) => [index("escalation_user_time").on(t.userId, t.createdAt)],
+);
+
+/* ---------------------------------------------------- notifications */
+
+/**
+ * Read state of in-app notifications. The notifications themselves are
+ * computed on each request (lib/notifications); only "this user has read the
+ * item with this key" is stored. Also holds "Choose later" on the environment
+ * dialog, per login session (key "env-prompt-later:<session issuedAt>").
+ */
+export const notificationRead = sqliteTable(
+  "notification_read",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    userId: integer("user_id").notNull(),
+    /** Stable item key, e.g. "checkin-due:2026-11-13" or "escalation:42". */
+    key: text("key").notNull(),
+    /** Epoch ms. */
+    readAt: integer("read_at").notNull(),
+  },
+  (t) => [uniqueIndex("notification_read_user_key").on(t.userId, t.key)],
 );
 
 /* ----------------------------------------------------------- alerts */

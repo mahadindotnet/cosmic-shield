@@ -1,10 +1,7 @@
 import "server-only";
-import { and, desc, eq, gte, isNull } from "drizzle-orm";
+import { activeAlertsFor, type ActiveAlert } from "@/lib/alerts/active";
 import thresholds from "@/data/rules/thresholds.json";
-import { isAcknowledged, utcToday } from "@/lib/alerts/data";
 import type { UserRow } from "@/lib/auth/users";
-import { db } from "@/lib/db";
-import { escalation } from "@/lib/db/schema";
 import { getMissionEnvironment, type MissionEnvironment, type MissionEnvironmentId } from "@/lib/mission/environments";
 import { getBaselines } from "@/lib/nasa/loaders";
 import { radiationSummaryFor } from "@/lib/radiation/data";
@@ -12,10 +9,8 @@ import { RADIATION_LIMITS } from "@/lib/radiation/rules";
 import { loadSpaceWeather } from "@/lib/radiation/space-weather";
 import { projectedMissionMsv } from "@/lib/radiation/summary";
 import { HRV_SLEEP_DECLINE_FOLLOW_UP, HRV_SLEEP_DECLINE_MAY_MEAN, HRV_SLEEP_DECLINE_STEPS } from "@/lib/rules/hrv-guidance";
-import { evaluateHrvSleepDecline, HRV_SLEEP_DECLINE_CITATIONS, HRV_SLEEP_DECLINE_ID } from "@/lib/rules/hrv-sleep-decline";
-import { nightlyReadingsFor, sleepSummaryFor } from "@/lib/sleep/data";
-import { mindSummaryFor } from "@/lib/mind/data";
-import { MIND_PATTERN_ID } from "@/lib/mind/rules";
+import { HRV_SLEEP_DECLINE_CITATIONS, HRV_SLEEP_DECLINE_ID } from "@/lib/rules/hrv-sleep-decline";
+import { sleepSummaryFor } from "@/lib/sleep/data";
 import { CMO_LINE } from "./safety";
 import { ESCALATE_GUIDANCE } from "@/lib/vitals/escalation";
 import { vitalsSummaryFor } from "@/lib/vitals/data";
@@ -194,20 +189,11 @@ export async function getSpaceWeather() {
   };
 }
 
-export interface ActiveAlert {
-  ruleId: string;
-  level: "watch" | "escalate";
-  title: string;
-  detail: string;
-}
+export type { ActiveAlert } from "@/lib/alerts/active";
 
 export function getActiveAlerts(ctx: CopilotContext) {
   if (!ctx.subject) return { data: { ...NO_SUBJECT, alerts: [] as ActiveAlert[] }, source: { label: "Rules engine", citation: RULES_DOC } };
-  const u = ctx.subject;
-  const today = utcToday();
-  const alerts: ActiveAlert[] = [];
-
-  const hrv = evaluateHrvSleepDecline(nightlyReadingsFor(u.id), today);
+  const { alerts, hrv, hrvDismissedToday, openEscalations } = activeAlertsFor(ctx.subject.id);
   let hrvDetail = null;
   if (hrv.fired && hrv.baseline) {
     const avgPct = Math.round((hrv.flagged.reduce((a, f) => a + f.hrvPctVsBaseline, 0) / hrv.flagged.length) * 10) / 10;
@@ -220,49 +206,15 @@ export function getActiveAlerts(ctx: CopilotContext) {
       flaggedSleepAverageHours: hrv.sleepAvg,
       hrvDropThresholdPct: hrv.config.hrvDropPct,
       baselineNights: hrv.baseline.hrv.n,
-      dismissedToday: isAcknowledged(u.id, HRV_SLEEP_DECLINE_ID, today),
+      dismissedToday: hrvDismissedToday,
     };
-    alerts.push({
-      ruleId: HRV_SLEEP_DECLINE_ID,
-      level: "watch",
-      title: "HRV has dropped for three nights. Sleep is down.",
-      detail: `HRV ${Math.abs(avgPct)}% below your own baseline on average over ${hrv.flagged.length} nights; sleep ${hrv.sleepAvg} h on average.`,
-    });
   }
-
-  const vitals = vitalsSummaryFor(u.id).latest;
-  if (vitals && vitals.evaluation.status !== "normal")
-    alerts.push({ ruleId: "vitals", level: vitals.evaluation.status, title: `Latest vitals: ${vitals.evaluation.status}`, detail: vitals.evaluation.reasons.join(" ") });
-
-  const sleep = sleepSummaryFor(u.id).latest;
-  if (sleep && sleep.evaluation.status !== "normal")
-    alerts.push({ ruleId: "sleep_night", level: "watch", title: `Night of ${sleep.night}: Watch`, detail: sleep.evaluation.reasons.join(" ") });
-
-  const rad = radiationSummaryFor(u.id);
-  if (rad.latest && rad.latest.evaluation.status !== "normal")
-    alerts.push({ ruleId: "radiation_daily", level: "watch", title: "Latest dose reading: Watch", detail: rad.latest.evaluation.reason ?? "" });
-  if (rad.career.status !== "normal")
-    alerts.push({ ruleId: "radiation_career", level: rad.career.status, title: `Career dose: ${rad.career.status}`, detail: rad.career.reason ?? "" });
-
-  const mind = mindSummaryFor(u.id).pattern;
-  if (mind.status === "watch")
-    alerts.push({ ruleId: MIND_PATTERN_ID, level: "watch", title: "Check-ins: a few hard days in a row", detail: mind.reason ?? "" });
-
-  const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
-  const openEscalations = db
-    .select({ id: escalation.id, ruleId: escalation.ruleId, reason: escalation.reason, createdAt: escalation.createdAt })
-    .from(escalation)
-    .where(and(eq(escalation.userId, u.id), gte(escalation.createdAt, since), isNull(escalation.reviewedAt)))
-    .orderBy(desc(escalation.createdAt))
-    .all();
-
-  alerts.sort((a, b) => (a.level === b.level ? 0 : a.level === "escalate" ? -1 : 1));
   const hrpCitation = HRV_SLEEP_DECLINE_CITATIONS[0];
   return {
     data: {
       available: true as const,
       alertCount: alerts.length,
-      alerts,
+      alerts: alerts.map(({ ruleId, level, title, detail }) => ({ ruleId, level, title, detail })),
       hrvSleepDecline: hrvDetail,
       openEscalationRecords: openEscalations,
       note: "Statuses come from the deterministic rules engine. Decision support, not a diagnosis.",

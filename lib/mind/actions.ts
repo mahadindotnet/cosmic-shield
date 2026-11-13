@@ -40,7 +40,7 @@ export async function logCheckinAction(_prev: LogCheckinState, formData: FormDat
 
   const { safety } = recordCheckin(crew, current.user.id, parsed.data as CheckinInput);
   revalidatePath("/dashboard/mind");
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
   const env = getMissionEnvironment((crew.environment as MissionEnvironmentId | null) ?? null);
   return {
     ok: true,

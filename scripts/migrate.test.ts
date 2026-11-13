@@ -43,12 +43,12 @@ describe("runMigrations", () => {
 
   it("0003 converts existing 0–10 check-in scores to 1–5 (and adds sleep_quality)", () => {
     const file = dbFile();
-    // Migrations up to 0002 only: copy the folder without 0003.
+    // Migrations up to 0002 only: copy the folder without 0003 and anything newer.
     const partial = path.join(path.dirname(file), "drizzle-0002");
     fs.cpSync(MIGRATIONS_FOLDER, partial, { recursive: true });
     const journalPath = path.join(partial, "meta", "_journal.json");
     const journal = JSON.parse(fs.readFileSync(journalPath, "utf8")) as { entries: { tag: string }[] };
-    journal.entries = journal.entries.filter((e) => !e.tag.startsWith("0003"));
+    journal.entries = journal.entries.filter((e) => Number(e.tag.slice(0, 4)) < 3);
     fs.writeFileSync(journalPath, JSON.stringify(journal));
     runMigrations(`file:${file}`, partial);
 

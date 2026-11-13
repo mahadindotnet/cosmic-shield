@@ -11,6 +11,7 @@ import {
   eyeScreening,
   giEntry,
   loginAudit,
+  notificationRead,
   sleepEntry,
   users,
   vitalReading,
@@ -34,6 +35,7 @@ async function main() {
     await db.delete(t);
   }
   await db.delete(alertAck);
+  await db.delete(notificationRead);
   await db.delete(loginAudit);
   await db.delete(users);
   await db.delete(escalationEvent);

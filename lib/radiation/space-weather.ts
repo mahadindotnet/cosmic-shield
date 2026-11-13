@@ -1,6 +1,6 @@
 import "server-only";
 import type { DonkiType, SpaceWeatherEvent } from "@/lib/nasa/donki";
-import { getLiveSpaceWeather } from "@/lib/nasa/loaders";
+import { getCachedSpaceWeather, getLiveSpaceWeather, type Loaded, type SpaceWeather } from "@/lib/nasa/loaders";
 
 /** Solar activity for the Radiation page, with where it came from. */
 export interface SpaceWeatherView {
@@ -15,9 +15,40 @@ export interface SpaceWeatherView {
   events: SpaceWeatherEvent[];
 }
 
+/** Live results are reused for this long across requests (one DONKI round trip, not one per page). */
+const LIVE_TTL_MS = 15 * 60_000;
+let memo: { at: number; loaded: Awaited<ReturnType<typeof getLiveSpaceWeather>> } | null = null;
+let refreshing: Promise<unknown> | null = null;
+
+/** Fetches DONKI (live when NASA_API_KEY is set, else the cached file) and remembers the result. */
+async function fetchAndRemember() {
+  const loaded = await getLiveSpaceWeather({ days: 30, limit: 30 });
+  memo = { at: Date.now(), loaded };
+  return loaded;
+}
+
 /** DONKI events (live when NASA_API_KEY is set and the API answers, otherwise cached). The key is never returned. */
 export async function loadSpaceWeather(limit = 8): Promise<SpaceWeatherView> {
-  const loaded = await getLiveSpaceWeather({ days: 30, limit: 30 });
+  const loaded = memo && Date.now() - memo.at < LIVE_TTL_MS ? memo.loaded : await fetchAndRemember();
+  return toView(loaded, limit);
+}
+
+/**
+ * For the notification bell, which renders on every page: never waits on
+ * NASA. Uses the last live result while fresh; otherwise answers from the
+ * cached file at once and refreshes the live data in the background.
+ */
+export function spaceWeatherNow(limit = 30): SpaceWeatherView {
+  if (memo && Date.now() - memo.at < LIVE_TTL_MS) return toView(memo.loaded, limit);
+  refreshing ??= fetchAndRemember()
+    .catch(() => null)
+    .finally(() => {
+      refreshing = null;
+    });
+  return toView(memo?.loaded ?? (getCachedSpaceWeather() as Loaded<SpaceWeather>), limit);
+}
+
+function toView(loaded: Awaited<ReturnType<typeof getLiveSpaceWeather>>, limit: number): SpaceWeatherView {
   const d = loaded.data;
   const events = d.events.slice(0, limit) as SpaceWeatherEvent[];
   if (loaded.origin === "live" && "start_date" in d) {

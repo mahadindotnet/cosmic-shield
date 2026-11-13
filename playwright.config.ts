@@ -41,6 +41,8 @@ export default defineConfig({
     // Changes CS-001's sleep data (the early-warning card appears), so it runs
     // after the dashboard tests that share CS-001's session.
     { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind)\.spec\.ts/, dependencies: ["dashboard"] },
+    // Uses CS-004, so it waits for the lockout test (auth project) to finish; runs last.
+    { name: "final", testMatch: /onboarding\.spec\.ts/, dependencies: ["auth", "after-dashboard"] },
   ],
   webServer: {
     command: `npx next dev --turbopack --port ${PORT}`,
