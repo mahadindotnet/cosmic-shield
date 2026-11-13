@@ -21,6 +21,8 @@ export interface CrewNotificationInput {
   /** YYYY-MM-DD (UTC). */
   today: string;
   checkedInToday: boolean;
+  /** Current check-in streak (days), from lib/gamification. */
+  streak: number;
   vitalsToday: boolean;
   alerts: { key: string; ruleId: string; level: "watch" | "escalate"; title: string; detail: string; href: string }[];
   /** DONKI events (any window). Only those that started in the 24 h before `now` count. */
@@ -75,7 +77,7 @@ export function buildNotifications(input: CrewNotificationInput | SurgeonNotific
     items.push({
       key: `checkin-due:${input.today}`,
       kind: "task",
-      title: "Daily check-in due",
+      title: input.streak > 0 ? `Daily check-in due: keep your ${input.streak}-day streak` : "Daily check-in due: start a streak today",
       detail: "Log in and check in every day to keep your streak.",
       href: "/dashboard/mind#mind-log",
     });

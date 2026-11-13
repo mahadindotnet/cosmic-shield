@@ -42,7 +42,7 @@ export default defineConfig({
     // after the dashboard tests that share CS-001's session.
     { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind)\.spec\.ts/, dependencies: ["dashboard"] },
     // Runs last: uses CS-004 (after the lockout test) and the alerts other specs created.
-    { name: "final", testMatch: /(onboarding|summary)\.spec\.ts/, dependencies: ["auth", "after-dashboard"] },
+    { name: "final", testMatch: /(onboarding|summary|gamification)\.spec\.ts/, dependencies: ["auth", "after-dashboard"] },
   ],
   webServer: {
     command: `npx next dev --turbopack --port ${PORT}`,

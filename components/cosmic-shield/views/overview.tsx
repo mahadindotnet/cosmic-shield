@@ -47,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { ChooseEnvironmentPrompt } from "@/components/mission/choose-environment-prompt";
 import type { TileReading } from "@/lib/vitals/summary";
 import type { AlertSummary } from "@/lib/alerts/summary";
+import type { GamificationSummary } from "@/lib/gamification/rules";
 
 /** Server data for the signed-in crew member (null for a flight surgeon or while loading). */
 export interface OverviewData {
@@ -54,6 +55,8 @@ export interface OverviewData {
   viewer: "crew" | "flight_surgeon";
   /** Active Watch/Escalate items (lib/alerts/active.ts); null for the flight surgeon. */
   alerts: AlertSummary | null;
+  /** Points and streaks from real activity (lib/gamification); null for the flight surgeon. */
+  gamification: GamificationSummary | null;
   vitals: {
     tile: TileReading | null;
     /** Daily mean heart rate, last 7 days, oldest first. */
@@ -195,7 +198,7 @@ export function OverviewView({
           eyebrow="Gamification"
           title="Streak"
         />
-        <Await promise={data}>{(d) => <StreakPanel checkins={d?.mind.checkinsByDay ?? {}} points={null} exerciseSessions={null} />}</Await>
+        <Await promise={data}>{(d) => <StreakPanel summary={d?.gamification ?? null} />}</Await>
       </section>
     </div>
   );

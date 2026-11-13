@@ -77,6 +77,27 @@ Daily check-in: mood 1–5, stress 1–5, sleep quality 1–5 (optional), a priv
 
 Tests: `lib/mind/mind.test.ts`, `lib/mind/mind-db.test.ts`; Playwright `e2e/mind.spec.ts`.
 
+## Gamification (`lib/gamification/rules.ts`)
+
+Motivation only: points and streaks never change a health status. All values are **app defaults** in `thresholds.json` `gamification`.
+
+| Activity | Points per UTC day |
+|---|---|
+| Daily check-in (Mind) | 10 |
+| Vitals entry | 10 |
+| Sleep entry (the night it covers) | 10 |
+| Dosimeter reading | 5 |
+| Exercise session (Bone, once built) | 10 |
+
+- Each activity earns its points **once per UTC day**: logging the same thing again that day earns nothing more.
+- **Streak** = consecutive UTC days with a daily check-in. The current streak counts back from today, or from yesterday while today's check-in is still open; **best streak** is the longest run in all history.
+- **Streak bonuses:** every run that reaches 7 days earns +20 once, and 30 days +50.
+- The month calendar is coloured by how many of the five activities were logged that day.
+- Demo seed entries count: they stand in for the demo crew's past logging.
+- The bell's reminder names the current streak: "Daily check-in due: keep your 5-day streak" (or "start a streak today").
+
+Tests: `lib/gamification/rules.test.ts`; Playwright `e2e/gamification.spec.ts`.
+
 ## Sleep & Stress (`lib/sleep/rules.ts`)
 
 Per night, evaluated on read, Watch only. All **app default**:

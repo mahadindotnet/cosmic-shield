@@ -3,6 +3,7 @@
 import { useSyncExternalStore } from "react";
 import { CalendarCheck, Dumbbell, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import type { GamificationSummary } from "@/lib/gamification/rules";
 import { cn } from "@/lib/utils";
 
 const DAY_MS = 86_400_000;
@@ -47,21 +48,26 @@ function useToday() {
 }
 
 export interface StreakPanelProps {
-  /** Mind check-ins per UTC day, keyed YYYY-MM-DD. */
+  /** Points, streaks and activity from real entries (lib/gamification). Null while loading or for the flight surgeon. */
+  summary?: GamificationSummary | null;
+  /** Without a summary: check-ins per UTC day only (streak and calendar). */
   checkins?: Record<string, number>;
-  /** Not computed yet: null shows "—" rather than a made-up 0. */
-  exerciseSessions?: number | null;
-  points?: number | null;
 }
 
 /**
  * Gamified streak: a Snapchat-style flame counter with an hourglass warning
  * and milestones, next to a LeetCode-style calendar for the current month.
  */
-export function StreakPanel({ checkins = {}, exerciseSessions = null, points = null }: StreakPanelProps) {
+export function StreakPanel({ summary = null, checkins = {} }: StreakPanelProps) {
   const today = useToday();
-  const m = buildMonth(today, checkins);
-  const best = Math.max(m.streak, m.maxStreak);
+  // Calendar colour: how many activities were logged that day (check-in, vitals, sleep, dose, exercise).
+  const m = buildMonth(today, summary?.activitiesByDay ?? checkins);
+  const checkinMonth = buildMonth(today, summary?.checkinsByDay ?? checkins);
+  const streak = summary ? summary.streak : checkinMonth.streak;
+  const best = summary ? summary.best : Math.max(checkinMonth.streak, checkinMonth.maxStreak);
+  const checkedToday = summary ? summary.checkedInToday : checkinMonth.checkedToday;
+  const exerciseSessions = summary ? summary.exerciseDaysThisMonth : null;
+  const points = summary ? summary.points : null;
 
   return (
     <Card id="overview-streak" data-testid="streak-panel" className="scroll-mt-20 gap-0 overflow-hidden p-0">
@@ -77,8 +83,8 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
             <span className="absolute inset-[5px] rounded-full bg-background/95" />
             <span className="relative flex flex-col items-center">
               <span className="flex items-center gap-1 font-heading text-5xl font-semibold text-foreground tabular-nums">
-                {m.streak}
-                <span aria-hidden="true" className={cn("text-4xl", m.streak === 0 && "opacity-45")}>
+                <span data-testid="streak-current">{streak}</span>
+                <span aria-hidden="true" className={cn("text-4xl", streak === 0 && "opacity-45")}>
                   🔥
                 </span>
               </span>
@@ -87,10 +93,10 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
           </div>
 
           <p className="flex items-center gap-1.5 rounded-full border border-border bg-background/60 px-3 py-1 text-xs text-foreground/90">
-            <span aria-hidden="true">{m.checkedToday ? "✅" : "⌛"}</span>
-            {m.checkedToday
+            <span aria-hidden="true">{checkedToday ? "✅" : "⌛"}</span>
+            {checkedToday
               ? "Checked in today. Streak safe."
-              : m.streak > 0
+              : streak > 0
                 ? "Check in before midnight UTC to keep it."
                 : "Check in today to start a streak."}
           </p>
@@ -121,7 +127,7 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
         <div className="flex min-w-0 flex-col gap-5 p-6">
           <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
             <p className="text-sm text-foreground">
-              <span className="font-mono text-lg font-medium tabular-nums">{m.total}</span>{" "}
+              <span className="font-mono text-lg font-medium tabular-nums">{checkinMonth.total}</span>{" "}
               <span className="text-muted-foreground">check-ins in {m.title || "this month"}</span>
             </p>
             <p className="flex gap-4 text-xs text-muted-foreground">
@@ -130,7 +136,7 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
                 <span className="text-muted-foreground">/{m.daysSoFar}</span>
               </span>
               <span>
-                Best streak <span className="font-mono text-foreground">{m.maxStreak}</span>
+                Best streak <span className="font-mono text-foreground" data-testid="streak-best">{best}</span>
               </span>
             </p>
           </div>
@@ -138,7 +144,7 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
           <div className="mx-auto flex w-full max-w-[460px] flex-col gap-3">
             <div
               role="img"
-              aria-label={`Check-in calendar for ${m.title || "this month"}: ${m.total} check-ins on ${m.activeDays} days`}
+              aria-label={`Activity calendar for ${m.title || "this month"}: ${checkinMonth.total} check-ins, activity on ${m.activeDays} days`}
               className="grid w-full grid-cols-7 gap-1.5"
             >
               {WEEKDAYS.map((d, i) => (
@@ -156,7 +162,9 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
                     title={
                       c.future
                         ? `${c.date}: upcoming`
-                        : `${c.date}: ${c.count ? `${c.count} check-in${c.count > 1 ? "s" : ""}` : "no check-in"}`
+                        : summary
+                          ? `${c.date}: ${c.count ? `${c.count} of 5 activities logged${summary.checkinsByDay[c.date] ? ", checked in" : ""}` : "nothing logged"}`
+                          : `${c.date}: ${c.count ? `${c.count} check-in${c.count > 1 ? "s" : ""}` : "no check-in"}`
                     }
                     className={cn(
                       "flex aspect-square items-center justify-center rounded-md font-mono text-[10px] tabular-nums",
@@ -183,9 +191,9 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
 
           <div className="grid grid-cols-3 gap-3">
             {[
-              { icon: CalendarCheck, k: "Check-ins", v: m.total },
-              { icon: Dumbbell, k: "Exercise", v: exerciseSessions },
-              { icon: Trophy, k: "Points", v: points },
+              { icon: CalendarCheck, k: "Check-ins", v: checkinMonth.total, id: "streak-checkins" },
+              { icon: Dumbbell, k: "Exercise days", v: exerciseSessions, id: "streak-exercise" },
+              { icon: Trophy, k: "Points", v: points, id: "streak-points" },
             ].map((x) => (
               <div key={x.k} className="rounded-lg border border-border bg-background/40 px-3 py-2">
                 <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -198,7 +206,9 @@ export function StreakPanel({ checkins = {}, exerciseSessions = null, points = n
                     <span className="sr-only">Not counted yet</span>
                   </p>
                 ) : (
-                  <p className="font-mono text-xl text-foreground tabular-nums">{x.v}</p>
+                  <p className="font-mono text-xl text-foreground tabular-nums" data-testid={x.id}>
+                    {x.v}
+                  </p>
                 )}
               </div>
             ))}

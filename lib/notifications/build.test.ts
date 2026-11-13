@@ -6,6 +6,7 @@ const crew = (over: Partial<CrewNotificationInput> = {}): CrewNotificationInput 
   role: "crew",
   today: "2026-11-13",
   checkedInToday: false,
+  streak: 0,
   vitalsToday: false,
   alerts: [],
   spaceWeather: [],
@@ -18,12 +19,16 @@ describe("buildNotifications (crew)", () => {
     const keys = (i: CrewNotificationInput) => buildNotifications(i).map((n) => n.key);
     expect(keys(crew())).toEqual(["checkin-due:2026-11-13", "vitals-due:2026-11-13"]);
     expect(buildNotifications(crew())[0]).toMatchObject({
-      title: "Daily check-in due",
+      title: "Daily check-in due: start a streak today",
       detail: "Log in and check in every day to keep your streak.",
       href: "/dashboard/mind#mind-log",
     });
     expect(keys(crew({ checkedInToday: true }))).toEqual(["vitals-due:2026-11-13"]);
     expect(keys(crew({ checkedInToday: true, vitalsToday: true }))).toEqual([]);
+  });
+
+  it("the check-in reminder names the current streak", () => {
+    expect(buildNotifications(crew({ streak: 5 }))[0].title).toBe("Daily check-in due: keep your 5-day streak");
   });
 
   it("every active alert links to its module, alerts first", () => {

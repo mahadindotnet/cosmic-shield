@@ -5,6 +5,7 @@ import { OverviewView, type OverviewData } from "@/components/cosmic-shield/view
 import { activeCrew, getCurrentUser } from "@/lib/auth/dal";
 import { activeAlertsFor } from "@/lib/alerts/active";
 import { dashboardAlertSummary } from "@/lib/alerts/summary";
+import { gamificationFor } from "@/lib/gamification/data";
 import { mindSummaryFor } from "@/lib/mind/data";
 import { radiationSummaryFor } from "@/lib/radiation/data";
 import { sleepSummaryFor } from "@/lib/sleep/data";
@@ -31,6 +32,7 @@ export default function DashboardPage() {
 const SURGEON_OVERVIEW: OverviewData = {
   viewer: "flight_surgeon",
   alerts: null,
+  gamification: null,
   vitals: { tile: null, heartRateWeek: [] },
   sleep: { tile: null, week: [] },
   radiation: { tile: null, careerMsv: null, careerStatus: null },
@@ -54,6 +56,7 @@ async function loadOverview(): Promise<OverviewData> {
   return {
     viewer: "crew",
     alerts: dashboardAlertSummary(activeAlertsFor(crew.id)),
+    gamification: gamificationFor(crew.id),
     vitals: { tile: vitals.tile, heartRateWeek: vitals.trends.heartRate.map((p) => p.value) },
     sleep: {
       tile: sleep.tile && {

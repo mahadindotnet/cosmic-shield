@@ -75,6 +75,16 @@
     "consecutiveDays": 3,
     "maxAgeDays": 1
   },
+  "gamification": {
+    "basis": "app default",
+    "note": "Motivation only; never affects a health status. Only the first entry of each activity per UTC day earns points.",
+    "pointsPerDay": { "checkin": 10, "vitals": 10, "sleep": 10, "dose": 5, "exercise": 10 },
+    "streakActivity": "checkin",
+    "streakBonuses": [
+      { "days": 7, "points": 20 },
+      { "days": 30, "points": 50 }
+    ]
+  },
   "patterns": {
     "hrvSleepDecline": {
       "basis": "app heuristic; see docs/rules.md",

@@ -5,7 +5,7 @@ import { utcToday } from "@/lib/alerts/data";
 import type { UserRow } from "@/lib/auth/users";
 import { db } from "@/lib/db";
 import { escalation, notificationRead } from "@/lib/db/schema";
-import { mindSummaryFor } from "@/lib/mind/data";
+import { gamificationFor } from "@/lib/gamification/data";
 import { spaceWeatherNow } from "@/lib/radiation/space-weather";
 import { vitalsSummaryFor } from "@/lib/vitals/data";
 import { buildNotifications, withReadState, type NotificationItem } from "./build";
@@ -51,10 +51,12 @@ export async function notificationsFor(user: UserRow): Promise<{ items: Notifica
   } else {
     const today = utcToday();
     const latestVitals = vitalsSummaryFor(user.id, 1).latest;
+    const game = gamificationFor(user.id, today);
     items = buildNotifications({
       role: "crew",
       today,
-      checkedInToday: mindSummaryFor(user.id, 1).checkedInToday,
+      checkedInToday: game.checkedInToday,
+      streak: game.streak,
       vitalsToday: Boolean(latestVitals && latestVitals.recordedAt.slice(0, 10) === today),
       alerts: activeAlertsFor(user.id, today).alerts,
       spaceWeather: recentSpaceWeather(),
