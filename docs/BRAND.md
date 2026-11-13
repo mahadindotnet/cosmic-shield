@@ -51,10 +51,10 @@ The dashboard background is the chosen mission environment's image (`SpaceBackdr
 | Environment | Image |
 |---|---|
 | None selected | Plain dark space gradient (no image) |
-| ISS | `public/backgrounds/iss-orbit.webp` (from `design-ref/ISS.jpg`) |
-| Lunar surface | `public/backgrounds/lunar-astronaut.webp` (from `design-ref/moonNew.jpg`) |
-| Mars transit | `public/backgrounds/mars-planet.webp` (from `design-ref/mars1.jpg`) |
-| Mars surface | `public/backgrounds/mars-cliff.webp` (from `design-ref/marsSurf.jpg`) |
+| ISS | `public/backgrounds/iss-orbit.webp` |
+| Lunar surface | `public/backgrounds/lunar-astronaut.webp` |
+| Mars transit | `public/backgrounds/mars-planet.webp` |
+| Mars surface | `public/backgrounds/mars-cliff.webp` |
 
 The background image is clearly visible: a light blur (`backdrop.blur`, default 2 px), per-image brightness (`backdrop.dim`, 0.78–0.95) and full opacity. Readability comes from two things instead of darkening the whole image:
 
@@ -69,11 +69,11 @@ The astronaut picks an environment with `MissionPicker`: always in the top navig
 
 ## Body map and feature images
 
-`BodyMap` on the Health Dashboard uses `public/organs/anatomy.webp`, made from `feature_img/anatomy1.jpg`: cropped to the figure, with the black background keyed to transparency. Motion is kept subtle: a slow float, a breathing glow and a scan band masked to the figure. All three stop under reduced motion. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection. Positions are fractions of the image, so update `HOTSPOTS` if the image changes.
+`BodyMap` on the Health Dashboard uses `public/organs/anatomy.webp`, made from a source photo (kept outside the repository, credited in README → Image credits): cropped to the figure, with the black background keyed to transparency. Motion is kept subtle: a slow float, a breathing glow and a scan band masked to the figure. All three stop under reduced motion. Callouts: head → Mind, eyes → Eyes, chest dosimeter → Radiation, heart → Vitals, gut → GI, wrist → Sleep & Stress, thigh → Bone Protection. Positions are fractions of the image, so update `HOTSPOTS` if the image changes.
 
 The Health Dashboard shows one key reading per module tile, a statistics grid (`dashboard-stats.tsx`: crew charts plus NASA reference charts), and `StreakPanel`: a Snapchat-style flame counter with an hourglass warning and milestones, beside a LeetCode-style calendar of the current month in a single-hue cyan scale. A round floating co-pilot button (`CopilotButton`, `CopilotMark` logo: an AI spark inside an orbit) sits in the bottom-right corner on every page.
 
-Feature pages show transparent images from `public/organs/` (heart, bone, eye, gi, mind) through `OrganImage`. Callout positions are fractions of each image, converted with `onImage(fx, fy, aspect)`; if an image is replaced, update its aspect constant in the view. Sources are in `feature_img/`. `bone.webp` is recoloured to light cyan so it shows on dark backgrounds. Sleep & Stress and Radiation keep drawn SVG holograms (`holograms.tsx`).
+Feature pages show transparent images from `public/organs/` (heart, bone, eye, gi, mind) through `OrganImage`. Callout positions are fractions of each image, converted with `onImage(fx, fy, aspect)`; if an image is replaced, update its aspect constant in the view. Source photos are kept outside the repository (`feature_img/` is gitignored) and credited in README → Image credits. `bone.webp` is recoloured to light cyan so it shows on dark backgrounds. Sleep & Stress and Radiation keep drawn SVG holograms (`holograms.tsx`).
 
 ## Navigation
 

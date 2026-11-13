@@ -125,23 +125,21 @@ Loaded with `next/font/google`, all under the SIL Open Font License.
 | Geist | Body text and UI | [vercel.com/font](https://vercel.com/font) |
 | Geist Mono | Readings, units, numeric inputs | [vercel.com/font](https://vercel.com/font) |
 
-### Images
+### Image credits
 
-Supplied by the project team in `design-ref/` and `feature_img/`, then converted to WebP (and cropped, keyed or recoloured) for the app. **The original creator and licence of these images are not recorded in the repository.**
-Image source 1: https://unsplash.com/
-Image source 2: https://pixabay.com/
+The 10 images the app uses, all photos from Unsplash or Pixabay, converted to WebP (and cropped, keyed to a transparent background or recoloured) for the app:
 
-| App file | Made from | Note |
-|---|---|---|
-| `public/backgrounds/iss-orbit.webp` | `design-ref/ISS.jpg` | ISS background |
-| `public/backgrounds/lunar-astronaut.webp` | `design-ref/moonNew.jpg` | Lunar surface background |
-| `public/backgrounds/mars-planet.webp` | `design-ref/mars1.jpg` | Mars transit background |
-| `public/backgrounds/mars-cliff.webp` | `design-ref/marsSurf.jpg` | Mars surface background |
-| `public/organs/anatomy.webp` | `feature_img/anatomy1.jpg` | Health Dashboard body map; background keyed to transparency |
-| `public/organs/heart.webp` | `feature_img/heart.png` | Vitals |
-| `public/organs/bone.webp` | `feature_img/bone.png` | Bone Protection; recoloured light cyan |
-| `public/organs/eye.webp` | `feature_img/eye.png` | Eyes |
-| `public/organs/gi.webp` | `feature_img/GI.png` | GI |
-| `public/organs/mind.webp` | `feature_img/mind.png` | Mind |
+- ISS in orbit (background for the ISS environment, `public/backgrounds/iss-orbit.webp`): Photo by [NASA] on [Unsplash], [(https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0)]
+- Astronaut on the lunar surface (background for Lunar surface, `public/backgrounds/lunar-astronaut.webp`): Photo by [History in HD] on [Unsplash], [(https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg)]
+- Mars from space (background for Mars transit, `public/backgrounds/mars-planet.webp`): Photo by [javier Miranda] on [Unsplash], [https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo]
+- Martian cliffs (background for Mars surface, `public/backgrounds/mars-cliff.webp`): Photo by [Nicolas Lobos] on [Unsplash], [https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI]
+- Anatomical body figure (Health Dashboard body map, `public/organs/anatomy.webp`): Photo by [Rohit Choudhari] on [Unsplash], [(https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ)]
+- Anatomical heart (Vitals page, `public/organs/heart.webp`): Photo by [Mohammad-Ben-Ammar] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/]
+- Skeleton / bone (Bone Protection page, `public/organs/bone.webp`): Photo by [divotomezove] on [Pixabay], [https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/]
+- Human eye (Eyes page, `public/organs/eye.webp`): Photo by [95C] on [Pixabay], [https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/]
+- Digestive system (GI page, `public/organs/gi.webp`): Photo by [Phylum] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/]
+- Brain (Mind page, `public/organs/mind.webp`): Photo by [Milad-Fakurian] on [Unsplash], [https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U]
 
-The other images in `design-ref/` (numbered screenshots and "Inspo" files) were used as layout and style inspiration only; none ships with the app. The Cosmic Shield logo and the Sleep & Stress and Radiation holograms are drawn in code (`logo.tsx`, `holograms.tsx`). `public/file.svg`, `globe.svg`, `next.svg`, `vercel.svg` and `window.svg` are the Next.js starter files and are unused.
+Photos are used under the Unsplash License (https://unsplash.com/license) and the Pixabay Content License (https://pixabay.com/service/license-summary/), and are not covered by this repository's MIT licence.
+
+The source photos (`feature_img/`) and the design inspiration folder (`design-ref/`) are kept out of the repository (`.gitignore`) and were removed from the git history. The Cosmic Shield logo, the Sleep & Stress and Radiation holograms and the app icon (`app/icon.svg`) are drawn in code; `app/favicon.ico` is the Next.js starter favicon.

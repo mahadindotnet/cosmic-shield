@@ -9,7 +9,7 @@ import {
 import { cn } from "@/lib/utils";
 
 /*
- * public/organs/anatomy.webp (from feature_img/anatomy1.jpg): cropped to the
+ * public/organs/anatomy.webp (credited in README, Image credits): cropped to the
  * figure, black keyed to transparent. Hotspots are fractions of that box.
  */
 const SRC = "/organs/anatomy.webp";

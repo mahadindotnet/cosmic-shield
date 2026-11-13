@@ -62,3 +62,7 @@ next-env.d.ts
 
 # Playwright saved sign-in state
 /e2e/.auth/
+
+# Design inspiration and source photos (not used by the app; never commit them)
+design-ref/
+feature_img/

@@ -160,6 +160,26 @@ Intelligent features in the product (co-pilot, vision classifiers): [docs/intell
 
 ---
 
+## Image credits
+
+
+- ISS in orbit (background for the ISS environment, `public/backgrounds/iss-orbit.webp`): Photo by [NASA] on [Unsplash], [(https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0)]
+- Astronaut on the lunar surface (background for Lunar surface, `public/backgrounds/lunar-astronaut.webp`): Photo by [History in HD] on [Unsplash], [(https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg)]
+- Mars from space (background for Mars transit, `public/backgrounds/mars-planet.webp`): Photo by [javier Miranda] on [Unsplash], [https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo]
+- Martian cliffs (background for Mars surface, `public/backgrounds/mars-cliff.webp`): Photo by [Nicolas Lobos] on [Unsplash], [https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI]
+- Anatomical body figure (Health Dashboard body map, `public/organs/anatomy.webp`): Photo by [Rohit Choudhari] on [Unsplash], [(https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ)]
+- Anatomical heart (Vitals page, `public/organs/heart.webp`): Photo by [Mohammad-Ben-Ammar] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/]
+- Skeleton / bone (Bone Protection page, `public/organs/bone.webp`): Photo by [divotomezove] on [Pixabay], [https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/]
+- Human eye (Eyes page, `public/organs/eye.webp`): Photo by [95C] on [Pixabay], [https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/]
+- Digestive system (GI page, `public/organs/gi.webp`): Photo by [Phylum] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/]
+- Brain (Mind page, `public/organs/mind.webp`): Photo by [Milad-Fakurian] on [Unsplash], [https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U]
+
+The images were converted to WebP for the app (and cropped, keyed to a transparent background or recoloured). Everything else visual (logo, holograms, charts) is drawn in code.
+
+Photos are used under the Unsplash License (https://unsplash.com/license) and the Pixabay Content License (https://pixabay.com/service/license-summary/), and are not covered by this repository's MIT licence.
+
+---
+
 ## License
 
 [MIT](./LICENSE) — suitable for NASA Space Apps open-source requirements.
