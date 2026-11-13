@@ -21,6 +21,7 @@ import { assertAuthEnv } from "@/lib/auth/config";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
+import { seedCheckinSeries } from "@/lib/mind/seed-data";
 import { seedDoseSeries } from "@/lib/radiation/seed-data";
 import { seedVitalsSeries } from "@/lib/vitals/seed-data";
 
@@ -157,6 +158,15 @@ async function main() {
     doseRows += rows.length;
   });
 
+  // 14 evening check-ins per crew member (1–5 scales), ending yesterday, so
+  // today's check-in (and the streak) is still open. Never raises a status.
+  let checkinRows = 0;
+  crewUsers.forEach((u, i) => {
+    const rows = seedCheckinSeries(i, today).map((c) => ({ ...c, userId: u.id, enteredBy: u.id, source: "seed" as const, createdAt }));
+    db.insert(checkin).values(rows).run();
+    checkinRows += rows.length;
+  });
+
   console.log(
     "Seed complete:",
     Object.keys(dashboards).length,
@@ -168,7 +178,9 @@ async function main() {
     sleepRows,
     "sleep entries,",
     doseRows,
-    "dose entries",
+    "dose entries,",
+    checkinRows,
+    "check-ins",
   );
 }
 

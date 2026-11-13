@@ -14,6 +14,9 @@ import { projectedMissionMsv } from "@/lib/radiation/summary";
 import { HRV_SLEEP_DECLINE_FOLLOW_UP, HRV_SLEEP_DECLINE_MAY_MEAN, HRV_SLEEP_DECLINE_STEPS } from "@/lib/rules/hrv-guidance";
 import { evaluateHrvSleepDecline, HRV_SLEEP_DECLINE_CITATIONS, HRV_SLEEP_DECLINE_ID } from "@/lib/rules/hrv-sleep-decline";
 import { nightlyReadingsFor, sleepSummaryFor } from "@/lib/sleep/data";
+import { mindSummaryFor } from "@/lib/mind/data";
+import { MIND_PATTERN_ID } from "@/lib/mind/rules";
+import { CMO_LINE } from "./safety";
 import { ESCALATE_GUIDANCE } from "@/lib/vitals/escalation";
 import { vitalsSummaryFor } from "@/lib/vitals/data";
 import { sourceText } from "@/lib/vitals/rules";
@@ -241,6 +244,10 @@ export function getActiveAlerts(ctx: CopilotContext) {
   if (rad.career.status !== "normal")
     alerts.push({ ruleId: "radiation_career", level: rad.career.status, title: `Career dose: ${rad.career.status}`, detail: rad.career.reason ?? "" });
 
+  const mind = mindSummaryFor(u.id).pattern;
+  if (mind.status === "watch")
+    alerts.push({ ruleId: MIND_PATTERN_ID, level: "watch", title: "Check-ins: a few hard days in a row", detail: mind.reason ?? "" });
+
   const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const openEscalations = db
     .select({ id: escalation.id, ruleId: escalation.ruleId, reason: escalation.reason, createdAt: escalation.createdAt })
@@ -315,6 +322,8 @@ export const GUIDANCE_IDS = [
   "radiation_daily",
   "radiation_career",
   "space_weather",
+  "mind_pattern",
+  "mind_safety",
 ] as const;
 export type GuidanceId = (typeof GUIDANCE_IDS)[number];
 
@@ -356,6 +365,23 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
       whenToContact: `Above the 600 mSv career limit: ${contact}.`,
       citation: sourceText(RADIATION_LIMITS.careerLimitSource)!,
       label: "NASA-STD-3001",
+    },
+    mind_pattern: {
+      steps: [
+        "Protect your next sleep period.",
+        "Try a few minutes of slow breathing when things feel heavy.",
+        "Talk to a crewmate you trust, or plan a call home.",
+        "Ask for a workload adjustment if the schedule feels like too much.",
+      ],
+      whenToContact: `If it doesn't ease in a few days, talk to your Crew Medical Officer, or ${contact}. ${CMO_LINE}`,
+      citation: `${RULES_DOC}. Mind check-in pattern (app default, Watch only; not a screening tool).`,
+      label: "Rules engine",
+    },
+    mind_safety: {
+      steps: ["Talk to your Crew Medical Officer right away.", "You don't have to handle this alone; the flight surgeon has been told."],
+      whenToContact: `Now: your Crew Medical Officer, then ${contact} or ground behavioural health support.`,
+      citation: "Cosmic Shield safety check (lib/ai/safety.ts): simple phrase matching, not a clinical tool.",
+      label: "Safety check",
     },
     space_weather: {
       steps: [env ? env.shelter : "Follow the shelter procedure for your mission environment (choose one in the top bar)."],

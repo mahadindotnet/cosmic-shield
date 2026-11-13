@@ -34,21 +34,20 @@ const LEVELS = ["border border-border/60 bg-muted/40", "bg-primary/25", "bg-prim
 /** YYYY-MM-DD of a UTC-midnight date (calendar arithmetic is done in UTC). */
 const toKey = (d: Date) => d.toISOString().slice(0, 10);
 
-/** The astronaut's local calendar date as YYYY-MM-DD. */
-const localKey = (d: Date) =>
-  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+/** Station time: the UTC date as YYYY-MM-DD (the same day key as check-ins and the rules). */
+const utcKey = (d: Date) => d.toISOString().slice(0, 10);
 
-/** Today's date as YYYY-MM-DD on the client; null during server render. */
+/** Today's UTC date on the client; null during server render. */
 function useToday() {
   return useSyncExternalStore(
     () => () => {},
-    () => localKey(new Date()),
+    () => utcKey(new Date()),
     () => null,
   );
 }
 
 export interface StreakPanelProps {
-  /** Check-ins per day, keyed YYYY-MM-DD. Empty until logging is wired up. */
+  /** Mind check-ins per UTC day, keyed YYYY-MM-DD. */
   checkins?: Record<string, number>;
   exerciseSessions?: number;
   points?: number;
@@ -91,7 +90,7 @@ export function StreakPanel({ checkins = {}, exerciseSessions = 0, points = 0 }:
             {m.checkedToday
               ? "Checked in today. Streak safe."
               : m.streak > 0
-                ? "Check in before midnight to keep it."
+                ? "Check in before midnight UTC to keep it."
                 : "Check in today to start a streak."}
           </p>
 

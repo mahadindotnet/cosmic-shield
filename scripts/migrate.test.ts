@@ -41,6 +41,36 @@ describe("runMigrations", () => {
     expect(userCols).toContain("environment");
   });
 
+  it("0003 converts existing 0–10 check-in scores to 1–5 (and adds sleep_quality)", () => {
+    const file = dbFile();
+    // Migrations up to 0002 only: copy the folder without 0003.
+    const partial = path.join(path.dirname(file), "drizzle-0002");
+    fs.cpSync(MIGRATIONS_FOLDER, partial, { recursive: true });
+    const journalPath = path.join(partial, "meta", "_journal.json");
+    const journal = JSON.parse(fs.readFileSync(journalPath, "utf8")) as { entries: { tag: string }[] };
+    journal.entries = journal.entries.filter((e) => !e.tag.startsWith("0003"));
+    fs.writeFileSync(journalPath, JSON.stringify(journal));
+    runMigrations(`file:${file}`, partial);
+
+    const db = new Database(file);
+    const insert = db.prepare(
+      "INSERT INTO checkin (user_id, recorded_at, source, entered_by, created_at, mood, stress, energy) VALUES (1, '2026-01-01', 'manual', 1, '2026-01-01', ?, ?, ?)",
+    );
+    for (const [mood, stress] of [[0, null], [5, 10], [10, 3], [7, 0]]) insert.run(mood, stress, null);
+    db.close();
+
+    runMigrations(`file:${file}`);
+    const after = new Database(file);
+    const rows = after.prepare("SELECT mood, stress, sleep_quality FROM checkin ORDER BY id").all();
+    after.close();
+    expect(rows).toEqual([
+      { mood: 1, stress: null, sleep_quality: null },
+      { mood: 3, stress: 5, sleep_quality: null },
+      { mood: 5, stress: 2, sleep_quality: null },
+      { mood: 4, stress: 1, sleep_quality: null },
+    ]);
+  });
+
   it("adopts a database created by drizzle-kit push (baseline tables, no journal)", () => {
     const file = dbFile();
     const baseline = fs.readFileSync(path.join(MIGRATIONS_FOLDER, "0000_baseline.sql"), "utf8");

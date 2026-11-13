@@ -21,7 +21,7 @@ async function logNight(page: Page, night: string, v: { sleep: string; hrv: stri
 test("CS-001 enters 3 low nights by hand: the early-warning card appears", async ({ page }) => {
   await signInOk(page, "CS-001");
   // Normal seeded pattern: no card yet.
-  await expect(page.getByTestId("streak-panel")).toBeVisible();
+  await expect(page.getByTestId("streak-panel").filter({ visible: true })).toBeVisible();
   await expect(page.getByTestId("early-warning-card")).toHaveCount(0);
 
   await page.goto("/dashboard/sleep-stress");

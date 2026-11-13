@@ -37,6 +37,13 @@ const PRESCRIPTION: RegExp[] = [
   /\bprescri(?:be|bed|bing|ption)\b|\bdosage of\b|\bmg of\b/i,
 ];
 
+/** Clinical labels the support conversation must never use (support mode only). */
+const CLINICAL_LABELS =
+  /\b(?:depression|depressive|major depressive|clinical(?:ly)? depressed|anxiety disorder|generali[sz]ed anxiety|panic disorder|panic attacks?|ptsd|post-?traumatic|bipolar|mania|manic|burnout syndrome|adjustment disorder|personality disorder|psychosis|psychotic|schizophreni\w*|eating disorder|ocd|adhd|insomnia|mental (?:illness|disorder))\b/i;
+
+export const SUPPORT_FALLBACK =
+  "Thanks for telling me. I can't put a label on how you're feeling, but I can listen, and suggest simple things like rest, slow breathing, talking to a crewmate or a call home. If things feel heavy, your Crew Medical Officer is there for you.";
+
 export const SAFE_FALLBACK =
   "I can't give a diagnosis or recommend medication. I can show what your logged data and the rules say, and help you decide when to contact your Crew Medical Officer or the flight surgeon.";
 
@@ -48,6 +55,8 @@ export interface PostCheckInput {
   question: string;
   /** One-way comms delay of the subject's environment, or null when none is chosen. */
   environment: { name: string; commsDelayOneWay: string } | null;
+  /** "support" (Mind page) also blocks clinical labels. */
+  purpose?: "copilot" | "support";
 }
 
 export interface PostCheckResult {
@@ -81,7 +90,9 @@ export function postCheck(input: PostCheckInput): PostCheckResult {
     ...DIAGNOSIS.filter((r) => r.test(input.text)).map(() => "diagnosis"),
     ...PRESCRIPTION.filter((r) => r.test(input.text)).map(() => "prescription"),
   ];
+  if (input.purpose === "support" && CLINICAL_LABELS.test(input.text)) reasons.push("clinical_label");
   if (reasons.length) {
+    if (input.purpose === "support") return { text: SUPPORT_FALLBACK, blocked: true, reasons: [...new Set(reasons)], ungroundedNumbers: [] };
     const contact = input.environment
       ? ` For anything medical, contact the flight surgeon (one-way comms delay on ${input.environment.name}: ${input.environment.commsDelayOneWay}).`
       : " For anything medical, contact the flight surgeon. No mission environment is chosen, so the comms delay is unknown; pick one in the top bar.";

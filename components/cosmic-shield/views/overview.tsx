@@ -67,6 +67,14 @@ export interface OverviewData {
     careerMsv: number;
     careerStatus: "normal" | "watch" | "escalate";
   };
+  mind: {
+    /** Latest mood and the 3-day pattern status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Mood (1–5), last 14 days, oldest first. */
+    moodFortnight: (number | null)[];
+    /** Check-ins per UTC day, for the streak. */
+    checkinsByDay: Record<string, number>;
+  };
 }
 
 const NO_DATA: Promise<OverviewData | null> = Promise.resolve(null);
@@ -89,7 +97,7 @@ const LEFT: TileDef[] = [
 const RIGHT: TileDef[] = [
   { slug: "eyes", metric: "Last screening" },
   { slug: "gi", metric: "Hydration today", unit: "L" },
-  { slug: "mind", metric: "Mood", unit: "/10" },
+  { slug: "mind", metric: "Mood", unit: "/5" },
 ];
 
 const WEEK = ["6d", "5d", "4d", "3d", "2d", "1d", "Today"];
@@ -111,10 +119,11 @@ export function OverviewView({
 }) {
   const env = useMissionEnvironment();
   const withData = (t: TileDef) =>
-    t.slug === "vitals" || t.slug === "sleep-stress" || t.slug === "radiation" ? (
+    t.slug === "vitals" || t.slug === "sleep-stress" || t.slug === "radiation" || t.slug === "mind" ? (
       <Await key={t.slug} promise={data}>
         {(d) => {
-          const tile = t.slug === "vitals" ? d?.vitals.tile : t.slug === "sleep-stress" ? d?.sleep.tile : d?.radiation.tile;
+          const tile =
+            t.slug === "vitals" ? d?.vitals.tile : t.slug === "sleep-stress" ? d?.sleep.tile : t.slug === "mind" ? d?.mind.tile : d?.radiation.tile;
           return (
             <ModuleTile
               {...(tile ? { ...t, metric: tile.metric, value: tile.value, unit: tile.unit, status: tile.status } : t)}
@@ -161,9 +170,7 @@ export function OverviewView({
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:col-start-3 lg:row-start-1 lg:auto-rows-fr lg:grid-cols-1">
-          {RIGHT.map((t) => (
-            <ModuleTile key={t.slug} {...t} />
-          ))}
+          {RIGHT.map(withData)}
           <div className="flex items-center gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur)">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background/50">
               <Bell
@@ -190,7 +197,7 @@ export function OverviewView({
           eyebrow="Gamification"
           title="Streak"
         />
-        <StreakPanel />
+        <Await promise={data}>{(d) => <StreakPanel checkins={d?.mind.checkinsByDay ?? {}} />}</Await>
       </section>
     </div>
   );
@@ -304,18 +311,22 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
         <StatPanel
           icon={Smile}
           title="Mood"
-          keyPoint="14 days · self-rated 0–10"
+          keyPoint="14 days · self-rated 1–5"
           href="/dashboard/mind"
         >
-          <MiniChart
-            kind="line"
-            data={[]}
-            window={FORTNIGHT}
-            unit="/10"
-            seriesLabel="Mood"
-            colorSlot={2}
-            yDomain={[0, 10]}
-          />
+          <Await promise={data}>
+            {(d) => (
+              <MiniChart
+                kind="line"
+                data={(d?.mind.moodFortnight ?? []).map((value, i) => ({ label: FORTNIGHT[i] ?? "", value }))}
+                window={FORTNIGHT}
+                unit="/5"
+                seriesLabel="Mood"
+                colorSlot={2}
+                yDomain={[0, 5]}
+              />
+            )}
+          </Await>
         </StatPanel>
 
         <Await promise={data}>

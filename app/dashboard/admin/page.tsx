@@ -3,6 +3,9 @@ import { Suspense } from "react";
 import { connection } from "next/server";
 import { AdminPanel } from "@/components/auth/admin-panel";
 import { CrewPicker, CrewReview } from "@/components/auth/crew-review";
+import { CrewMindReview } from "@/components/admin/crew-mind-review";
+import { mindSummaryForReview } from "@/lib/mind/data";
+import { escalationsForReview } from "@/lib/mind/safety-escalation";
 import { requireRole } from "@/lib/auth/dal";
 import { auditFor, listUsers, recentAudit } from "@/lib/auth/users";
 import { getCrewDashboardWithLogs } from "@/lib/services/crew-service";
@@ -28,7 +31,7 @@ export default function AdminPage({ searchParams }: PageProps<"/dashboard/admin"
 
 async function AdminContent({ searchParams }: { searchParams: PageProps<"/dashboard/admin">["searchParams"] }) {
   // Server-side role check (proxy.ts also blocks crew from this route).
-  await requireRole("flight_surgeon", { onDenied: "redirect" });
+  const { user: viewer } = await requireRole("flight_surgeon", { onDenied: "redirect" });
   await connection();
   const { crew } = await searchParams;
   const data = loadAdminData(typeof crew === "string" ? crew.toUpperCase() : null);
@@ -37,6 +40,9 @@ async function AdminContent({ searchParams }: { searchParams: PageProps<"/dashbo
         account: data.selected.account,
         data: data.selected.profileId ? await getCrewDashboardWithLogs(data.selected.profileId) : null,
         activity: auditFor(data.selected.account.crewId),
+        // Flight surgeon only (enforced again inside both functions).
+        mind: mindSummaryForReview(viewer, data.selected.userId),
+        escalations: escalationsForReview(viewer, data.selected.userId),
       }
     : null;
 
@@ -47,7 +53,8 @@ async function AdminContent({ searchParams }: { searchParams: PageProps<"/dashbo
           Crew member
         </h2>
         <CrewPicker crew={data.picker} selected={data.selected?.account.crewId ?? null} />
-        {review && <CrewReview {...review} />}
+        {review && <CrewReview account={review.account} data={review.data} activity={review.activity} />}
+        {review && <CrewMindReview crewId={review.account.crewId} mind={review.mind} escalations={review.escalations} />}
       </section>
 
       <AdminPanel users={data.users} audit={data.audit} now={data.now} />
@@ -83,6 +90,7 @@ function loadAdminData(requested: string | null) {
     picker: crew.map((u) => ({ crewId: u.crewId, displayName: u.displayName, title: u.title, locked: isLocked(u) })),
     selected: chosen
       ? {
+          userId: chosen.id,
           profileId: chosen.profileId,
           account: {
             crewId: chosen.crewId,

@@ -3,7 +3,10 @@ import { generateText, isStepCount, type ModelMessage } from "ai";
 import { getEnvironment, type CopilotContext } from "./copilot-data";
 import { postCheck } from "./post-check";
 import { getCopilotModel, type CopilotMode } from "./provider";
+import { SUPPORT_PROMPT } from "./support";
 import { buildCopilotTools } from "./tools";
+
+export type CopilotPurpose = "copilot" | "support";
 
 /** Hard limit on model steps per question (tool rounds + the answer). */
 export const MAX_STEPS = 6;
@@ -45,12 +48,14 @@ export async function runCopilot(
   question: string,
   /** Called after each step with that step's tool calls and results (for live tool chips). */
   onToolEvents?: (events: CopilotToolEvent[]) => void,
+  /** "support": the Mind page check-in conversation (adds its instructions and the clinical-label check). */
+  purpose: CopilotPurpose = "copilot",
 ): Promise<CopilotRun> {
   const { model, mode, label } = getCopilotModel();
   const tools: CopilotToolEvent[] = [];
   const result = await generateText({
     model,
-    instructions: SYSTEM_PROMPT,
+    instructions: purpose === "support" ? [SYSTEM_PROMPT, SUPPORT_PROMPT].join("\n\n") : SYSTEM_PROMPT,
     messages,
     tools: buildCopilotTools(ctx),
     stopWhen: isStepCount(MAX_STEPS),
@@ -73,6 +78,7 @@ export async function runCopilot(
     toolOutputs: tools.map((t) => t.output),
     question,
     environment: env.chosen ? { name: env.name, commsDelayOneWay: env.commsDelayOneWay } : null,
+    purpose,
   });
 
   return {

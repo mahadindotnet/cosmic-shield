@@ -188,17 +188,23 @@ export const eyeScreening = sqliteTable(
   (t) => [index("eye_screening_user_time").on(t.userId, t.recordedAt)],
 );
 
-/** Daily Mind check-in. */
+/**
+ * Daily Mind check-in. Scales are 1–5 (migration 0003 converted any older
+ * 0–10 rows). The note is private: the flight surgeon sees scores only, unless
+ * the note triggered a safety escalation.
+ */
 export const checkin = sqliteTable(
   "checkin",
   {
     ...entryColumns(),
-    /** Self-rated 0–10. */
+    /** Self-rated 1 (low) – 5 (great). */
     mood: integer("mood").notNull(),
-    /** Self-rated 0–10. */
+    /** Self-rated 1 (calm) – 5 (overwhelmed). */
     stress: integer("stress"),
-    /** Self-rated 0–10. */
+    /** Unused (kept from the original table). */
     energy: integer("energy"),
+    /** Self-rated sleep quality 1 (poor) – 5 (great), optional. */
+    sleepQuality: integer("sleep_quality"),
     note: text("note"),
   },
   (t) => [index("checkin_user_time").on(t.userId, t.recordedAt)],

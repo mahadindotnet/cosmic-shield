@@ -39,13 +39,13 @@ export function adoptPushedDatabase(sqlite: Database.Database) {
   return true;
 }
 
-export function runMigrations(url?: string) {
+export function runMigrations(url?: string, migrationsFolder = MIGRATIONS_FOLDER) {
   const dbPath = resolveDbPath(url);
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const sqlite = new Database(dbPath);
   try {
     const adopted = adoptPushedDatabase(sqlite);
-    migrate(drizzle(sqlite), { migrationsFolder: MIGRATIONS_FOLDER, migrationsTable: MIGRATIONS_TABLE });
+    migrate(drizzle(sqlite), { migrationsFolder, migrationsTable: MIGRATIONS_TABLE });
     return { dbPath, adopted };
   } finally {
     sqlite.close();

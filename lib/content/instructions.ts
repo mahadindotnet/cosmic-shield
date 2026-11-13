@@ -154,18 +154,18 @@ export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
     intro: "A quick daily check-in on mood and stress, plus a supportive AI conversation. Nothing here diagnoses or prescribes.",
     sections: [
       { title: "Brain hologram", body: "Callouts show today's mood and stress, this week's check-ins and conversations.", anchor: "mind-hero" },
-      { title: "Daily check-in", body: "Rate mood and stress from 1 to 5 and add a short note if you like. It counts toward your streak.", anchor: "mind-log" },
-      { title: "Talk it through", body: "An AI companion that listens and suggests coping techniques. Anything serious is routed to the flight surgeon.", anchor: "mind-log" },
-      { title: "History", body: "Your past check-ins. Private to you and the flight surgeon.", anchor: "mind-history" },
+      { title: "Daily check-in", body: "Rate mood and stress from 1 to 5 (sleep quality optional) and add a short note if you like. Each day you check in counts toward your streak.", anchor: "mind-log" },
+      { title: "Talk it through", body: "A short check-in conversation that listens and suggests simple coping steps. If you mention feeling unable to cope or unsafe, it asks you to contact your Crew Medical Officer and lets the flight surgeon know.", anchor: "mind-talk" },
+      { title: "History", body: "Your past check-ins. The flight surgeon sees your scores; your notes and conversations stay private.", anchor: "mind-history" },
     ],
     measure: {
       duration: "≈ 1 min",
       steps: [
         { title: "Pick a fixed time", detail: "The end of the work shift works well for most crews." },
-        { title: "Rate mood and stress honestly", detail: "Entries are private to you and the flight surgeon." },
+        { title: "Rate mood and stress honestly", detail: "The flight surgeon sees your scores; your note stays private to you." },
         { title: "Add a note if something stands out", detail: "Sleep, workload, conflict, homesickness…" },
       ],
-      tip: "Low mood or high stress on 3 or more days triggers a Watch, never an automatic diagnosis.",
+      tip: "Mood 2 or lower, or stress 4 or higher, on 3 days in a row triggers a Watch, never a diagnosis. If you feel unsafe or unable to cope, contact your Crew Medical Officer now.",
     },
   },
   mission: {

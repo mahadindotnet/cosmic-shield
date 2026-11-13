@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { EarlyWarningSlot } from "@/components/alerts/early-warning-slot";
 import { OverviewView, type OverviewData } from "@/components/cosmic-shield/views/overview";
 import { activeCrew, getCurrentUser } from "@/lib/auth/dal";
+import { mindSummaryFor } from "@/lib/mind/data";
 import { radiationSummaryFor } from "@/lib/radiation/data";
 import { sleepSummaryFor } from "@/lib/sleep/data";
 import { utcToday, vitalsSummaryFor } from "@/lib/vitals/data";
@@ -32,6 +33,7 @@ async function loadOverview(): Promise<OverviewData | null> {
   const vitals = vitalsSummaryFor(crew.id, 7);
   const sleep = sleepSummaryFor(crew.id, 7);
   const radiation = radiationSummaryFor(crew.id, 7);
+  const mind = mindSummaryFor(crew.id, 14);
   const lastNight = addDays(utcToday(), -1);
   return {
     vitals: { tile: vitals.tile, heartRateWeek: vitals.trends.heartRate.map((p) => p.value) },
@@ -48,6 +50,11 @@ async function loadOverview(): Promise<OverviewData | null> {
       tile: radiation.tile && { metric: "Latest dose", ...radiation.tile },
       careerMsv: radiation.career.totalMsv,
       careerStatus: radiation.career.status,
+    },
+    mind: {
+      tile: mind.tile,
+      moodFortnight: mind.trends.mood.map((p) => p.value),
+      checkinsByDay: mind.checkinsByDay,
     },
   };
 }

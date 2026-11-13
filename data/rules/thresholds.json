@@ -67,6 +67,14 @@
     "hrDriftBpm": 6,
     "basis": "app default"
   },
+  "mind": {
+    "basis": "app default",
+    "note": "Self-rated daily check-in, 1–5 scales. Watch only; never Escalate. Not a screening tool.",
+    "lowMoodMax": 2,
+    "highStressMin": 4,
+    "consecutiveDays": 3,
+    "maxAgeDays": 1
+  },
   "patterns": {
     "hrvSleepDecline": {
       "basis": "app heuristic; see docs/rules.md",

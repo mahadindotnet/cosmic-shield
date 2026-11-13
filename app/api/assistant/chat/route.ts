@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, type UIMessage } from "ai";
-import { runCopilot } from "@/lib/ai/agent";
+import { runCopilot, type CopilotPurpose } from "@/lib/ai/agent";
 import type { CopilotContext } from "@/lib/ai/copilot-data";
 import { getCopilotModel } from "@/lib/ai/provider";
+import { CMO_LINE, CRISIS_FOLLOW_UP, crisisResponse, detectCrisis } from "@/lib/ai/safety";
+import { getMissionEnvironment, type MissionEnvironmentId } from "@/lib/mission/environments";
+import { recordSafetyEscalation } from "@/lib/mind/safety-escalation";
 import { withApiUser } from "@/lib/auth/api";
 import type { CurrentUser } from "@/lib/auth/dal";
 import { findUserByCrewId } from "@/lib/auth/users";
@@ -42,7 +45,7 @@ export async function POST(req: Request) {
   return withApiUser(async (current) => {
     const raw = await req.text();
     if (raw.length > MAX_BODY_CHARS) return NextResponse.json({ error: "Conversation too long" }, { status: 413 });
-    let body: { messages?: UIMessage[]; crewId?: unknown };
+    let body: { id?: unknown; messages?: UIMessage[]; crewId?: unknown; purpose?: unknown };
     try {
       body = JSON.parse(raw);
     } catch {
@@ -55,6 +58,34 @@ export async function POST(req: Request) {
     if (question.length > MAX_QUESTION_CHARS) return NextResponse.json({ error: "Question too long" }, { status: 400 });
 
     const ctx = contextFor(current, body.crewId);
+    const purpose: CopilotPurpose = body.purpose === "support" ? "support" : "copilot";
+    const conversationId = typeof body.id === "string" && body.id.length <= 100 ? body.id : null;
+    const userTexts = messages.filter((m) => m.role === "user").map(textOf);
+
+    // Safety first, in every mode: a crisis message never reaches the model.
+    const crisis = detectCrisis(question);
+    const earlierCrisis = userTexts.slice(0, -1).some((t) => detectCrisis(t).triggered);
+    if (crisis.triggered) {
+      recordSafetyEscalation(current.user, {
+        source: purpose === "support" ? "support_chat" : "copilot_chat",
+        conversationId,
+        categories: crisis.categories,
+        recentMessages: userTexts,
+      });
+      const env = getMissionEnvironment((current.user.environment as MissionEnvironmentId | null) ?? null);
+      const text = earlierCrisis ? CRISIS_FOLLOW_UP : crisisResponse(env ? { name: env.name, commsDelayOneWay: env.commsDelayLabel } : null);
+      const stream = createUIMessageStream({
+        execute({ writer }) {
+          writer.write({ type: "start" });
+          writer.write({ type: "text-start", id: "answer" });
+          writer.write({ type: "text-delta", id: "answer", delta: text });
+          writer.write({ type: "text-end", id: "answer" });
+          writer.write({ type: "finish", messageMetadata: { safety: true } });
+        },
+        onError: () => `${CMO_LINE}`,
+      });
+      return createUIMessageStreamResponse({ stream });
+    }
     const modelMessages = await convertToModelMessages(
       messages.filter((m) => m.role === "user" || m.role === "assistant"),
       { ignoreIncompleteToolCalls: true },
@@ -70,10 +101,12 @@ export async function POST(req: Request) {
             writer.write({ type: "tool-output-available", toolCallId: e.toolCallId, output: e.output });
           }
           writer.write({ type: "finish-step" });
-        });
+        }, purpose);
+        // After a crisis earlier in this conversation, every reply keeps the CMO line.
+        const answer = earlierCrisis ? `${run.text}\n\n${CMO_LINE}` : run.text;
         writer.write({ type: "start-step" });
         writer.write({ type: "text-start", id: "answer" });
-        writer.write({ type: "text-delta", id: "answer", delta: run.text });
+        writer.write({ type: "text-delta", id: "answer", delta: answer });
         writer.write({ type: "text-end", id: "answer" });
         writer.write({ type: "finish-step" });
         writer.write({

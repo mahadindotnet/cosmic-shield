@@ -151,8 +151,8 @@ test("health dashboard shows the anatomy body map, statistics and streak", async
   await expect(page.getByTestId("stat-env-dose")).toContainText("Mars transit");
   await expect(page.getByTestId("stat-env-dose")).toContainText("1.84");
   await expect(page.getByTestId("stat-space-weather")).toContainText("CMEs");
-  await expect(page.getByTestId("streak-panel")).toContainText("day streak");
-  await expect(page.getByTestId("streak-panel")).toContainText("check-ins in");
+  await expect(page.getByTestId("streak-panel").filter({ visible: true })).toContainText("day streak");
+  await expect(page.getByTestId("streak-panel").filter({ visible: true })).toContainText("check-ins in");
 });
 
 test("floating co-pilot button explains itself on hover and opens on click", async ({ page }) => {

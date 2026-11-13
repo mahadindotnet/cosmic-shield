@@ -58,6 +58,7 @@ export interface CrewDashboardPayload {
   sleepTrend: VitalPoint[];
   moduleState: ModuleState;
   escalation: EscalationResult;
+  /** Demo snapshot log. affectScore is self-rated 1–5 (the same scale as Mind check-ins). */
   behavioralLog: { at: string; affectScore: number; note: string }[];
   nasaSources: { module: string; source: string }[];
 }

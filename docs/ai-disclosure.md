@@ -40,6 +40,33 @@ Every tool reads only one crew member: the signed-in crew member, or, for the fl
 
 Statuses come only from the deterministic rules engine ([rules.md](./rules.md)); the co-pilot explains them but never sets or changes one.
 
+## Mind support conversation
+
+The "Talk it through" card on the Mind page uses the same co-pilot (same route, tools, providers, step limit and post-check) with `purpose: "support"`, in its own conversation.
+
+- **Structure:** the app asks about sleep first; then, one short question at a time, workload, feeling connected to crew and family, and mood. Each answer gets a brief, kind reflection. After the fourth answer it looks up sleep history and active alerts and summarises with simple coping steps only: rest, slow breathing, talking to a crewmate, contacting family, asking for a workload adjustment.
+- **Mock mode:** reflections come from a small positive/negative word list (with "not good"-style negation). If the tone is mixed or unclear it says "Thanks for telling me…" rather than guessing.
+- **Claude / Ollama:** get the same structure and rules as extra instructions (`lib/ai/support.ts`).
+- **Never** diagnoses, uses clinical labels (the post-check blocks words such as depression, anxiety disorder, PTSD, burnout syndrome or insomnia in support replies and replaces the reply with a safe one) or mentions medication.
+- An always-visible line under the chat and at the bottom of the Mind page: "If you feel unsafe or unable to cope, contact your Crew Medical Officer now."
+
+## Crisis safety check
+
+`lib/ai/safety.ts` runs on the server **before any model**, on every co-pilot message (floating panel and Mind page) and on every check-in note, in every mode including offline mock.
+
+- **What it looks for:** phrases about hopelessness, self-harm, wanting to die or feeling unable to cope ("I feel hopeless", "I can't cope anymore", "I want to hurt myself"…), with curly apostrophes normalised. It is tested against everyday phrases that must not trigger ("I'm dying to see my family", "the battery is dead", "I could kill for a pizza").
+- **What happens:** the normal flow stops and no model is called. The reply is short and warm: it acknowledges the feeling, says they're not alone, gives the steps (Crew Medical Officer now; then the flight surgeon or ground behavioural health support, with that environment's comms delay) and offers to stay in the conversation. Later messages in the same conversation get a shorter reminder plus the CMO line instead of the full block; normal replies after it keep the CMO line at the end.
+- **Escalation record:** a `mind_safety` row in `escalation` with the source (support chat, co-pilot chat or check-in note), the categories matched and the crew member's last few messages (each clipped to 500 characters). One open record per conversation: later triggering messages are added to it.
+
+**Limits, plainly:** this is simple phrase matching. It can miss messages (other wording, sarcasm, other languages, typos) and can occasionally trigger on a phrase that wasn't meant that way. It is **not a clinical tool** and has not been clinically reviewed or validated. A real deployment would need clinical review of the wording and responses, and a validated screening approach. It is an extra safety net, not a replacement for the Crew Medical Officer or the flight surgeon.
+
+## Privacy
+
+- Co-pilot and support conversations are **not stored on the server**; they live in the browser tab and disappear when it is closed or cleared.
+- The one exception is a safety escalation: its record holds the excerpt of the crew member's own recent messages, so the flight surgeon can follow up.
+- The flight surgeon sees check-in **scores** and pattern status, and every escalation record, on Crew admin. Check-in notes stay private to the crew member (a note that triggered the safety check appears only inside that escalation record).
+- Escalation evidence (including excerpts) is readable only with the flight surgeon role (`escalationsForReview`, `mindSummaryForReview` return 403 for anyone else). Crew can never see another crew member's records; their own co-pilot only sees the generic reason line of their own records, never an excerpt.
+
 ## Rules the co-pilot follows
 
 Given to the model as instructions (`lib/ai/agent.ts`), and built into the mock's templates:
@@ -67,5 +94,5 @@ The model's instructions are not trusted alone. Every answer, from any provider,
 
 ## Tests
 
-- Unit: `lib/ai/intents.test.ts` (intent matcher, tool plans, templates), `lib/ai/post-check.test.ts` (blocking, grounding, comms delay), `lib/ai/copilot-data.test.ts` (data isolation between crew members, flight-surgeon scoping, the full offline tool loop against a real SQLite database).
-- Playwright (mock mode): `e2e/early-warning.spec.ts` (CS-003 asks "Why am I seeing this warning?" from the card; the answer names `hrv_sleep_decline` and the HRV % drop, with tool chips) and `e2e/copilot.spec.ts` (CS-001 picks ISS and asks about radiation; the answer gives their career total and "600 mSv").
+- Unit: `lib/ai/safety.test.ts` (crisis phrases that must and must not trigger, the caring responses), `lib/ai/support.test.ts` (tone, neutral reflections, summary, clinical-label blocking), `lib/mind/mind-db.test.ts` (note escalations, de-duplication per conversation, flight-surgeon-only evidence, notes hidden from the flight surgeon, the full offline support conversation), `lib/ai/intents.test.ts` (intent matcher, tool plans, templates), `lib/ai/post-check.test.ts` (blocking, grounding, comms delay), `lib/ai/copilot-data.test.ts` (data isolation between crew members, flight-surgeon scoping, the full offline tool loop against a real SQLite database).
+- Playwright (mock mode): `e2e/early-warning.spec.ts` (CS-003 asks "Why am I seeing this warning?" from the card; the answer names `hrv_sleep_decline` and the HRV % drop, with tool chips) `e2e/copilot.spec.ts` (CS-001 picks ISS and asks about radiation; the answer gives their career total and "600 mSv") and `e2e/mind.spec.ts` (CS-002 writes "I feel hopeless and I can't cope anymore" in the support chat: the caring response appears, a second message gets the short reminder, FS-001 sees the escalation with the excerpt, CS-001 can't reach it).

@@ -58,6 +58,25 @@ Evaluated on read. Dosimeter readings are stored in `dose_entry` with the crew m
 
 Tests: `lib/radiation/radiation.test.ts`; Playwright `e2e/radiation.spec.ts`.
 
+## Mind (`lib/mind/rules.ts`)
+
+Daily check-in: mood 1–5, stress 1–5, sleep quality 1–5 (optional), a private note (optional). Rule `mind_pattern`, evaluated on read, **app default, Watch only, never Escalate, not a screening tool**:
+
+| Watch when | Basis |
+|---|---|
+| Mood ≤ 2 on 3 consecutive days | app default (`thresholds.mind`) |
+| Stress ≥ 4 on 3 consecutive days | app default |
+
+- A "day" is a UTC (station time) date; the latest check-in of the day counts, and every check-in counts toward the streak.
+- The run must end today or yesterday, so an old run stops counting. A missing day breaks the run.
+- History rows show the pattern status as of that day. Seeded check-ins (mood 3–5, stress 1–3) never raise it.
+- The flight surgeon sees the scores and statuses on Crew admin, never the notes.
+- **Scale change:** migration 0003 converted any earlier 0–10 rows once to 1–5 (1 + round(value × 0.4), clamped: 0 → 1, 5 → 3, 10 → 5).
+
+**Safety check (`mind_safety`)** is separate from this rule: a message in any co-pilot chat, or a check-in note, that mentions hopelessness, self-harm, wanting to die or being unable to cope creates an escalation record for the flight surgeon. See [ai-disclosure.md](./ai-disclosure.md#crisis-safety-check) for how it works and its limits.
+
+Tests: `lib/mind/mind.test.ts`, `lib/mind/mind-db.test.ts`; Playwright `e2e/mind.spec.ts`.
+
 ## Sleep & Stress (`lib/sleep/rules.ts`)
 
 Per night, evaluated on read, Watch only. All **app default**:
