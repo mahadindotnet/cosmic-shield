@@ -1,4 +1,5 @@
-import { getCurrentUser } from "@/lib/auth/dal";
+import { redirect } from "next/navigation";
+import { getCurrentUser, hasStaleSession, STALE_SESSION_PATH } from "@/lib/auth/dal";
 import { EnvironmentDialog } from "@/components/mission/environment-dialog";
 import { EnvironmentHydrator } from "@/components/mission/environment-hydrator";
 import { envPromptDismissed } from "@/lib/notifications/data";
@@ -24,7 +25,12 @@ const view = (u: {
  */
 export async function AccountBar() {
   const current = await getCurrentUser();
-  if (!current) return null;
+  // On every dashboard page: a cookie for a user that no longer exists (e.g.
+  // after a reseed) must not render a half-working page.
+  if (!current) {
+    if (await hasStaleSession()) redirect(STALE_SESSION_PATH);
+    return null;
+  }
   const { user, session } = current;
   const promptEnvironment =
     user.role === "crew" && !user.mustChangePin && user.environment === null && !envPromptDismissed(user.id, session.issuedAt);

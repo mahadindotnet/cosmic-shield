@@ -20,17 +20,32 @@ export class AuthError extends Error {
   }
 }
 
+/** Where a signed cookie that no longer matches a user is cleared (then /login?stale=1). */
+export const STALE_SESSION_PATH = "/auth/reset";
+
 /**
  * The signed-in user, re-read from the database on every request (so a
  * changed crew ID, reset PIN or deleted account takes effect immediately).
+ * A session issued before the account was created (e.g. before a reseed,
+ * even if the user id was reused) is stale and counts as signed out.
  */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const session = await getSession();
   if (!session) return null;
   const user = findUserById(session.uid);
   if (!user || user.crewId !== session.crewId) return null;
+  if (session.issuedAt < Date.parse(user.createdAt)) return null;
   return { session, user };
 });
+
+/**
+ * True when the browser holds a valid, signed session cookie that no longer
+ * matches a user (deleted account, or a reseeded database). Such a page must
+ * not render: send it to STALE_SESSION_PATH, which clears the cookie.
+ */
+export async function hasStaleSession() {
+  return (await getSession()) !== null && (await getCurrentUser()) === null;
+}
 
 /**
  * For pages and Server Actions. Redirects to /login when signed out, and to
@@ -40,7 +55,7 @@ export async function requireUser(
   opts: { allowPendingPinChange?: boolean } = {},
 ): Promise<CurrentUser> {
   const current = await getCurrentUser();
-  if (!current) redirect("/login");
+  if (!current) redirect((await getSession()) ? STALE_SESSION_PATH : "/login");
   if (current.user.mustChangePin && !opts.allowPendingPinChange)
     redirect("/change-pin");
   return current;

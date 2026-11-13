@@ -7,6 +7,7 @@ import { showDemoAccounts } from "@/lib/auth/config";
 import { getCurrentUser } from "@/lib/auth/dal";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { getRememberedCrewId } from "@/lib/auth/session";
+import { ClearClientState } from "@/components/auth/clear-client-state";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -32,8 +33,18 @@ async function LoginContent({ searchParams }: { searchParams: PageProps<"/login"
     : null;
 
   const locked = sp.locked === "1";
+  const stale = sp.stale === "1";
   // Keyed so a new pre-fill (e.g. after Lock) always starts a fresh form state.
   return (
+    <>
+      {stale && (
+        <>
+          <ClearClientState />
+          <p role="status" data-testid="login-stale" className="mb-4 rounded-lg border border-primary/30 bg-primary/10 px-3 py-2 text-sm text-foreground">
+            Your session ended because your account or the demo data changed. Please sign in again.
+          </p>
+        </>
+      )}
     <LoginForm
       key={`${locked}-${remembered ?? ""}`}
       prefillCrewId={remembered}
@@ -41,5 +52,6 @@ async function LoginContent({ searchParams }: { searchParams: PageProps<"/login"
       next={next}
       demoAccounts={demo}
     />
+    </>
   );
 }

@@ -75,6 +75,14 @@ export interface OverviewData {
     careerMsv: number | null;
     careerStatus: "normal" | "watch" | "escalate" | null;
   };
+  bone: {
+    /** Exercise today and the weekly status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Exercise minutes, last 7 days, oldest first. */
+    exerciseWeek: (number | null)[];
+    /** Daily exercise target (app default). */
+    dailyTargetMin: number | null;
+  };
   mind: {
     /** Latest mood and the 3-day pattern status. */
     tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
@@ -138,7 +146,9 @@ export function OverviewView({
                 ? d?.mind.tile
                 : t.slug === "radiation"
                   ? d?.radiation.tile
-                  : null; // Bone, Eyes and GI have no entries yet.
+                  : t.slug === "bone"
+                    ? d?.bone.tile
+                    : null; // Eyes and GI have no entries yet.
         // Empty states say why there's no number: loading, the flight surgeon's view, or nothing logged yet.
         const empty = !d ? "Loading…" : d.viewer === "flight_surgeon" ? "Crew data is in Crew admin" : EMPTY_TILE;
         return tile ? (
@@ -273,23 +283,25 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           </Await>
         </StatPanel>
 
-        <StatPanel
-          icon={Dumbbell}
-          title="Exercise"
-          keyPoint={`7 days · target ${env?.exerciseTargetMin ?? R.exerciseMinutes.min} min/day`}
-          href="/dashboard/bone"
-        >
-          <MiniChart
-            kind="bar"
-            data={[]}
-            window={WEEK}
-            unit="min"
-            seriesLabel="Exercise"
-            colorSlot={4}
-            target={env?.exerciseTargetMin ?? R.exerciseMinutes.min}
-            yDomain={[0, 180]}
-          />
-        </StatPanel>
+        <Await promise={data}>
+          {(d) => {
+            const target = d?.bone.dailyTargetMin ?? env?.exerciseTargetMin ?? R.exerciseMinutes.min;
+            return (
+              <StatPanel icon={Dumbbell} title="Exercise" keyPoint={`7 days · target ${target} min/day (app default)`} href="/dashboard/bone">
+                <MiniChart
+                  kind="bar"
+                  data={(d?.bone.exerciseWeek ?? []).map((value, i) => ({ label: WEEK[i] ?? "", value }))}
+                  window={WEEK}
+                  unit="min"
+                  seriesLabel="Exercise"
+                  colorSlot={4}
+                  target={target}
+                  yDomain={[0, 180]}
+                />
+              </StatPanel>
+            );
+          }}
+        </Await>
 
         <StatPanel
           icon={Droplets}

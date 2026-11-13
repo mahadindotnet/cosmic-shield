@@ -1,6 +1,9 @@
 import "server-only";
 import { and, desc, eq, gte, isNull } from "drizzle-orm";
 import { isAcknowledged, utcToday } from "@/lib/alerts/data";
+import { findUserById } from "@/lib/auth/users";
+import { boneSummaryFor } from "@/lib/bone/data";
+import { BONE_EXERCISE_ID } from "@/lib/bone/rules";
 import { db } from "@/lib/db";
 import { escalation } from "@/lib/db/schema";
 import { mindSummaryFor } from "@/lib/mind/data";
@@ -103,6 +106,18 @@ export function activeAlertsFor(userId: number, today = utcToday()): ActiveAlert
       detail: mind.reason ?? "",
       href: "/dashboard/mind",
       key: `alert:${MIND_PATTERN_ID}:${mind.runDays.at(-1)}`,
+    });
+
+  const user = findUserById(userId);
+  const bone = user ? boneSummaryFor(user).week : null;
+  if (bone?.status === "watch")
+    alerts.push({
+      ruleId: BONE_EXERCISE_ID,
+      level: "watch",
+      title: "Exercise: below half the weekly target",
+      detail: bone.reason ?? "",
+      href: "/dashboard/bone",
+      key: `alert:${BONE_EXERCISE_ID}:${today}`,
     });
 
   const since = new Date(Date.now() - 7 * 86_400_000).toISOString();

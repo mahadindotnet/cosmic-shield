@@ -77,6 +77,21 @@ Daily check-in: mood 1–5, stress 1–5, sleep quality 1–5 (optional), a priv
 
 Tests: `lib/mind/mind.test.ts`, `lib/mind/mind-db.test.ts`; Playwright `e2e/mind.spec.ts`.
 
+## Bone protection (`lib/bone/rules.ts`)
+
+One log per day or several (they add up): aerobic and resistance minutes, resistance load (kg, with reps: volume = kg × reps), calcium (mg) and vitamin D (IU), stored in `countermeasure_entry`. **No target here has a verified source: all are app defaults** (`thresholds.json` `bone`).
+
+| Target | Value | Basis |
+|---|---|---|
+| Daily exercise | The mission environment's target: ISS 120, Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen | app default |
+| Weekly exercise | 7 × the daily target | app default |
+| Calcium | 1000 mg/day | app default |
+| Vitamin D | 800 IU/day | app default |
+
+**Rule `bone_exercise`** (Watch only, evaluated on read): if anything was logged in the 7 days ending today, total exercise below 50 % of the weekly target is Watch (e.g. under 420 min against 840). No logs in the window means no status, not Watch. Calcium and vitamin D are shown against their targets but never raise a status. The alert goes through `lib/alerts/active.ts` (bell, dashboard summary, co-pilot). Days with exercise minutes count as exercise days for points.
+
+Tests: `lib/bone/bone.test.ts`; Playwright `e2e/bone.spec.ts`.
+
 ## Gamification (`lib/gamification/rules.ts`)
 
 Motivation only: points and streaks never change a health status. All values are **app defaults** in `thresholds.json` `gamification`.
@@ -87,7 +102,7 @@ Motivation only: points and streaks never change a health status. All values are
 | Vitals entry | 10 |
 | Sleep entry (the night it covers) | 10 |
 | Dosimeter reading | 5 |
-| Exercise session (Bone, once built) | 10 |
+| Exercise (a Bone log with exercise minutes) | 10 |
 
 - Each activity earns its points **once per UTC day**: logging the same thing again that day earns nothing more.
 - **Streak** = consecutive UTC days with a daily check-in. The current streak counts back from today, or from yesterday while today's check-in is still open; **best streak** is the longest run in all history.

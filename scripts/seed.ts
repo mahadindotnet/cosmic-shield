@@ -23,6 +23,7 @@ import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
 import { seedCheckinSeries } from "@/lib/mind/seed-data";
+import { seedBoneSeries } from "@/lib/bone/seed-data";
 import { seedDoseSeries } from "@/lib/radiation/seed-data";
 import { seedVitalsSeries } from "@/lib/vitals/seed-data";
 
@@ -169,6 +170,14 @@ async function main() {
     checkinRows += rows.length;
   });
 
+  // 14 days of bone protection logs (exercise + calcium / vitamin D), ending yesterday.
+  let boneRows = 0;
+  crewUsers.forEach((u, i) => {
+    const rows = seedBoneSeries(i, today).map((b) => ({ ...b, userId: u.id, enteredBy: u.id, source: "seed" as const, createdAt }));
+    db.insert(countermeasureEntry).values(rows).run();
+    boneRows += rows.length;
+  });
+
   console.log(
     "Seed complete:",
     Object.keys(dashboards).length,
@@ -182,7 +191,9 @@ async function main() {
     doseRows,
     "dose entries,",
     checkinRows,
-    "check-ins",
+    "check-ins,",
+    boneRows,
+    "bone logs",
   );
 }
 

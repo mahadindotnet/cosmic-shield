@@ -75,6 +75,15 @@
     "consecutiveDays": 3,
     "maxAgeDays": 1
   },
+  "bone": {
+    "basis": "app default",
+    "note": "No verified source: the daily exercise target is the mission environment's (app default; 120 min when none is chosen), calcium and vitamin D intake targets are app defaults. Watch only.",
+    "defaultDailyExerciseMin": 120,
+    "calciumMgPerDay": 1000,
+    "vitaminDIuPerDay": 800,
+    "windowDays": 7,
+    "weeklyWatchFraction": 0.5
+  },
   "gamification": {
     "basis": "app default",
     "note": "Motivation only; never affects a health status. Only the first entry of each activity per UTC day earns points.",

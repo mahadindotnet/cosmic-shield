@@ -67,7 +67,7 @@ These are Cosmic Shield settings, labelled **app default** in the code and UI an
 - The `hrv_sleep_decline` pattern settings.
 - Exercise and hydration targets, SANS cadence, Bristol and SANS settings, mission day 42, ISS increment and lunar stay lengths.
 
-**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
+**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), bone protection logs (`lib/bone/seed-data.ts`; exercise, load, calcium and vitamin D), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
 
 ## 5. Libraries
 

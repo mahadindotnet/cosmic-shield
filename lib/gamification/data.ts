@@ -1,5 +1,5 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import { and, eq, gt } from "drizzle-orm";
 import { utcToday } from "@/lib/alerts/data";
 import { db } from "@/lib/db";
 import { checkin, countermeasureEntry, doseEntry, sleepEntry, vitalsEntry } from "@/lib/db/schema";
@@ -25,7 +25,13 @@ export function activityFor(userId: number): ActivityDay[] {
       .all()
       .map((r) => ({ activity: "sleep" as const, day: r.night })),
     ...rows(doseEntry).map((r) => ({ activity: "dose" as const, day: day(r.recordedAt) })),
-    ...rows(countermeasureEntry).map((r) => ({ activity: "exercise" as const, day: day(r.recordedAt) })),
+    // Exercise days: logs with exercise minutes (intake-only logs don't count).
+    ...db
+      .select({ recordedAt: countermeasureEntry.recordedAt })
+      .from(countermeasureEntry)
+      .where(and(eq(countermeasureEntry.userId, userId), gt(countermeasureEntry.minutes, 0)))
+      .all()
+      .map((r) => ({ activity: "exercise" as const, day: day(r.recordedAt) })),
   ];
 }
 

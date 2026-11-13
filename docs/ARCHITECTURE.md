@@ -64,6 +64,10 @@ Chat panel (useChat)                POST /api/assistant/chat
 - **Alerts card:** every active Watch/Escalate across modules (vitals, sleep/HRV, radiation, `mind_pattern`), Escalate first, each linking to its module; "All clear" when there are none. Built by `dashboardAlertSummary()` (`lib/alerts/summary.ts`) from `activeAlertsFor()` (`lib/alerts/active.ts`), the single source also used by the bell and the co-pilot. An open `mind_safety` escalation appears to the crew member only as "Support follow-up open" (no reason, no excerpt). The flight surgeon gets a pointer to Crew admin.
 - **No fake numbers:** module tiles show a real reading and its status, or "No entries yet: log your first reading" (Bone, Eyes, GI until built), "Loading…" while data streams in, or "Crew data is in Crew admin" for the flight surgeon. The streak panel's points, current and best streak, exercise days and month calendar all come from real entries (`lib/gamification`, see rules.md).
 
+### Stale sessions
+
+A session cookie is signed, so after a reseed (or when an account is deleted) it can still look valid while its user is gone. `getCurrentUser()` treats such a session as signed out: no user with that id and crew ID, or a session issued before the account was created (a reseed re-creates accounts, even if an id is reused). `requireUser()` and the account bar (on every dashboard page) then redirect to `/auth/reset`, which clears the session and remembered-crew-ID cookies and sends the browser to `/login?stale=1`. That page explains why and clears cached client state (the saved environment copy in localStorage). Tested in `e2e/stale-session.spec.ts` (deleted user; account re-created after the session).
+
 ## Crew demo scenarios
 
 Four seeded crew profiles (`lib/demo/crew-profiles.ts`):

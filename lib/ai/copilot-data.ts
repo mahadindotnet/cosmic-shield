@@ -276,6 +276,7 @@ export const GUIDANCE_IDS = [
   "space_weather",
   "mind_pattern",
   "mind_safety",
+  "bone_exercise",
 ] as const;
 export type GuidanceId = (typeof GUIDANCE_IDS)[number];
 
@@ -327,6 +328,15 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
       ],
       whenToContact: `If it doesn't ease in a few days, talk to your Crew Medical Officer, or ${contact}. ${CMO_LINE}`,
       citation: `${RULES_DOC}. Mind check-in pattern (app default, Watch only; not a screening tool).`,
+      label: "Rules engine",
+    },
+    bone_exercise: {
+      steps: [
+        "Fit in short exercise sessions: aerobic and resistance both count toward the daily target.",
+        "Log each session on the Bone protection page so the weekly total is complete.",
+      ],
+      whenToContact: `If you can't keep up the schedule, ask for a workload adjustment, or ${contact}.`,
+      citation: `${RULES_DOC}. Exercise target is the mission environment's (app default).`,
       label: "Rules engine",
     },
     mind_safety: {

@@ -138,13 +138,22 @@ export const doseEntry = sqliteTable(
   (t) => [index("dose_entry_user_time").on(t.userId, t.recordedAt)],
 );
 
-/** Exercise countermeasure session (bone and muscle protection). */
+/** Bone protection log: exercise (aerobic and resistance, with load) and calcium / vitamin D intake. */
 export const countermeasureEntry = sqliteTable(
   "countermeasure_entry",
   {
     ...entryColumns(),
-    kind: text("kind", { enum: ["resistive", "aerobic", "other"] }).notNull(),
+    /** Derived from the minutes: aerobic, resistive, mixed, or none (intake only). */
+    kind: text("kind", { enum: ["resistive", "aerobic", "mixed", "other", "none"] }).notNull(),
+    /** Total exercise minutes (aerobic + resistance). */
     minutes: integer("minutes").notNull(),
+    aerobicMinutes: integer("aerobic_minutes"),
+    resistanceMinutes: integer("resistance_minutes"),
+    /** Resistance load, kg (with reps: volume = kg × reps). */
+    loadKg: real("load_kg"),
+    reps: integer("reps"),
+    calciumMg: real("calcium_mg"),
+    vitaminDIu: real("vitamin_d_iu"),
     /** Perceived effort, 1–10. */
     effort: integer("effort"),
     note: text("note"),
