@@ -9,6 +9,10 @@ interface MissionState {
   ownerId: number | null;
   /** True once the owner picked an environment in this page session. */
   touched: boolean;
+  /** Epoch ms of the last "show me the environment buttons" request (0 = none). */
+  highlightAt: number;
+  /** Makes the top-bar environment buttons pulse and takes focus to them. */
+  highlightPicker: () => void;
   /** Picks an environment and saves it to the signed-in user's account. */
   setEnvironment: (id: MissionEnvironmentId) => void;
   /** Applies the value stored on the account (ignored after the same user picked one). */
@@ -29,6 +33,8 @@ export const useMissionStore = create<MissionState>()(
       environmentId: null,
       ownerId: null,
       touched: false,
+      highlightAt: 0,
+      highlightPicker: () => set({ highlightAt: Date.now() }),
       setEnvironment: (environmentId) => {
         set({ environmentId, touched: true });
         void saveEnvironmentAction(environmentId).catch(() => {

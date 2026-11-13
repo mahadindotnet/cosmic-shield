@@ -6,6 +6,7 @@ import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import type { ModuleSlug } from "@/lib/mission/environments";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
+import { ShowEnvironmentButton } from "@/components/mission/choose-environment-prompt";
 
 /**
  * Banner under each page header with what the current mission environment
@@ -33,9 +34,12 @@ export function MissionContext({
           className,
         )}
       >
-        <p className="text-sm font-medium text-foreground">Choose your mission environment in the top bar</p>
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <p className="text-sm font-medium text-foreground">Choose your mission environment in the top bar</p>
+          <ShowEnvironmentButton />
+        </div>
         <p className="text-xs text-muted-foreground">
-          Thresholds, targets and guidance adapt to ISS, the lunar surface, Mars transit or the Mars surface.
+          Thresholds, targets, projected dose and guidance adapt to ISS, the lunar surface, Mars transit or the Mars surface.
         </p>
       </div>
     );

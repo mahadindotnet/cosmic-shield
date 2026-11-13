@@ -3,6 +3,31 @@ import { signInOk } from "./helpers";
 
 const HEADLINE = "HRV has dropped for three nights. Sleep is down.";
 
+// The co-pilot test needs CS-003's card before the next test dismisses it for today.
+test.describe.configure({ mode: "serial" });
+
+test("CS-003 asks the co-pilot from the card: hrv_sleep_decline, the HRV % drop and tool chips", async ({ page }) => {
+  await signInOk(page, "CS-003");
+  const card = page.getByTestId("early-warning-card");
+  await expect(card).toBeVisible();
+  await card.getByTestId("ew-copilot").click();
+
+  const panel = page.getByTestId("copilot-panel");
+  await expect(panel).toBeVisible();
+  const input = panel.getByTestId("copilot-input");
+  await expect(input).toHaveValue("Why am I seeing this warning?");
+  await panel.getByTestId("copilot-send").click();
+
+  const answer = panel.getByTestId("copilot-answer").last();
+  await expect(answer).toContainText("hrv_sleep_decline", { timeout: 30_000 });
+  await expect(answer).toContainText(/HRV \(RMSSD\) was \d+(\.\d)?% below your own baseline/);
+  await expect(answer).toContainText("Source:");
+  const chips = panel.getByTestId("copilot-tool-chip");
+  await expect(chips.filter({ hasText: "Checked active alerts · Rules engine" })).toBeVisible();
+  await expect(chips.filter({ hasText: "Looked up guidance" }).first()).toBeVisible();
+  await expect(panel.getByTestId("copilot-footer")).toContainText("Decision support, not a diagnosis · Mode: offline (mock)");
+});
+
 test("CS-003 sees the calm early-warning card with its numbers and can dismiss it for today", async ({
   page,
 }) => {

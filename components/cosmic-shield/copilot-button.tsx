@@ -1,30 +1,17 @@
 "use client";
 
-import { toast } from "sonner";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { CopilotMark } from "@/components/cosmic-shield/logo";
+import { useCopilotStore } from "@/lib/store/copilot-store";
 import { cn } from "@/lib/utils";
-
-/** Placeholder until the AI co-pilot exists (shared by every "Ask co-pilot" entry point). */
-export function showCopilotComingSoon() {
-  toast("AI co-pilot is coming soon", {
-    description: "It will answer questions about your readings and onboard guidance. It won't diagnose.",
-  });
-}
 
 /** Hover text: what the co-pilot does, in a few words. */
 export const COPILOT_HINT = "Ask your mission co-pilot";
 
-/**
- * Round floating button (bottom-right) that opens the AI co-pilot. Until the
- * agent exists, pass nothing and it shows a "coming soon" notice; later pass
- * `onOpen` to open the agent panel.
- */
-export function CopilotButton({ onOpen, className }: { onOpen?: () => void; className?: string }) {
-  function open() {
-    if (onOpen) return onOpen();
-    showCopilotComingSoon();
-  }
+/** Round floating button (bottom-right) that opens the AI co-pilot panel. */
+export function CopilotButton({ className }: { className?: string }) {
+  const setOpen = useCopilotStore((s) => s.setOpen);
+  const open = () => setOpen(true);
 
   return (
     <div className={cn("fixed right-5 bottom-5 z-40 md:right-7 md:bottom-7", className)}>

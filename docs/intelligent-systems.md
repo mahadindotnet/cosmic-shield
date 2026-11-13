@@ -4,10 +4,10 @@ NASA Space Apps projects that use AI should describe **what runs in the product*
 
 ## Mission co-pilot
 
-- **Location:** Dashboard drawer → `/api/assistant/chat`
-- **Behavior:** Responds to astronaut questions about vitals, escalation level, and radiation exposure.
-- **Grounding:** Before answering, the service reads current mission state via internal tools (`getCrewVitals`, `getEscalation`, `getRadiationSummary`).
-- **Safety:** Responses use decision-support language only. The co-pilot does not diagnose conditions or prescribe medication.
+- **Location:** floating button and "Ask co-pilot" → chat panel → `/api/assistant/chat`
+- **Behavior:** answers questions about the crew member's alerts, vitals, sleep, radiation dose, space weather, mission environment and OSD-575 baselines.
+- **Grounding:** eight read-only tools with cited sources; offline deterministic mode by default (`AI_PROVIDER=mock`), Claude or Ollama optional.
+- **Safety:** decision support only; a server-side post-check blocks diagnosis and prescription language. Full details: [ai-disclosure.md](./ai-disclosure.md).
 
 ## Vision-assisted modules
 

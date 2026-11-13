@@ -42,7 +42,7 @@ Loaded by `lib/nasa/loaders.ts` (derived, then fixtures). Space weather can also
 
 | Feature | Implementation | Role |
 |---------|----------------|------|
-| Mission co-pilot | `lib/ai/mission-copilot.ts` + `/api/assistant/chat` | Answers questions using tool-read vitals, escalation, radiation |
+| Mission co-pilot | Vercel AI SDK (`ai`, `@ai-sdk/react`, `@ai-sdk/anthropic`, `@ai-sdk/openai-compatible`) + `lib/ai/` + `/api/assistant/chat` | Tool-calling agent over eight read-only tools; offline mock by default, Claude or Ollama via `AI_PROVIDER` (see docs/ai-disclosure.md) |
 | Bristol classifier | `/api/vision/bristol` | GI logging; extensible to ONNX |
 | SANS screening | `/api/vision/sans` | Ocular risk workflow; extensible to ONNX |
 

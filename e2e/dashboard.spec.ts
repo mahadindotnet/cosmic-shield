@@ -169,5 +169,8 @@ test("floating co-pilot button explains itself on hover and opens on click", asy
     await expect(tip).toHaveText("Ask your mission co-pilot", { timeout: 1_000 });
   }).toPass({ timeout: 15_000 });
   await button.click();
-  await expect(page.getByText("AI co-pilot is coming soon")).toBeVisible();
+  const panel = page.getByTestId("copilot-panel");
+  await expect(panel).toBeVisible();
+  await expect(panel.getByTestId("copilot-suggestion").first()).toBeVisible();
+  await expect(panel.getByTestId("copilot-footer")).toContainText("Decision support, not a diagnosis · Mode: offline (mock)");
 });

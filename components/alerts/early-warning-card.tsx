@@ -32,10 +32,15 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import { showCopilotComingSoon } from "@/components/cosmic-shield/copilot-button";
+import { useCopilotStore } from "@/lib/store/copilot-store";
 import { StatusBadge } from "@/components/cosmic-shield/status";
 import { dismissAlertAction } from "@/lib/alerts/actions";
 import type { HrvSleepDeclineResult } from "@/lib/rules/hrv-sleep-decline";
+import {
+  HRV_SLEEP_DECLINE_FOLLOW_UP,
+  HRV_SLEEP_DECLINE_MAY_MEAN,
+  HRV_SLEEP_DECLINE_STEPS,
+} from "@/lib/rules/hrv-guidance";
 
 const MONTHS = [
   "Jan",
@@ -69,24 +74,13 @@ function usePrefersReducedMotion() {
   );
 }
 
-const MAY_MEAN = [
-  "Accumulated fatigue that hasn't been recovered yet.",
-  "Workload stress building up over several days.",
-  "A disrupted sleep schedule, for example after shift changes.",
-];
+const MAY_MEAN = HRV_SLEEP_DECLINE_MAY_MEAN;
 
-const NEXT_STEPS: { icon: LucideIcon; text: string }[] = [
-  {
-    icon: BedDouble,
-    text: "Protect your next sleep period and keep a consistent schedule.",
-  },
-  {
-    icon: Lightbulb,
-    text: "Follow the station's sleep-shift lighting schedule.",
-  },
-  { icon: Coffee, text: "Ease your workload where you can over the next day." },
-  { icon: Wind, text: "Try a few minutes of slow breathing before sleep." },
-];
+const STEP_ICONS: LucideIcon[] = [BedDouble, Lightbulb, Coffee, Wind];
+const NEXT_STEPS: { icon: LucideIcon; text: string }[] = HRV_SLEEP_DECLINE_STEPS.map((text, i) => ({
+  icon: STEP_ICONS[i] ?? Lightbulb,
+  text,
+}));
 
 /**
  * Calm early-warning card for the `hrv_sleep_decline` pattern. Amber (Watch),
@@ -101,6 +95,7 @@ export function EarlyWarningCard({
   const reduced = usePrefersReducedMotion();
   const [dismissed, setDismissed] = useState(false);
   const [pending, startTransition] = useTransition();
+  const openCopilot = useCopilotStore((s) => s.openWith);
   const b = result.baseline!;
   const flaggedNights = new Set(result.flagged.map((f) => f.night));
   const avgHrvPct =
@@ -210,15 +205,14 @@ export function EarlyWarningCard({
                 className="mt-0.5 size-4 shrink-0 text-primary"
                 aria-hidden="true"
               />
-              Re-check tomorrow morning.
+              {HRV_SLEEP_DECLINE_FOLLOW_UP[0]}
             </li>
             <li className="flex gap-2">
               <MessageCircleHeart
                 className="mt-0.5 size-4 shrink-0 text-primary"
                 aria-hidden="true"
               />
-              Talk to your Crew Medical Officer if it continues or you feel
-              unwell.
+              {HRV_SLEEP_DECLINE_FOLLOW_UP[1]}
             </li>
           </ul>
         </div>
@@ -234,7 +228,7 @@ export function EarlyWarningCard({
         </Button>
         <Button
           variant="outline"
-          onClick={showCopilotComingSoon}
+          onClick={() => openCopilot("Why am I seeing this warning?")}
           data-testid="ew-copilot"
         >
           <Bot aria-hidden="true" />

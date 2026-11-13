@@ -253,6 +253,25 @@
   }
 }
 
+/* "Show me" highlight around the top-bar environment buttons (three soft pulses, then gone). */
+@keyframes env-highlight {
+  0%,
+  33%,
+  66% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 oklch(0.82 0.12 210 / 55%);
+  }
+  16%,
+  50%,
+  83% {
+    opacity: 0.6;
+    box-shadow: 0 0 0 8px oklch(0.82 0.12 210 / 0%);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 /* Gentle entrance for the early-warning card (no flashing). */
 @keyframes ew-fade {
   from {

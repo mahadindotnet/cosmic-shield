@@ -21,6 +21,7 @@ import { RADIATION_LIMITS } from "@/lib/radiation/rules";
 import { projectedMissionMsv, type RadiationSummary } from "@/lib/radiation/summary";
 import type { SpaceWeatherView } from "@/lib/radiation/space-weather";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
+import { ChooseEnvironmentPrompt } from "@/components/mission/choose-environment-prompt";
 
 export interface RadiationPageData {
   /** The signed-in crew member's dose entries; null for a flight surgeon. */
@@ -97,6 +98,7 @@ export function RadiationView({ data, spaceWeather }: { data: Promise<RadiationP
               const career = d?.summary?.career ?? null;
               const p = projection(env, career?.totalMsv ?? null);
               return (
+                <>
                 <RingGauge
                   title="Career dose"
                   icon={ShieldHalf}
@@ -106,6 +108,8 @@ export function RadiationView({ data, spaceWeather }: { data: Promise<RadiationP
                   caption="Sum of every dose entry, against the NASA-STD-3001 career limit for every astronaut."
                   marker={env && p?.careerAfter != null ? { value: p.careerAfter, label: `After a full ${env.missionDaysLabel.toLowerCase()} here: ≈ ${p.careerAfter} mSv` } : undefined}
                 />
+                {!env && <ChooseEnvironmentPrompt className="glass-strong" />}
+                </>
               );
             }}
           </Await>
@@ -166,9 +170,11 @@ export function RadiationView({ data, spaceWeather }: { data: Promise<RadiationP
                     value={p ? p.mission : null}
                     unit="mSv"
                     neutral
-                    caption={env ? `${env.radiationMsvPerDay} mSv/d × ${env.missionDays} days (${env.radiation.basis})` : "Choose a mission environment in the top bar"}
+                    caption={env ? `${env.radiationMsvPerDay} mSv/d × ${env.missionDays} days (${env.radiation.basis})` : "No environment chosen"}
                     reference={env ? env.name : "No environment"}
-                  />
+                  >
+                    {!env && <ChooseEnvironmentPrompt />}
+                  </StatusCard>
                 </div>
               </div>
             );

@@ -44,6 +44,7 @@ import {
 } from "@/lib/mission/environments";
 import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
+import { ChooseEnvironmentPrompt } from "@/components/mission/choose-environment-prompt";
 import type { TileReading } from "@/lib/vitals/summary";
 
 /** Server data for the signed-in crew member (null for a flight surgeon or while loading). */
@@ -548,13 +549,15 @@ function CareerDoseMeter({
           />
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground">
-        {after !== null
-          ? `Marker: ≈ ${after} mSv after a full ${missionLabel?.toLowerCase()} here (+${projected} mSv)`
-          : projected === null
-            ? "Choose an environment to see the projected mission dose"
+      {projected === null ? (
+        <ChooseEnvironmentPrompt />
+      ) : (
+        <p className="text-[11px] text-muted-foreground">
+          {after !== null
+            ? `Marker: ≈ ${after} mSv after a full ${missionLabel?.toLowerCase()} here (+${projected} mSv)`
             : "Sum of your dose entries"}
-      </p>
+        </p>
+      )}
     </div>
   );
 }

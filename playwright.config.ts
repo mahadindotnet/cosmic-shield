@@ -40,7 +40,7 @@ export default defineConfig({
     },
     // Changes CS-001's sleep data (the early-warning card appears), so it runs
     // after the dashboard tests that share CS-001's session.
-    { name: "after-dashboard", testMatch: /sleep-stress\.spec\.ts/, dependencies: ["dashboard"] },
+    { name: "after-dashboard", testMatch: /(sleep-stress|copilot)\.spec\.ts/, dependencies: ["dashboard"] },
   ],
   webServer: {
     command: `npx next dev --turbopack --port ${PORT}`,
@@ -48,6 +48,12 @@ export default defineConfig({
     // Always start our own server so it is guaranteed to use the test database.
     reuseExistingServer: false,
     timeout: 180_000,
-    env: { DATABASE_URL: TEST_DATABASE_URL, NEXT_DIST_DIR: ".next-test", NEXT_TSCONFIG_PATH: "tsconfig.e2e.json" },
+    env: {
+      DATABASE_URL: TEST_DATABASE_URL,
+      NEXT_DIST_DIR: ".next-test",
+      NEXT_TSCONFIG_PATH: "tsconfig.e2e.json",
+      // The co-pilot always runs offline in tests, whatever .env says.
+      AI_PROVIDER: "mock",
+    },
   },
 });

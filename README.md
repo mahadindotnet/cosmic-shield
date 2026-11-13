@@ -25,7 +25,7 @@ Long-duration crews cannot rely on real-time ground support. Cosmic Shield helps
 - **SANS ocular screening** — fundus-style capture workflow (Spaceflight Associated Neuro-ocular Syndrome)
 - **GI monitoring** — Bristol stool classification pipeline (Inspiration4 stool data reference)
 - **Behavioral check-in** — structured 1–5 affect scale (screening, not diagnosis)
-- **Mission co-pilot** — conversational assistant grounded in live crew vitals, escalation state, and radiation summary
+- **Mission co-pilot** — chat panel built on the Vercel AI SDK: answers from your own logged data through eight read-only, cited tools; works offline by default (`AI_PROVIDER=mock`), with Claude or Ollama optional; decision support, never a diagnosis ([docs/ai-disclosure.md](./docs/ai-disclosure.md))
 - **Offline-ready demo** — NASA reference datasets bundled under `data/nasa/` for reproducible judging
 
 ---
@@ -41,7 +41,7 @@ Long-duration crews cannot rely on real-time ground support. Cosmic Shield helps
 | Data | **Drizzle ORM**, **SQLite** | Crew vitals, check-ins, escalation audit log |
 | Rules | TypeScript + JSON thresholds | Explainable Normal / Watch / Escalate logic |
 | Vision APIs | Next.js route handlers | Bristol + SANS classification endpoints (extensible to ONNX) |
-| Assistant | Tool-grounded co-pilot API | Reads vitals, escalation, radiation from mission state |
+| Assistant | Vercel AI SDK tool calling | Offline mock (default), Claude (`claude-opus-5-5`) or Ollama |
 | Testing | **Playwright** | End-to-end dashboard smoke tests |
 | Deploy | **Docker Compose** (optional Postgres) | Local / demo hosting |
 
@@ -79,7 +79,7 @@ npm run dev
 
 `npm run db:migrate` applies the SQL migrations in `drizzle/` (generated with `npm run db:generate` after editing `lib/db/schema.ts`). A database created earlier with `drizzle-kit push` is adopted automatically. `npm run db:seed` resets the demo: accounts, 14 days of morning vitals per crew member (source "seed", ending yesterday so today is free for a real entry), and the simulated nights for the early-warning demo.
 
-Open **http://localhost:3000** and sign in with a demo account below.
+Open **http://localhost:3000** and sign in with a demo account below. After logging in, pick a mission environment (ISS, Lunar surface, Mars transit or Mars surface) in the top bar. The seed sets no default environment, so the projected dose and the environment-specific thresholds and guidance appear once you choose one.
 
 `SESSION_SECRET` and `PIN_PEPPER` are required; the server refuses to start without them. Generate each with:
 

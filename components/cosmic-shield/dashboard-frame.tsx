@@ -8,6 +8,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppSidebar } from "@/components/cosmic-shield/app-sidebar";
 import { CopilotButton } from "@/components/cosmic-shield/copilot-button";
+import { CopilotPanel } from "@/components/copilot/copilot-panel";
 import { InstructionsButton } from "@/components/cosmic-shield/instructions-dialog";
 import { MissionPicker } from "@/components/cosmic-shield/mission-picker";
 import { SECTIONS } from "@/components/cosmic-shield/sections";
@@ -48,6 +49,7 @@ export function DashboardFrame({ children, account }: { children: React.ReactNod
         </SidebarInset>
       </SidebarProvider>
       <CopilotButton />
+      <CopilotPanel />
     </TooltipProvider>
   );
 }

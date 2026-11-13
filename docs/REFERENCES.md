@@ -78,6 +78,9 @@ Versions are from `package.json`.
 | Library | Version | Use | Link |
 |---|---|---|---|
 | Next.js | 16.4.6 | App framework (App Router, Server Actions, `proxy.ts`) | [nextjs.org](https://nextjs.org/) |
+| Vercel AI SDK (`ai`, `@ai-sdk/react`, `@ai-sdk/provider`) | 7.0 / 4.0 / 4.0 | Co-pilot tool-calling loop, chat UI hook, offline mock model | [ai-sdk.dev](https://ai-sdk.dev/) |
+| `@ai-sdk/anthropic` | 4.0 | Claude provider for the co-pilot (`AI_PROVIDER=anthropic`) | [ai-sdk.dev/providers/ai-sdk-providers/anthropic](https://ai-sdk.dev/providers/ai-sdk-providers/anthropic) |
+| `@ai-sdk/openai-compatible` | 3.0 | Ollama's OpenAI-compatible API for the co-pilot (`AI_PROVIDER=ollama`) | [ai-sdk.dev](https://ai-sdk.dev/) |
 | React / React DOM | 19.3.0 | UI | [react.dev](https://react.dev/) |
 | Tailwind CSS | 4 | Styling | [tailwindcss.com](https://tailwindcss.com/) |
 | tw-animate-css | ^1.4.0 | Animation utilities | [github.com/Wombosvideo/tw-animate-css](https://github.com/Wombosvideo/tw-animate-css) |

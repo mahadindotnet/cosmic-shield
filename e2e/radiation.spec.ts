@@ -68,3 +68,15 @@ test("CS-003 logs dosimeter readings: career total, Watch, history, dashboard an
   await expect(visible(page2, "radiation-history").getByTestId("radiation-history-row")).toHaveCount(15);
   await other.close();
 });
+
+test("without an environment the projection asks for one, and Show me highlights the top-bar buttons", async ({ page }) => {
+  // FS-001 never picks an environment in the tests.
+  await signInOk(page, "FS-001");
+  await page.goto("/dashboard/radiation");
+  const prompt = visible(page, "radiation-status-cards").getByTestId("choose-env-prompt");
+  await expect(prompt).toContainText("Choose your mission environment in the top bar to see your projected dose");
+  await prompt.getByTestId("choose-env-show").click();
+  const picker = page.getByTestId("topbar-mission-picker");
+  await expect(picker).toHaveAttribute("data-highlight-at", /\d+/);
+  await expect(page.getByTestId("topbar-mission-iss")).toBeFocused();
+});

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
 import { MISSION_ENVIRONMENTS } from "@/lib/mission/environments";
 import { useMissionStore } from "@/lib/store/mission-store";
@@ -22,10 +23,33 @@ export function MissionPicker({
   className?: string;
 }) {
   const { environmentId, setEnvironment } = useMissionStore();
+  const highlightAt = useMissionStore((s) => s.highlightAt);
+  const barRef = useRef<HTMLDivElement>(null);
+
+  // "Show me" from an empty-state prompt: focus the first top-bar button (the pulse is CSS, below).
+  useEffect(() => {
+    if (variant !== "bar" || !highlightAt) return;
+    barRef.current?.querySelector<HTMLButtonElement>("button")?.focus({ preventScroll: true });
+  }, [highlightAt, variant]);
 
   if (variant === "bar") {
     return (
-      <div role="radiogroup" aria-label="Mission environment" className={cn("flex items-center gap-1", className)}>
+      <div
+        ref={barRef}
+        role="radiogroup"
+        aria-label="Mission environment"
+        data-testid="topbar-mission-picker"
+        data-highlight-at={highlightAt || undefined}
+        className={cn("relative flex items-center gap-1 rounded-full", className)}
+      >
+        {highlightAt > 0 && (
+          // Re-keyed on every request so the 2.4 s pulse runs again; static ring under reduced motion.
+          <span
+            key={highlightAt}
+            aria-hidden="true"
+            className="pointer-events-none absolute -inset-1.5 rounded-full ring-2 ring-primary motion-safe:animate-[env-highlight_2.4s_ease-out_forwards] motion-reduce:opacity-0"
+          />
+        )}
         {MISSION_ENVIRONMENTS.map((m) => {
           const selected = m.id === environmentId;
           return (
