@@ -51,10 +51,19 @@ The dashboard background is the chosen mission environment's image (`SpaceBackdr
 | Environment | Image |
 |---|---|
 | None selected | Plain dark space gradient (no image) |
-| ISS | `public/backgrounds/iss.webp` |
-| Lunar surface | `public/backgrounds/lunar.webp` |
-| Mars transit | `public/backgrounds/mars-transit.webp` |
-| Mars surface | `public/backgrounds/mars-surface.webp` (a crop of the Mars image) |
+| ISS | `public/backgrounds/iss-orbit.webp` (from `design-ref/ISS.jpg`) |
+| Lunar surface | `public/backgrounds/lunar-astronaut.webp` (from `design-ref/moonNew.jpg`) |
+| Mars transit | `public/backgrounds/mars-planet.webp` (from `design-ref/mars1.jpg`) |
+| Mars surface | `public/backgrounds/mars-cliff.webp` (from `design-ref/marsSurf.jpg`) |
+
+The background image is clearly visible: a light blur (`backdrop.blur`, default 2 px), per-image brightness (`backdrop.dim`, 0.78–0.95) and full opacity. Readability comes from two things instead of darkening the whole image:
+
+- **Frosted glass panels.** Cards, tiles and panels use the `--glass` tokens (`app/globals.css`): our navy at 60% opacity, a 14 px backdrop blur and a 1 px light border (`glass` / `glass-panel` utilities; `glass-strong` for panels that need more). Glass opacity is tuned per environment on `<html data-environment>` so all panel text meets WCAG AA (4.5:1): ISS 82%, Lunar surface 76%, Mars transit 66%, Mars surface 60%. Section headers that sit directly on the image get their own small glass backing.
+- **Edge vignette.** A soft dark vignette only at the screen edges and behind the top bar and sidebar keeps the centre of the image bright.
+
+With `prefers-reduced-transparency: reduce`, panels become solid and the backdrop blur is turned off.
+
+Thumbnails (top bar, sidebar, banners, Mission page) use the same file without blur. When replacing an image, use a new filename so cached copies of the old one are never served, then re-check text contrast in that environment.
 
 The astronaut picks an environment with `MissionPicker`: always in the top navigation bar (`variant="bar"`), on the Mission tab, and in module banners when none is set. The choice is saved in localStorage. `lib/mission/environments.ts` is the single source for everything that changes per environment: background, dose (from `data/nasa`, see docs/nasa-data-sources.md) and Watch threshold, projected mission dose, gravity, ground delay, exercise target, SANS screening cadence, solar-storm shelter procedure, and a note for each module (shown by `MissionContext`).
 

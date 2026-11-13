@@ -130,7 +130,8 @@ export function PageSection({
 }) {
   return (
     <section id={id} className={cn("mt-16 scroll-mt-20 md:mt-20", className)}>
-      <div className="text-halo mb-6">
+      {/* Own glass backing: the header sits directly on the environment image. */}
+      <div className="glass mb-6 w-fit max-w-full rounded-2xl px-5 py-4">
         <p className="console-label">{eyebrow}</p>
         <h2 className="mt-2 font-heading text-2xl font-light tracking-tight text-foreground md:text-3xl">{title}</h2>
         {description && <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{description}</p>}
@@ -151,7 +152,7 @@ export function NextStepCard({
   className?: string;
 }) {
   return (
-    <div className={cn("rounded-2xl border border-border bg-background/45 p-4 backdrop-blur-md", className)}>
+    <div className={cn("rounded-2xl border border-(--glass-border) bg-(--glass) p-4 backdrop-blur-(--glass-blur)", className)}>
       <p className="console-label !text-[10px]">Next step</p>
       <p className="mt-1.5 text-sm font-medium text-foreground">{title}</p>
       <p className="mt-1 text-xs text-muted-foreground">{body}</p>

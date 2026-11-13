@@ -125,7 +125,13 @@ export function MissionPicker({
                 {selected && <Check className="size-3" aria-hidden="true" />}
               </span>
             </span>
-            <span className={cn("flex flex-1 flex-col gap-2 p-4 pt-1", selected ? "bg-primary/10" : "bg-background/60")}>
+            <span
+              className={cn(
+                // Stronger glass: this text measured below WCAG AA over bright images.
+                "glass-strong flex flex-1 flex-col gap-2 p-4 pt-1 backdrop-blur-(--glass-blur)",
+                selected && "shadow-[inset_0_0_0_999px_oklch(0.82_0.12_210/7%)]",
+              )}
+            >
               <span>
                 <span className="block font-heading text-base font-semibold text-foreground">{m.name}</span>
                 <span className="console-label !text-[10px]">{m.tagline}</span>

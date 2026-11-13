@@ -309,7 +309,7 @@ export function HBars({
             {r.label}
           </span>
           {r.value === null ? (
-            <span className="text-muted-foreground/80 italic">
+            <span className="text-muted-foreground italic">
               {r.missing ?? "No data"}
             </span>
           ) : (

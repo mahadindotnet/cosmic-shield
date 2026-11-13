@@ -60,7 +60,7 @@ export function MissionView() {
           mission ? (
             <>
               <NextStepCard title="Ground support" body={mission.groundSupport} />
-              <div className="rounded-2xl border border-watch/30 bg-background/45 p-4 backdrop-blur-md">
+              <div className="rounded-2xl border border-watch/30 bg-(--glass) p-4 backdrop-blur-(--glass-blur)">
                 <p className="console-label flex items-center gap-1.5 !text-[10px]">
                   <ShieldAlert className="size-3.5 text-watch-foreground" aria-hidden="true" />
                   Solar storm procedure

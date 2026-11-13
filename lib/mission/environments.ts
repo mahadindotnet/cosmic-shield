@@ -9,9 +9,20 @@ export type ModuleSlug = Exclude<SectionSlug, "overview" | "mission">;
 
 export interface Backdrop {
   src: string;
-  /** object-position used when a portrait image covers a landscape screen. */
+  /** object-position used when the image is cropped to fill the screen. */
   position: string;
+  /**
+   * Brightness of the full-screen background (0–1). Slightly lower for the
+   * brighter photos; readability comes from the glass panels and the edge
+   * vignette, not from darkening the whole image. Thumbnails use the
+   * original image.
+   */
+  dim: number;
+  /** Background blur in px (default 2). Thumbnails are never blurred. */
+  blur?: number;
 }
+
+export const DEFAULT_BACKDROP_BLUR = 2;
 
 export interface MissionEnvironment {
   id: MissionEnvironmentId;
@@ -87,7 +98,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     name: "ISS",
     tagline: "Low Earth orbit · ~400 km",
     summary: "Partially shielded by Earth's magnetic field. Ground support is effectively live.",
-    backdrop: { src: "/backgrounds/iss.webp", position: "50% 50%" },
+    backdrop: { src: "/backgrounds/iss-orbit.webp", position: "50% 45%", dim: 0.92, blur: 2 },
     ...dose("iss"),
     missionDays: 180,
     missionDaysLabel: "6-month increment",
@@ -122,7 +133,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     name: "Lunar surface",
     tagline: "Lunar surface · one-sixth gravity",
     summary: "No magnetosphere and no thick atmosphere. Ground replies after a short pause.",
-    backdrop: { src: "/backgrounds/lunar.webp", position: "50% 50%" },
+    backdrop: { src: "/backgrounds/lunar-astronaut.webp", position: "55% 30%", dim: 0.8, blur: 2 },
     ...dose("lunar_surface"),
     missionDays: 30,
     missionDaysLabel: "30-day surface stay",
@@ -157,7 +168,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     name: "Mars transit",
     tagline: "Deep-space cruise",
     summary: "The highest exposure, and ground may be up to ~22 min away each way, so the crew acts on onboard guidance.",
-    backdrop: { src: "/backgrounds/mars-transit.webp", position: "50% 45%" },
+    backdrop: { src: "/backgrounds/mars-planet.webp", position: "35% 50%", dim: 0.95, blur: 2 },
     ...dose("mars_transit"),
     missionDays: 180,
     missionDaysLabel: "~6-month cruise, one way",
@@ -192,7 +203,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     name: "Mars surface",
     tagline: "Gale crater · 0.38 g",
     summary: "The planet blocks half the sky and the thin atmosphere adds a little shielding, but ground is still up to ~22 min away each way.",
-    backdrop: { src: "/backgrounds/mars-surface.webp", position: "50% 50%" },
+    backdrop: { src: "/backgrounds/mars-cliff.webp", position: "50% 60%", dim: 0.78, blur: 2 },
     ...dose("mars_surface"),
     missionDays: 500,
     missionDaysLabel: "500-day surface stay",

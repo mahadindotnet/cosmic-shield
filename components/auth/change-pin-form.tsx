@@ -53,7 +53,7 @@ export function ChangePinForm({ forced }: { forced: boolean }) {
       <div className="flex flex-col items-center gap-4 text-center" data-testid="change-pin-done">
         <CheckCircle2 className="size-10 text-normal-foreground" aria-hidden="true" />
         <p className="text-sm text-foreground">Your PIN has been changed.</p>
-        <Button render={<Link href="/dashboard" />}>Back to dashboard</Button>
+        <Button nativeButton={false} render={<Link href="/dashboard" />}>Back to dashboard</Button>
       </div>
     );
   }
@@ -96,7 +96,7 @@ export function ChangePinForm({ forced }: { forced: boolean }) {
 
       <div className="flex gap-3">
         {!forced && (
-          <Button variant="outline" size="lg" className="flex-1" render={<Link href="/dashboard" />}>
+          <Button variant="outline" size="lg" className="flex-1" nativeButton={false} render={<Link href="/dashboard" />}>
             Cancel
           </Button>
         )}

@@ -29,7 +29,7 @@ export function MissionContext({
       <div
         data-testid="mission-context"
         className={cn(
-          "mb-4 rounded-xl border border-dashed border-primary/30 bg-background/55 p-3 pl-4 backdrop-blur-md",
+          "mb-4 rounded-xl border border-dashed border-primary/30 bg-(--glass) p-3 pl-4 backdrop-blur-(--glass-blur)",
           className,
         )}
       >
@@ -45,7 +45,7 @@ export function MissionContext({
     return (
       <div
         className={cn(
-          "mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-primary/30 bg-background/55 p-3 pl-4 backdrop-blur-md",
+          "mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-primary/30 bg-(--glass) p-3 pl-4 backdrop-blur-(--glass-blur)",
           className,
         )}
       >
@@ -64,7 +64,7 @@ export function MissionContext({
     <div
       data-testid="mission-context"
       className={cn(
-        "mb-4 flex flex-col gap-3 rounded-xl border border-border bg-background/55 p-3 backdrop-blur-md md:flex-row md:items-center",
+        "mb-4 flex flex-col gap-3 rounded-xl border border-(--glass-border) bg-(--glass) p-3 backdrop-blur-(--glass-blur) md:flex-row md:items-center",
         className,
       )}
     >

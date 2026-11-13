@@ -18,7 +18,12 @@
   /* Surfaces */
   --background: oklch(0.14 0.028 262);
   --foreground: oklch(0.95 0.012 240);
-  --card: oklch(0.18 0.032 258 / 0.72);
+  /* Frosted glass: our navy at ~60% over the environment image, 14px blur. */
+  --glass: oklch(0.16 0.03 262 / 0.6);
+  --glass-strong: oklch(0.16 0.03 262 / 0.78);
+  --glass-border: oklch(0.95 0.02 230 / 0.14);
+  --glass-blur: 14px;
+  --card: var(--glass);
   --card-foreground: oklch(0.95 0.012 240);
   --popover: oklch(0.19 0.032 258);
   --popover-foreground: oklch(0.95 0.012 240);
@@ -67,6 +72,37 @@
   --sidebar-accent-foreground: oklch(0.97 0.01 240);
   --sidebar-border: oklch(0.78 0.08 220 / 12%);
   --sidebar-ring: oklch(0.82 0.12 210 / 60%);
+}
+
+/*
+ * Glass opacity per environment, tuned so all text on panels measures at
+ * least WCAG AA (4.5:1) over that environment's photo. Brighter photos need
+ * more opaque glass. Set on <html data-environment> by SpaceBackdrop.
+ */
+:root[data-environment="iss"] {
+  --glass: oklch(0.16 0.03 262 / 0.82);
+  --glass-strong: oklch(0.16 0.03 262 / 0.9);
+}
+:root[data-environment="lunar"] {
+  --glass: oklch(0.16 0.03 262 / 0.76);
+  --glass-strong: oklch(0.16 0.03 262 / 0.86);
+}
+:root[data-environment="mars-transit"] {
+  --glass: oklch(0.16 0.03 262 / 0.66);
+  --glass-strong: oklch(0.16 0.03 262 / 0.8);
+}
+/* mars-surface: the base --glass (60%) already passes. */
+
+/* Reduced transparency: solid panels, no backdrop blur (wins over the above). */
+@media (prefers-reduced-transparency: reduce) {
+  :root,
+  :root[data-environment],
+  .dark {
+    --glass: oklch(0.16 0.03 262);
+    --glass-strong: oklch(0.16 0.03 262);
+    --sidebar: oklch(0.12 0.026 262);
+    --glass-blur: 0px;
+  }
 }
 
 @theme inline {
@@ -238,10 +274,22 @@
 
 /* Large frosted panel used for page heroes. */
 @utility glass-panel {
-  border: 1px solid var(--border);
-  background: oklch(0.14 0.03 262 / 0.42);
-  backdrop-filter: blur(14px);
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  backdrop-filter: blur(var(--glass-blur));
   box-shadow:
-    inset 0 1px 0 0 oklch(0.82 0.12 210 / 12%),
+    inset 0 1px 0 0 oklch(0.95 0.02 230 / 8%),
     0 30px 80px -40px oklch(0.05 0.02 262 / 80%);
+}
+
+/* Frosted-glass surface for cards, tiles and panels (same tokens as glass-panel). */
+@utility glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+/* For a panel whose text measured below WCAG AA over a bright image. */
+@utility glass-strong {
+  background: var(--glass-strong);
 }

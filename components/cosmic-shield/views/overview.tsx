@@ -91,7 +91,7 @@ export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode 
       >
         <div
           id="overview-body"
-          className="relative order-first flex scroll-mt-20 items-center justify-center rounded-2xl border border-border/60 bg-background/30 px-16 py-10 backdrop-blur-sm lg:order-none lg:col-start-2 lg:row-start-1"
+          className="relative order-first flex scroll-mt-20 items-center justify-center rounded-2xl border border-(--glass-border) bg-(--glass) px-16 py-10 backdrop-blur-(--glass-blur) lg:order-none lg:col-start-2 lg:row-start-1"
         >
           <div
             aria-hidden="true"
@@ -113,7 +113,7 @@ export function OverviewView({ earlyWarning }: { earlyWarning?: React.ReactNode 
           {RIGHT.map((t) => (
             <ModuleTile key={t.slug} {...t} />
           ))}
-          <div className="flex items-center gap-3 rounded-xl border border-border/70 bg-card/70 px-4 py-3 backdrop-blur">
+          <div className="flex items-center gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur)">
             <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background/50">
               <Bell
                 className="size-4 text-muted-foreground"
@@ -375,7 +375,7 @@ function SectionTitle({
   note?: string;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-2">
+    <div className="glass flex flex-wrap items-end justify-between gap-x-6 gap-y-2 rounded-2xl px-5 py-4">
       <div>
         <p className="console-label">{eyebrow}</p>
         <h2
@@ -400,7 +400,7 @@ function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
     <Link
       href={s.href}
       data-testid={`tile-${slug}`}
-      className="group flex items-center gap-3 rounded-xl border border-border/70 bg-card/70 px-4 py-3 backdrop-blur transition-colors hover:border-primary/40 hover:bg-card/85 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="group flex items-center gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur) transition-colors hover:border-primary/40 hover:bg-card/85 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10 transition-colors group-hover:border-primary/50">
         <Icon className="size-5 text-primary" aria-hidden="true" />

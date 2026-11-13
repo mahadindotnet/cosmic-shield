@@ -123,7 +123,7 @@ export function EarlyWarningCard({
     <section
       data-testid="early-warning-card"
       aria-labelledby="ew-headline"
-      className="relative overflow-hidden rounded-2xl border border-watch/30 bg-card/80 p-5 pl-6 backdrop-blur-md motion-safe:animate-[ew-fade_700ms_ease-out_both] md:p-6 md:pl-7"
+      className="relative overflow-hidden rounded-2xl border border-watch/30 bg-(--glass) p-5 pl-6 backdrop-blur-(--glass-blur) motion-safe:animate-[ew-fade_700ms_ease-out_both] md:p-6 md:pl-7"
     >
       <span
         aria-hidden="true"
@@ -226,7 +226,7 @@ export function EarlyWarningCard({
 
       <div className="mt-6 flex flex-wrap items-center gap-2">
         <Button
-          render={<Link href="/dashboard/mind#mind-log" />}
+          nativeButton={false} render={<Link href="/dashboard/mind#mind-log" />}
           data-testid="ew-checkin"
         >
           <ClipboardCheck aria-hidden="true" />

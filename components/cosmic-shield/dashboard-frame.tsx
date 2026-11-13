@@ -32,7 +32,7 @@ export function DashboardFrame({ children, account }: { children: React.ReactNod
       <SidebarProvider className="relative z-[1]">
         <AppSidebar />
         <SidebarInset className="min-w-0 bg-transparent">
-          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-background/45 px-4 backdrop-blur-xl">
+          <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-b border-(--glass-border) bg-(--glass) px-4 backdrop-blur-(--glass-blur)">
             <SidebarTrigger className="-ml-1" />
             <Separator orientation="vertical" className="mr-1 h-4" />
             <section.icon className="size-4 text-primary" aria-hidden="true" />

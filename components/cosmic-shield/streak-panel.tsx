@@ -161,7 +161,7 @@ export function StreakPanel({ checkins = {}, exerciseSessions = 0, points = 0 }:
                     className={cn(
                       "flex aspect-square items-center justify-center rounded-md font-mono text-[10px] tabular-nums",
                       c.future
-                        ? "border border-dashed border-border/50 text-muted-foreground/40"
+                        ? "border border-dashed border-border text-muted-foreground"
                         : cn(LEVELS[Math.min(c.count, 4)], c.count >= 3 ? "text-background" : "text-muted-foreground"),
                       c.isToday && "ring-2 ring-primary ring-offset-2 ring-offset-card",
                     )}
