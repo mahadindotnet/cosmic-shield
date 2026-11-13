@@ -59,6 +59,11 @@ Chat panel (useChat)                POST /api/assistant/chat
 - **Back button** (`components/cosmic-shield/back-button.tsx`): on every page except the Health Dashboard home and `/login`. A small tracker records client-side page changes in this tab; with in-app history Back goes back, otherwise (a page opened from a link or a fresh tab) it goes to the Health Dashboard.
 - **Notification bell** (`lib/notifications/`): items are computed on each request and never stored: daily check-in due, morning vitals not logged, every active Watch/Escalate (from `lib/alerts/active.ts`, the same source as the co-pilot), and a DONKI event from the last 24 h. The flight surgeon instead sees new escalations for crew (no excerpts). Only read state is stored (`notification_read`, per user); read items stay visible, greyed. Done tasks disappear by themselves, and module saves refresh the layout so the badge updates at once. The bell never waits on NASA: it uses the last live DONKI result while fresh (15 min) or the cached file, refreshing in the background. In-app only, no browser push.
 
+### Health Dashboard summary
+
+- **Alerts card:** every active Watch/Escalate across modules (vitals, sleep/HRV, radiation, `mind_pattern`), Escalate first, each linking to its module; "All clear" when there are none. Built by `dashboardAlertSummary()` (`lib/alerts/summary.ts`) from `activeAlertsFor()` (`lib/alerts/active.ts`), the single source also used by the bell and the co-pilot. An open `mind_safety` escalation appears to the crew member only as "Support follow-up open" (no reason, no excerpt). The flight surgeon gets a pointer to Crew admin.
+- **No fake numbers:** module tiles show a real reading and its status, or "No entries yet: log your first reading" (Bone, Eyes, GI until built), "Loading…" while data streams in, or "Crew data is in Crew admin" for the flight surgeon. Streak points and exercise sessions show "—" until they are counted from real activity.
+
 ## Crew demo scenarios
 
 Four seeded crew profiles (`lib/demo/crew-profiles.ts`):

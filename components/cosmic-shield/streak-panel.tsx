@@ -49,15 +49,16 @@ function useToday() {
 export interface StreakPanelProps {
   /** Mind check-ins per UTC day, keyed YYYY-MM-DD. */
   checkins?: Record<string, number>;
-  exerciseSessions?: number;
-  points?: number;
+  /** Not computed yet: null shows "—" rather than a made-up 0. */
+  exerciseSessions?: number | null;
+  points?: number | null;
 }
 
 /**
  * Gamified streak: a Snapchat-style flame counter with an hourglass warning
  * and milestones, next to a LeetCode-style calendar for the current month.
  */
-export function StreakPanel({ checkins = {}, exerciseSessions = 0, points = 0 }: StreakPanelProps) {
+export function StreakPanel({ checkins = {}, exerciseSessions = null, points = null }: StreakPanelProps) {
   const today = useToday();
   const m = buildMonth(today, checkins);
   const best = Math.max(m.streak, m.maxStreak);
@@ -191,7 +192,14 @@ export function StreakPanel({ checkins = {}, exerciseSessions = 0, points = 0 }:
                   <x.icon className="size-3.5 text-primary/80" aria-hidden="true" />
                   {x.k}
                 </p>
-                <p className="font-mono text-xl text-foreground tabular-nums">{x.v}</p>
+                {x.v === null ? (
+                  <p className="text-xs text-muted-foreground" title="Not counted yet">
+                    <span aria-hidden="true">—</span>
+                    <span className="sr-only">Not counted yet</span>
+                  </p>
+                ) : (
+                  <p className="font-mono text-xl text-foreground tabular-nums">{x.v}</p>
+                )}
               </div>
             ))}
           </div>

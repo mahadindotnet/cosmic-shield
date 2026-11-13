@@ -3,6 +3,8 @@ import { Suspense } from "react";
 import { EarlyWarningSlot } from "@/components/alerts/early-warning-slot";
 import { OverviewView, type OverviewData } from "@/components/cosmic-shield/views/overview";
 import { activeCrew, getCurrentUser } from "@/lib/auth/dal";
+import { activeAlertsFor } from "@/lib/alerts/active";
+import { dashboardAlertSummary } from "@/lib/alerts/summary";
 import { mindSummaryFor } from "@/lib/mind/data";
 import { radiationSummaryFor } from "@/lib/radiation/data";
 import { sleepSummaryFor } from "@/lib/sleep/data";
@@ -25,17 +27,33 @@ export default function DashboardPage() {
   );
 }
 
-/** The signed-in crew member's latest readings (same data and rules as the module pages). */
-async function loadOverview(): Promise<OverviewData | null> {
+/** The flight surgeon has no crew data of their own here (they review crew in Crew admin). */
+const SURGEON_OVERVIEW: OverviewData = {
+  viewer: "flight_surgeon",
+  alerts: null,
+  vitals: { tile: null, heartRateWeek: [] },
+  sleep: { tile: null, week: [] },
+  radiation: { tile: null, careerMsv: null, careerStatus: null },
+  mind: { tile: null, moodFortnight: [], checkinsByDay: {} },
+};
+
+/**
+ * The signed-in crew member's latest readings and active alerts (same data and
+ * rules as the module pages; alerts from lib/alerts/active.ts). Never null once
+ * loaded, so the view can tell "loading" from "no entries yet".
+ */
+async function loadOverview(): Promise<OverviewData> {
   const current = await getCurrentUser();
   const crew = current && !current.user.mustChangePin ? activeCrew(current) : null;
-  if (!crew) return null;
+  if (!crew) return SURGEON_OVERVIEW;
   const vitals = vitalsSummaryFor(crew.id, 7);
   const sleep = sleepSummaryFor(crew.id, 7);
   const radiation = radiationSummaryFor(crew.id, 7);
   const mind = mindSummaryFor(crew.id, 14);
   const lastNight = addDays(utcToday(), -1);
   return {
+    viewer: "crew",
+    alerts: dashboardAlertSummary(activeAlertsFor(crew.id)),
     vitals: { tile: vitals.tile, heartRateWeek: vitals.trends.heartRate.map((p) => p.value) },
     sleep: {
       tile: sleep.tile && {

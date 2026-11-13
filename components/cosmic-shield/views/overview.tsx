@@ -46,9 +46,14 @@ import { useMissionEnvironment } from "@/lib/store/mission-store";
 import { cn } from "@/lib/utils";
 import { ChooseEnvironmentPrompt } from "@/components/mission/choose-environment-prompt";
 import type { TileReading } from "@/lib/vitals/summary";
+import type { AlertSummary } from "@/lib/alerts/summary";
 
 /** Server data for the signed-in crew member (null for a flight surgeon or while loading). */
 export interface OverviewData {
+  /** Crew see their own data; the flight surgeon has none here. */
+  viewer: "crew" | "flight_surgeon";
+  /** Active Watch/Escalate items (lib/alerts/active.ts); null for the flight surgeon. */
+  alerts: AlertSummary | null;
   vitals: {
     tile: TileReading | null;
     /** Daily mean heart rate, last 7 days, oldest first. */
@@ -64,8 +69,8 @@ export interface OverviewData {
     /** Latest reading's daily rate and status. */
     tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
     /** Sum of every dose entry, mSv, and its status against the career limit. */
-    careerMsv: number;
-    careerStatus: "normal" | "watch" | "escalate";
+    careerMsv: number | null;
+    careerStatus: "normal" | "watch" | "escalate" | null;
   };
   mind: {
     /** Latest mood and the 3-day pattern status. */
@@ -118,22 +123,29 @@ export function OverviewView({
   data?: Promise<OverviewData | null>;
 }) {
   const env = useMissionEnvironment();
-  const withData = (t: TileDef) =>
-    t.slug === "vitals" || t.slug === "sleep-stress" || t.slug === "radiation" || t.slug === "mind" ? (
-      <Await key={t.slug} promise={data}>
-        {(d) => {
-          const tile =
-            t.slug === "vitals" ? d?.vitals.tile : t.slug === "sleep-stress" ? d?.sleep.tile : t.slug === "mind" ? d?.mind.tile : d?.radiation.tile;
-          return (
-            <ModuleTile
-              {...(tile ? { ...t, metric: tile.metric, value: tile.value, unit: tile.unit, status: tile.status } : t)}
-            />
-          );
-        }}
-      </Await>
-    ) : (
-      <ModuleTile key={t.slug} {...t} />
-    );
+  const withData = (t: TileDef) => (
+    <Await key={t.slug} promise={data}>
+      {(d) => {
+        const tile =
+          t.slug === "vitals"
+            ? d?.vitals.tile
+            : t.slug === "sleep-stress"
+              ? d?.sleep.tile
+              : t.slug === "mind"
+                ? d?.mind.tile
+                : t.slug === "radiation"
+                  ? d?.radiation.tile
+                  : null; // Bone, Eyes and GI have no entries yet.
+        // Empty states say why there's no number: loading, the flight surgeon's view, or nothing logged yet.
+        const empty = !d ? "Loading…" : d.viewer === "flight_surgeon" ? "Crew data is in Crew admin" : EMPTY_TILE;
+        return tile ? (
+          <ModuleTile {...t} metric={tile.metric} value={tile.value} unit={tile.unit} status={tile.status} />
+        ) : (
+          <ModuleTile {...t} value={null} emptyText={empty} />
+        );
+      }}
+    </Await>
+  );
 
   return (
     <div className="flex flex-col gap-10 pb-6">
@@ -171,21 +183,7 @@ export function OverviewView({
 
         <div className="grid gap-3 sm:grid-cols-2 lg:col-start-3 lg:row-start-1 lg:auto-rows-fr lg:grid-cols-1">
           {RIGHT.map(withData)}
-          <div className="flex items-center gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur)">
-            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-background/50">
-              <Bell
-                className="size-4 text-muted-foreground"
-                aria-hidden="true"
-              />
-            </span>
-            <div className="min-w-0">
-              <p className="text-[13px] font-medium text-foreground">Alerts</p>
-              <p className="text-[11px] text-muted-foreground">
-                <span aria-hidden="true">—</span>
-                <span className="sr-only">Alert summary not available yet</span>
-              </p>
-            </div>
-          </div>
+          <Await promise={data}>{(d) => <AlertsCard data={d} />}</Await>
         </div>
       </section>
 
@@ -197,7 +195,7 @@ export function OverviewView({
           eyebrow="Gamification"
           title="Streak"
         />
-        <Await promise={data}>{(d) => <StreakPanel checkins={d?.mind.checkinsByDay ?? {}} />}</Await>
+        <Await promise={data}>{(d) => <StreakPanel checkins={d?.mind.checkinsByDay ?? {}} points={null} exerciseSessions={null} />}</Await>
       </section>
     </div>
   );
@@ -334,7 +332,7 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
             <StatPanel
               icon={Radiation}
               title="Career dose"
-              keyPoint={d ? `${d.radiation.careerMsv} of ${CAREER_DOSE_LIMIT_MSV} mSv logged` : `Limit ${CAREER_DOSE_LIMIT_MSV} mSv`}
+              keyPoint={d && d.radiation.careerMsv !== null ? `${d.radiation.careerMsv} of ${CAREER_DOSE_LIMIT_MSV} mSv logged` : `Limit ${CAREER_DOSE_LIMIT_MSV} mSv`}
               href="/dashboard/radiation"
               testId="stat-career-dose"
             >
@@ -410,19 +408,14 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           }
           href="/dashboard/eyes"
         >
-          <dl className="grid grid-cols-2 gap-3">
-            {[
-              { k: "Last fundus scan", v: "—" },
-              { k: "Last Amsler test", v: "—" },
-            ].map((x) => (
+          <dl className="grid grid-cols-2 gap-3" data-testid="stat-eyes">
+            {["Last fundus scan", "Last Amsler test"].map((k) => (
               <div
-                key={x.k}
+                key={k}
                 className="rounded-lg border border-border bg-background/40 px-3 py-2.5"
               >
-                <dt className="text-[11px] text-muted-foreground">{x.k}</dt>
-                <dd className="mt-0.5 font-mono text-xl text-muted-foreground/60">
-                  {x.v}
-                </dd>
+                <dt className="text-[11px] text-muted-foreground">{k}</dt>
+                <dd className="mt-0.5 text-xs text-muted-foreground">No screening logged yet</dd>
               </div>
             ))}
           </dl>
@@ -438,6 +431,61 @@ const DONKI_LABELS: Record<string, string> = {
   CME: "CMEs",
   GST: "Geomag. storms",
 };
+
+const EMPTY_TILE = "No entries yet: log your first reading";
+
+/** Active Watch/Escalate items across modules, each linking to its module; "All clear" when none. */
+function AlertsCard({ data }: { data: OverviewData | null }) {
+  const summary = data?.alerts ?? null;
+  const items = summary?.items ?? [];
+  const shown = items.slice(0, 4);
+  return (
+    <div
+      data-testid="alerts-summary"
+      data-state={!data ? "loading" : data.viewer === "flight_surgeon" ? "surgeon" : summary?.allClear ? "clear" : "active"}
+      className="flex gap-3 rounded-xl border border-(--glass-border) bg-(--glass) px-4 py-3 backdrop-blur-(--glass-blur)"
+    >
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-primary/25 bg-primary/10">
+        <Bell className="size-5 text-primary" aria-hidden="true" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-[13px] font-medium text-foreground">Alerts</p>
+        {!data ? (
+          <p className="text-[11px] text-muted-foreground">Loading…</p>
+        ) : data.viewer === "flight_surgeon" ? (
+          <Link href="/dashboard/admin" className="text-[11px] text-primary hover:underline">
+            Review crew alerts and escalations in Crew admin
+          </Link>
+        ) : summary?.allClear ? (
+          <p className="mt-0.5 flex items-center gap-1.5 text-[11px] text-foreground/90">
+            <StatusBadge status="normal" label="All clear" className="h-4 px-1.5 text-[9px]" />
+            Nothing on Watch or Escalate.
+          </p>
+        ) : (
+          <ul className="mt-1 flex flex-col gap-1" aria-label="Active alerts">
+            {shown.map((a) => (
+              <li key={a.key} data-testid="alerts-summary-item" data-rule={a.ruleId} className="flex min-w-0 items-center gap-1.5">
+                {a.level === "follow-up" ? (
+                  <span className="inline-flex h-4 shrink-0 items-center rounded-full border border-nebula/45 bg-nebula/10 px-1.5 font-mono text-[9px] font-medium tracking-wider text-foreground uppercase">
+                    Follow-up
+                  </span>
+                ) : (
+                  <StatusBadge status={a.level} className="h-4 px-1.5 text-[9px]" />
+                )}
+                <Link href={a.href} className="truncate text-[11px] text-foreground hover:text-primary hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none">
+                  {a.title}
+                </Link>
+              </li>
+            ))}
+            {items.length > shown.length && (
+              <li className="text-[11px] text-muted-foreground">+{items.length - shown.length} more in the notification bell</li>
+            )}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function SectionTitle({
   id,
@@ -468,7 +516,7 @@ function SectionTitle({
   );
 }
 
-function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
+function ModuleTile({ slug, metric, unit, value = null, status, emptyText }: TileDef & { emptyText?: string }) {
   const s = getSection(slug)!;
   const Icon: LucideIcon = s.icon;
   const has = value !== null && value !== "";
@@ -486,7 +534,9 @@ function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
         <p className="truncate text-[13px] font-medium text-foreground">
           {s.title}
         </p>
-        <p className="truncate text-[11px] text-muted-foreground">{metric}</p>
+        <p className="truncate text-[11px] text-muted-foreground" data-testid={has ? undefined : "tile-empty"}>
+          {has ? metric : (emptyText ?? metric)}
+        </p>
       </div>
       <div className="flex shrink-0 flex-col items-end gap-1">
         <span
@@ -495,7 +545,7 @@ function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
             has ? "text-foreground" : "text-muted-foreground/50",
           )}
         >
-          {has ? value : "—"}
+          {has ? value : <span aria-hidden="true">—</span>}
           {has && unit && (
             <span className="ml-0.5 text-[11px] text-muted-foreground">
               {unit}
