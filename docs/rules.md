@@ -21,7 +21,7 @@ Each number in `data/rules/thresholds.json`, `lib/health/reference-ranges.ts` an
 | ISS 180-day increment, lunar 30-day stay, ISS "0 g" and "< 1 s" | app default | Scenario values |
 | SpO₂ below 90 % → Escalate | sourced | World Health Organization, *Pulse Oximetry Training Manual*, WHO Patient Safety 2011 (ISBN 978 92 4 150113 2), [PDF](https://cdn.who.int/media/docs/default-source/patient-safety/pulse-oximetry/who-ps-pulse-oxymetry-training-manual-en.pdf): "If the oxygen saturation is 94% or lower, the patient is hypoxic and needs to be treated quickly. A saturation of less than 90% is a clinical emergency." Written for anaesthesia providers; applied here as a general hypoxaemia cut-off. |
 | Glucose below 70 mg/dL → Watch; below 54 mg/dL → Escalate | sourced | American Diabetes Association, *Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose)*, patient version, based on the Standards of Care in Diabetes—2025, [PDF](https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf): "LEVEL 1 Your blood glucose is less than 70 mg/dL but over or at 54 mg/dL"; "LEVEL 2 Your blood glucose is less than 54 mg/dL". |
-| Blood pressure Escalate (AHA "hypertensive crisis", > 180 and/or > 120 mmHg) | **not added** | Could not be confirmed on a primary AHA page: heart.org returned 403 to automated fetches (checked 2026-11-13). Blood pressure stays Watch-only until the source is verified; then add it in `thresholds.json` (`bloodPressureEscalate`) with its citation. |
+| Blood pressure: systolic > 180 or diastolic > 120 mmHg → Escalate | sourced | American Heart Association, *Understanding Blood Pressure Readings*, [https://goredforwomen.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings](https://goredforwomen.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings). This is the AHA's own Go Red for Women mirror of heart.org/bplevels: heart.org (and the mirror) return 403 to automated fetches, so the wording was read from the mirror page by the project team (2026-11-13). Verbatim: category "HYPERTENSIVE CRISIS (consult your doctor immediately)", values "HIGHER THAN 180 and/or HIGHER THAN 120"; guidance "Wait five minutes after your first reading." / "Take your blood pressure again." / "If your readings are still unusually high, contact your health care professional immediately." Strictly greater than, so 180/120 is not Escalate. |
 | Resting heart rate Escalate | **not added** | No verifiable source for an escalation cut-off was found. Heart rate stays Watch-only. |
 | Vital-sign baselines and Watch bands (HR, HRV, SpO₂ ≤ 94 %, BP, sleep, stress), glucose ≥ 140, self-rated stress ≥ 4/5, exercise 120–180 min, hydration 2–3 L, SANS cadence, Bristol and SANS settings, mission day 42 | app default | Not clinical cut-offs |
 | Glucose "Inspiration4 crew reference (n=4)" 56–100 mg/dL | sourced | NASA OSDR OSD-575 (Inspiration4 metabolic panel): min–max of all 12 pre-flight samples (L-92, L-44, L-3) from the 4 crew, `data/nasa/derived/baselines.json`. Fasting status not stated in the source. Shown for context only; it does not set the Watch bounds. |
@@ -33,15 +33,30 @@ Runs every time vitals are read (statuses are never stored), so a changed thresh
 | Measure | Watch when | Escalate when |
 |---|---|---|
 | Heart rate | ≥ 88 or ≤ 52 bpm (app default) | never (no verified source) |
-| Blood pressure | systolic ≥ 135 or ≤ 100 mmHg, or diastolic ≥ 88 mmHg (app default) | never (AHA source not verified, see above) |
+| Blood pressure | systolic ≥ 135 or ≤ 100 mmHg, or diastolic ≥ 88 mmHg (app default) | **systolic > 180 or diastolic > 120 mmHg** (sourced: AHA "hypertensive crisis") |
 | SpO₂ | ≤ 94 % (app default) | **< 90 %** (sourced: WHO) |
 | Glucose (optional) | **< 70 mg/dL** (sourced: ADA level 1), or ≥ 140 mg/dL (app default) | **< 54 mg/dL** (sourced: ADA level 2) |
 
-App-default Watch bounds are inclusive: the band drawn on charts is where readings count as Normal, and Watch begins at its edge. Sourced limits use the source's own comparison ("less than 90%", "less than 54 mg/dL"), so SpO₂ 90 % is Watch and 89 % is Escalate; glucose 54 is Watch and 53 is Escalate. Examples: 150/95 → Watch ("Systolic 150 mmHg is at or above the Watch level (135 mmHg)", and the same for diastolic 95); SpO₂ 88 → Escalate ("SpO₂ 88 % is below the Escalate level (90 %).").
+App-default Watch bounds are inclusive: the band drawn on charts is where readings count as Normal, and Watch begins at its edge. Sourced limits use the source's own comparison ("less than 90%", "less than 54 mg/dL"), so SpO₂ 90 % is Watch and 89 % is Escalate; glucose 54 is Watch and 53 is Escalate; 180/120 is Watch, while 181/100 and 150/121 are Escalate. Examples: 150/95 → Watch ("Systolic 150 mmHg is at or above the Watch level (135 mmHg)", and the same for diastolic 95); SpO₂ 88 → Escalate ("SpO₂ 88 % is below the Escalate level (90 %).").
 
-**When a reading escalates:** the reading is saved together with a row in the `escalation` table (same transaction), holding the values, every limit crossed with its basis and full citation, and the crew ID. The page and the toast show **"Contact the flight surgeon"** with the guidance to re-check the reading and keep the device on. The Health Dashboard tile shows the worst flagged measure of the latest reading (heart rate when nothing is flagged), so a status badge never sits next to an unrelated number.
+**When a reading escalates:** the reading is saved together with a row in the `escalation` table (same transaction), holding the values, every limit crossed with its basis and full citation, and the crew ID. The page and the toast show **"Contact the flight surgeon"** with one guidance line per escalating measure (`lib/vitals/escalation.ts`). For blood pressure it follows the AHA chart's steps, with "health care professional" mapped to the flight surgeon / Crew Medical Officer: **"Rest, wait 5 minutes and re-measure. If it is still above 180/120, contact the flight surgeon now."** When blood pressure is the only escalating measure, the notice is headed "Re-measure, then contact the flight surgeon". The Health Dashboard tile shows the worst flagged measure of the latest reading (heart rate when nothing is flagged), so a status badge never sits next to an unrelated number.
 
 Tests: `lib/vitals/rules.test.ts`, `lib/vitals/escalation.test.ts`; Playwright `e2e/vitals.spec.ts` (SpO₂ 88 → Escalate).
+
+## Radiation (`lib/radiation/rules.ts`)
+
+Evaluated on read. Dosimeter readings are stored in `dose_entry` with the crew member's mission environment at the time.
+
+| What | Watch when | Escalate when |
+|---|---|---|
+| A reading's daily rate (dose × 24 ÷ hours covered) | ≥ 2 × the typical daily dose of the environment it was taken in (app default; e.g. ISS 1.4, Mars transit 3.7 mSv/d). No environment: 1.4 mSv/d (app default, 2 × the ISS ALTEA dose) | never |
+| Career total = **sum of every dose entry** | ≥ 300 mSv (app default, half the limit) | **> 600 mSv** (sourced: NASA-STD-3001 career limit) |
+
+- **Projected mission dose** = the environment's typical daily dose × its mission length (e.g. Mars transit 1.84 mSv/d × 180 days ≈ 331 mSv). It is shown as a reference, and the career meter marks where the total would stand after a full mission there. It never sets a status.
+- **Crossing the career limit:** the reading that takes the total above 600 mSv is saved with an `escalation` row (rule `radiation_career`, same transaction) holding the totals before and after and the cited limit, and the page shows "Contact the flight surgeon".
+- **Space weather (NASA DONKI)** is shown with a source badge: **Live** when `NASA_API_KEY` is set and the API answers, otherwise **Cached** with the date of the last `npm run data:fetch`. It is context only and never changes a dose status.
+
+Tests: `lib/radiation/radiation.test.ts`; Playwright `e2e/radiation.spec.ts`.
 
 ## Sleep & Stress (`lib/sleep/rules.ts`)
 
@@ -122,6 +137,7 @@ The card shows the headline "HRV has dropped for three nights. Sleep is down." I
 - **Realistic variation:** night-to-night RMSSD varies with a coefficient of variation of 8–12 % and sleep with an SD of 0.4–0.6 h around each person's baseline (normal draws capped at ±2.5 SD). Normal nights are kept above the per-night Watch levels, so seeded data never shows Watch on its own.
 - **CS-003 Lindqvist:** 11 normal nights (around 45 ms RMSSD, about 7.2 h sleep), then 3 nights with HRV about 18–22 % down and sleep 5.1–5.4 h. The rule fires.
 - **Everyone else:** normal variation only. The rule stays quiet (checked in `lib/sleep/sleep.test.ts`).
+- **Dosimeter readings:** 14 daily 24-hour readings per crew member at the ISS dose measured by ALTEA (0.717 mSv/day, NASA RadLab) with a smooth ±8 % variation, ending yesterday, plus one career summary entry for previous missions (demo values: CS-001 118, CS-002 64, CS-003 none, CS-004 215 mSv). Everyone stays below every Watch level. Generator: `lib/radiation/seed-data.ts`.
 - **By hand:** entering 3 low nights (e.g. HRV 30 ms, 4.8 h) for the last three nights as CS-001 makes the card appear (`e2e/sleep-stress.spec.ts`).
 
 Because alerts only use the last 2 nights, **re-seed before a demo**.

@@ -59,6 +59,13 @@ export interface OverviewData {
     /** Sleep hours, last 7 nights, oldest first. */
     week: MiniPoint[];
   };
+  radiation: {
+    /** Latest reading's daily rate and status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Sum of every dose entry, mSv, and its status against the career limit. */
+    careerMsv: number;
+    careerStatus: "normal" | "watch" | "escalate";
+  };
 }
 
 const NO_DATA: Promise<OverviewData | null> = Promise.resolve(null);
@@ -75,7 +82,7 @@ interface TileDef {
 const LEFT: TileDef[] = [
   { slug: "vitals", metric: "Heart rate", unit: "bpm" },
   { slug: "sleep-stress", metric: "Sleep last night", unit: "h" },
-  { slug: "radiation", metric: "Dose today", unit: "mSv" },
+  { slug: "radiation", metric: "Latest dose", unit: "mSv/d" },
   { slug: "bone", metric: "Exercise today", unit: "min" },
 ];
 const RIGHT: TileDef[] = [
@@ -103,10 +110,10 @@ export function OverviewView({
 }) {
   const env = useMissionEnvironment();
   const withData = (t: TileDef) =>
-    t.slug === "vitals" || t.slug === "sleep-stress" ? (
+    t.slug === "vitals" || t.slug === "sleep-stress" || t.slug === "radiation" ? (
       <Await key={t.slug} promise={data}>
         {(d) => {
-          const tile = t.slug === "vitals" ? d?.vitals.tile : d?.sleep.tile;
+          const tile = t.slug === "vitals" ? d?.vitals.tile : t.slug === "sleep-stress" ? d?.sleep.tile : d?.radiation.tile;
           return (
             <ModuleTile
               {...(tile ? { ...t, metric: tile.metric, value: tile.value, unit: tile.unit, status: tile.status } : t)}
@@ -196,7 +203,6 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
     Math.ceil((R.heartRate.max * 1.15) / 10) * 10,
   ];
   const projected = env ? Math.round(projectedMissionDose(env)) : null;
-  const logged = 0;
 
   const feeds = spaceWeather.feeds;
   const latest = spaceWeather.events[0];
@@ -311,19 +317,24 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           />
         </StatPanel>
 
-        <StatPanel
-          icon={Radiation}
-          title="Career dose"
-          keyPoint={`${logged} of ${CAREER_DOSE_LIMIT_MSV} mSv logged`}
-          href="/dashboard/radiation"
-          testId="stat-career-dose"
-        >
-          <CareerDoseMeter
-            logged={logged}
-            projected={projected}
-            missionLabel={env?.missionDaysLabel ?? null}
-          />
-        </StatPanel>
+        <Await promise={data}>
+          {(d) => (
+            <StatPanel
+              icon={Radiation}
+              title="Career dose"
+              keyPoint={d ? `${d.radiation.careerMsv} of ${CAREER_DOSE_LIMIT_MSV} mSv logged` : `Limit ${CAREER_DOSE_LIMIT_MSV} mSv`}
+              href="/dashboard/radiation"
+              testId="stat-career-dose"
+            >
+              <CareerDoseMeter
+                logged={d?.radiation.careerMsv ?? null}
+                status={d?.radiation.careerStatus ?? null}
+                projected={projected}
+                missionLabel={env?.missionDaysLabel ?? null}
+              />
+            </StatPanel>
+          )}
+        </Await>
 
         <StatPanel
           icon={Gauge}
@@ -490,24 +501,32 @@ function ModuleTile({ slug, metric, unit, value = null, status }: TileDef) {
 
 function CareerDoseMeter({
   logged,
+  status,
   projected,
   missionLabel,
 }: {
-  logged: number;
+  /** Sum of dose entries, mSv; null before data (or for a flight surgeon). */
+  logged: number | null;
+  status: "normal" | "watch" | "escalate" | null;
+  /** Projected dose for a full mission in the chosen environment, mSv. */
   projected: number | null;
   missionLabel: string | null;
 }) {
   const pct = (v: number) =>
     `${Math.min(100, (v / CAREER_DOSE_LIMIT_MSV) * 100)}%`;
+  const after = logged !== null && projected !== null ? Math.round(logged + projected) : null;
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-baseline gap-1.5">
-        <span className="font-mono text-3xl text-foreground tabular-nums">
-          {logged}
-        </span>
-        <span className="font-mono text-xs text-muted-foreground">
-          / {CAREER_DOSE_LIMIT_MSV} mSv career limit
-        </span>
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline gap-1.5">
+          <span className="font-mono text-3xl text-foreground tabular-nums" data-testid="career-dose-value">
+            {logged ?? "—"}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            / {CAREER_DOSE_LIMIT_MSV} mSv career limit
+          </span>
+        </div>
+        {status && <StatusBadge status={status} />}
       </div>
       <div
         className="relative h-3 rounded-full bg-muted/50"
@@ -515,24 +534,26 @@ function CareerDoseMeter({
         aria-label="Career dose logged"
         aria-valuemin={0}
         aria-valuemax={CAREER_DOSE_LIMIT_MSV}
-        aria-valuenow={logged}
+        aria-valuenow={logged ?? 0}
       >
         <span
           className="absolute inset-y-0 left-0 rounded-full bg-(--chart-3)"
-          style={{ width: pct(logged) }}
+          style={{ width: pct(logged ?? 0) }}
         />
-        {projected !== null && (
+        {after !== null && (
           <span
             className="absolute -inset-y-1 w-0.5 rounded-full bg-foreground/80"
-            style={{ left: pct(projected) }}
-            title={`Projected mission dose ${projected} mSv`}
+            style={{ left: pct(after) }}
+            title={`After a full mission here: ${after} mSv`}
           />
         )}
       </div>
       <p className="text-[11px] text-muted-foreground">
-        {projected !== null
-          ? `Marker: projected ${projected} mSv for a ${missionLabel?.toLowerCase()}`
-          : "Choose an environment to see the projected mission dose"}
+        {after !== null
+          ? `Marker: ≈ ${after} mSv after a full ${missionLabel?.toLowerCase()} here (+${projected} mSv)`
+          : projected === null
+            ? "Choose an environment to see the projected mission dose"
+            : "Sum of your dose entries"}
       </p>
     </div>
   );

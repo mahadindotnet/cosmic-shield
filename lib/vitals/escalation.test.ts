@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evaluateVitals, type VitalsValues } from "./rules";
-import { vitalsEscalation } from "./escalation";
+import { escalateGuidance, remeasureFirst, vitalsEscalation } from "./escalation";
 import { summarizeVitals } from "./summary";
 
 const ok: VitalsValues = { heartRate: 66, systolic: 118, diastolic: 74, spo2: 98, glucose: null };
@@ -24,6 +24,26 @@ describe("vitalsEscalation", () => {
     expect(d.evidence.triggered.find((t) => t.measure === "spo2")?.citation).toContain("A saturation of less than 90% is a clinical emergency.");
     // The Watch measure is in the evidence too, labelled as an app default.
     expect(d.evidence.triggered).toContainEqual(expect.objectContaining({ measure: "bloodPressure", level: "watch", basis: "app default" }));
+  });
+});
+
+describe("escalate guidance", () => {
+  it("blood pressure: re-measure first, then contact the flight surgeon (AHA steps)", () => {
+    const v = { ...ok, systolic: 185, diastolic: 110 };
+    const e = evaluateVitals(v);
+    expect(escalateGuidance(e)).toEqual([
+      "Rest, wait 5 minutes and re-measure. If it is still above 180/120, contact the flight surgeon now (or the Crew Medical Officer if the ground is out of contact).",
+    ]);
+    expect(remeasureFirst(e)).toBe(true);
+    const d = vitalsEscalation(v, e)!;
+    expect(d.guidance).toEqual(escalateGuidance(e));
+    expect(d.evidence.triggered.find((t) => t.measure === "bloodPressure")?.citation).toContain("HIGHER THAN 180 and/or HIGHER THAN 120");
+  });
+
+  it("SpO₂ escalation says to contact the flight surgeon now", () => {
+    const e = evaluateVitals({ ...ok, spo2: 88 });
+    expect(escalateGuidance(e)[0]).toMatch(/^Contact the flight surgeon now\./);
+    expect(remeasureFirst(e)).toBe(false);
   });
 });
 

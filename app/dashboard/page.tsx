@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { EarlyWarningSlot } from "@/components/alerts/early-warning-slot";
 import { OverviewView, type OverviewData } from "@/components/cosmic-shield/views/overview";
 import { activeCrew, getCurrentUser } from "@/lib/auth/dal";
+import { radiationSummaryFor } from "@/lib/radiation/data";
 import { sleepSummaryFor } from "@/lib/sleep/data";
 import { utcToday, vitalsSummaryFor } from "@/lib/vitals/data";
 import { addDays, dayLabel } from "@/lib/vitals/summary";
@@ -30,6 +31,7 @@ async function loadOverview(): Promise<OverviewData | null> {
   if (!crew) return null;
   const vitals = vitalsSummaryFor(crew.id, 7);
   const sleep = sleepSummaryFor(crew.id, 7);
+  const radiation = radiationSummaryFor(crew.id, 7);
   const lastNight = addDays(utcToday(), -1);
   return {
     vitals: { tile: vitals.tile, heartRateWeek: vitals.trends.heartRate.map((p) => p.value) },
@@ -41,6 +43,11 @@ async function loadOverview(): Promise<OverviewData | null> {
         status: sleep.tile.status,
       },
       week: sleep.trends.sleepHours.map((p, i, all) => ({ label: i === all.length - 1 ? "Last" : `${all.length - 1 - i}n`, value: p.value })),
+    },
+    radiation: {
+      tile: radiation.tile && { metric: "Latest dose", ...radiation.tile },
+      careerMsv: radiation.career.totalMsv,
+      careerStatus: radiation.career.status,
     },
   };
 }

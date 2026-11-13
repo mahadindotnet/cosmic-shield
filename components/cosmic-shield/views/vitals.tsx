@@ -13,7 +13,7 @@ import { StatusCard } from "@/components/cosmic-shield/status-card";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
 import { logVitalsAction, type LogVitalsState } from "@/lib/vitals/actions";
-import { ESCALATE_GUIDANCE } from "@/lib/vitals/escalation";
+import { escalateGuidance, remeasureFirst } from "@/lib/vitals/escalation";
 import type { MeasureCheck, VitalsMeasure } from "@/lib/vitals/rules";
 import type { DailyPoint, VitalsSummary } from "@/lib/vitals/summary";
 
@@ -122,7 +122,7 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
                     )}
                   </StatusCard>
                   {level === "escalate" ? (
-                    <EscalateNotice />
+                    <EscalateNotice guidance={latest ? escalateGuidance(latest.evaluation) : []} remeasure={!!latest && remeasureFirst(latest.evaluation)} />
                   ) : (
                     <NextStepCard
                       title={level === "watch" ? "Re-check in 30 minutes" : "Log today's vitals"}
@@ -277,10 +277,10 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
 
   useEffect(() => {
     if (!state.savedAt) return;
-    if (state.status === "escalate") toast.error("Reading saved: Escalate", { description: ESCALATE_GUIDANCE });
+    if (state.status === "escalate") toast.error("Reading saved: Escalate", { description: state.guidance?.join(" ") });
     else if (state.status === "watch") toast.warning("Reading saved: Watch", { description: state.reasons?.join(" ") });
     else toast.success("Reading saved: Normal");
-  }, [state.savedAt, state.status, state.reasons]);
+  }, [state.savedAt, state.status, state.reasons, state.guidance]);
 
   return (
     <EntryForm
@@ -297,7 +297,7 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
               Saved. <StatusBadge status={state.status ?? "normal"} />
               {state.reasons?.[0]}
             </p>
-            {state.status === "escalate" && <EscalateNotice compact />}
+            {state.status === "escalate" && <EscalateNotice compact guidance={state.guidance ?? []} />}
           </div>
         ) : state.error ? (
           <p className="text-xs text-escalate-foreground" role="alert" data-testid="vitals-error">
@@ -320,8 +320,11 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
   );
 }
 
-/** "Contact the flight surgeon" guidance for an Escalate reading. Icon + text, never colour alone. */
-function EscalateNotice({ compact }: { compact?: boolean }) {
+/**
+ * "Contact the flight surgeon" guidance for an Escalate reading, one line per
+ * escalating measure. Icon + text, never colour alone.
+ */
+function EscalateNotice({ guidance, compact, remeasure }: { guidance: string[]; compact?: boolean; remeasure?: boolean }) {
   return (
     <div
       role="alert"
@@ -330,9 +333,17 @@ function EscalateNotice({ compact }: { compact?: boolean }) {
     >
       <OctagonAlert className="mt-0.5 size-4 shrink-0 text-escalate-foreground" aria-hidden="true" />
       <div className="min-w-0">
-        <p className="text-sm font-medium text-escalate-foreground">Contact the flight surgeon</p>
-        {!compact && <p className="mt-1 text-xs text-foreground">{ESCALATE_GUIDANCE}</p>}
-        {compact && <p className="mt-0.5 text-[11px] text-foreground">An evidence record was sent with this reading.</p>}
+        <p className="text-sm font-medium text-escalate-foreground">
+          {remeasure ? "Re-measure, then contact the flight surgeon" : "Contact the flight surgeon"}
+        </p>
+        <ul className="mt-1 flex flex-col gap-1 text-xs text-foreground">
+          {guidance.map((g) => (
+            <li key={g}>{g}</li>
+          ))}
+        </ul>
+        <p className="mt-1 text-[11px] text-muted-foreground">
+          {compact ? "An evidence record was sent with this reading." : "An evidence record has been sent with this reading."}
+        </p>
       </div>
     </div>
   );

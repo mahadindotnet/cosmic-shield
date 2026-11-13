@@ -33,11 +33,31 @@ describe("evaluateVitals: Watch (app defaults)", () => {
     expect(statusOf({ glucose: t.glucoseMgDl.watchHigh })).toBe("watch");
   });
 
-  it("heart rate and blood pressure never escalate (no verified source)", () => {
+  it("heart rate never escalates (no verified source)", () => {
     expect(statusOf({ heartRate: 190 })).toBe("watch");
-    expect(statusOf({ systolic: 220, diastolic: 130 })).toBe("watch");
     expect(VITALS_LIMITS.heartRate.every((l) => l.level === "watch")).toBe(true);
-    expect([...VITALS_LIMITS.systolic, ...VITALS_LIMITS.diastolic].every((l) => l.level === "watch")).toBe(true);
+  });
+});
+
+describe("evaluateVitals: blood pressure (AHA hypertensive crisis: higher than 180 and/or higher than 120)", () => {
+  it("180/120 is not Escalate (strictly greater than)", () => {
+    expect(statusOf({ systolic: 180, diastolic: 120 })).toBe("watch");
+  });
+
+  it("181/100 escalates on systolic", () => {
+    const e = evaluateVitals({ ...ok, systolic: 181, diastolic: 100 });
+    expect(e.status).toBe("escalate");
+    const bp = e.checks.find((c) => c.measure === "bloodPressure")!;
+    expect(bp.reason).toContain("Systolic 181 mmHg is above the Escalate level (180 mmHg).");
+    expect(bp.triggered[0]).toMatchObject({ level: "escalate", op: ">", basis: "sourced", source: "aha-bp-categories" });
+  });
+
+  it("150/121 escalates on diastolic alone", () => {
+    const e = evaluateVitals({ ...ok, systolic: 150, diastolic: 121 });
+    expect(e.status).toBe("escalate");
+    expect(e.reasons[0]).toContain("Diastolic 121 mmHg is above the Escalate level (120 mmHg).");
+    // Systolic 150 is still reported, as Watch.
+    expect(e.reasons[0]).toContain("Systolic 150 mmHg is at or above the Watch level (135 mmHg).");
   });
 });
 

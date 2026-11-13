@@ -31,7 +31,7 @@ export default defineConfig({
     // Signs in once as CS-001 and saves the cookie for the dashboard tests.
     { name: "setup", testMatch: /auth\.setup\.ts/ },
     // Tests that sign in themselves (no saved session).
-    { name: "auth", testMatch: /(auth|early-warning|vitals)\.spec\.ts/ },
+    { name: "auth", testMatch: /(auth|early-warning|vitals|radiation)\.spec\.ts/ },
     {
       name: "dashboard",
       testMatch: /dashboard\.spec\.ts/,

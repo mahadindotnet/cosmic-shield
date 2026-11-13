@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { activeCrew, requireUser } from "@/lib/auth/dal";
 import { recordVitals } from "./data";
+import { escalateGuidance } from "./escalation";
 import type { VitalsStatus } from "./rules";
 import { VitalsInput, type VitalsField } from "./schema";
 
@@ -12,6 +13,8 @@ export interface LogVitalsState {
   /** Status of the saved reading (rules run on the saved values). */
   status?: VitalsStatus;
   reasons?: string[];
+  /** What to do now, one line per escalating measure. */
+  guidance?: string[];
   /** Set when the reading raised an escalation record for the flight surgeon. */
   escalationId?: number | null;
   error?: string;
@@ -45,5 +48,5 @@ export async function logVitalsAction(_prev: LogVitalsState, formData: FormData)
   revalidatePath("/dashboard/vitals");
   revalidatePath("/dashboard");
 
-  return { ok: true, status: e.status, reasons: e.reasons, escalationId, savedAt: Date.now() };
+  return { ok: true, status: e.status, reasons: e.reasons, guidance: escalateGuidance(e), escalationId, savedAt: Date.now() };
 }

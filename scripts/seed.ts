@@ -21,6 +21,7 @@ import { assertAuthEnv } from "@/lib/auth/config";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
 import { getAllCrewDashboards } from "@/lib/demo/crew-profiles";
+import { seedDoseSeries } from "@/lib/radiation/seed-data";
 import { seedVitalsSeries } from "@/lib/vitals/seed-data";
 
 async function main() {
@@ -146,6 +147,16 @@ async function main() {
     sleepRows += nights.length;
   }
 
+  // 14 daily dosimeter readings per crew member at the ISS dose (ALTEA via
+  // NASA RadLab, ±8 %), ending yesterday, plus a career summary entry for
+  // anyone who has flown before. Everyone stays below every Watch level.
+  let doseRows = 0;
+  crewUsers.forEach((u, i) => {
+    const rows = seedDoseSeries(i, today).map((d) => ({ ...d, userId: u.id, enteredBy: u.id, source: "seed" as const, createdAt }));
+    db.insert(doseEntry).values(rows).run();
+    doseRows += rows.length;
+  });
+
   console.log(
     "Seed complete:",
     Object.keys(dashboards).length,
@@ -155,7 +166,9 @@ async function main() {
     vitalsRows,
     "vitals entries,",
     sleepRows,
-    "sleep entries",
+    "sleep entries,",
+    doseRows,
+    "dose entries",
   );
 }
 

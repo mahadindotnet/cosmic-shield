@@ -6,9 +6,9 @@ import thresholds from "@/data/rules/thresholds.json";
  * labelled: "sourced" (cited in thresholds.json `sources` and docs/rules.md)
  * or "app default". The reading's status is the worst of its measures.
  *
- * Escalate limits exist only where a source was confirmed: SpO₂ < 90 % (WHO)
- * and glucose < 54 mg/dL (ADA level 2). Heart rate and blood pressure are
- * Watch only.
+ * Escalate limits exist only where a source was confirmed: SpO₂ < 90 % (WHO),
+ * glucose < 54 mg/dL (ADA level 2) and blood pressure > 180 systolic or
+ * > 120 diastolic (AHA "hypertensive crisis"). Heart rate is Watch only.
  */
 
 export type VitalsStatus = "normal" | "watch" | "escalate";
@@ -71,10 +71,14 @@ export const VITALS_LIMITS: Record<"heartRate" | "systolic" | "diastolic" | "spo
     { level: "watch", op: "<=", value: v.heartRateBpm.watchLow, basis: DEFAULT },
   ],
   systolic: [
+    { level: "escalate", op: ">", value: v.bloodPressureEscalate.systolicAbove, basis: "sourced", source: v.bloodPressureEscalate.source },
     { level: "watch", op: ">=", value: v.systolicBp.watchHigh, basis: DEFAULT },
     { level: "watch", op: "<=", value: v.systolicBp.watchLow, basis: DEFAULT },
   ],
-  diastolic: [{ level: "watch", op: ">=", value: v.diastolicBp.watchHigh, basis: DEFAULT }],
+  diastolic: [
+    { level: "escalate", op: ">", value: v.bloodPressureEscalate.diastolicAbove, basis: "sourced", source: v.bloodPressureEscalate.source },
+    { level: "watch", op: ">=", value: v.diastolicBp.watchHigh, basis: DEFAULT },
+  ],
   spo2: [
     { level: "escalate", op: "<", value: v.spo2Pct.escalateBelow, basis: "sourced", source: v.spo2Pct.escalateSource },
     { level: "watch", op: "<=", value: v.spo2Pct.watchLow, basis: DEFAULT },
