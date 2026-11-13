@@ -41,6 +41,14 @@ We did not download anything directly from another agency. These instruments' da
 | Flynn-Evans EE, Rueger M, Liu AM, et al. Effectiveness of caffeine and blue-enriched light on cognitive performance and electroencephalography correlates of alertness in a spaceflight robotics simulation. *npj Microgravity* 2023;9:93. | The ISS's programmable LED lighting, behind the sleep-lighting suggestion | [doi:10.1038/s41526-023-00332-w](https://doi.org/10.1038/s41526-023-00332-w) (PMC10730879) |
 | Zanon C, et al. *Tomography* 2026;12(7):106. | Confirms NASA-STD-3001's 600 mSv career limit (cites the NASA-STD-3001 Technical Brief) | [doi:10.3390/tomography12070106](https://doi.org/10.3390/tomography12070106) |
 
+### Clinical guidance (sourced Escalate and Watch limits)
+
+| Source | What we use | Link |
+|---|---|---|
+| World Health Organization. *Pulse Oximetry Training Manual*. WHO Patient Safety, 2011. ISBN 978 92 4 150113 2. | SpO₂ < 90 % → Escalate ("A saturation of less than 90% is a clinical emergency"). Written for anaesthesia providers. | [PDF (who.int)](https://cdn.who.int/media/docs/default-source/patient-safety/pulse-oximetry/who-ps-pulse-oxymetry-training-manual-en.pdf) |
+| American Diabetes Association. *Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose)*, patient version, based on the Standards of Care in Diabetes—2025. | Glucose < 70 mg/dL → Watch (level 1), < 54 mg/dL → Escalate (level 2) | [PDF (professional.diabetes.org)](https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf) |
+| American Heart Association, blood pressure categories ("hypertensive crisis") | **Not used yet**: heart.org could not be read to confirm the wording (HTTP 403, 2026-11-13) | [heart.org/bplevels](https://www.heart.org/bplevels) (unverified) |
+
 ### Tools used to find and check the papers
 
 | Tool | Use | Link |
@@ -54,12 +62,12 @@ We did not download anything directly from another agency. These instruments' da
 
 These are Cosmic Shield settings, labelled **app default** in the code and UI and listed in [rules.md](./rules.md). They are not NASA standards or clinical cut-offs:
 
-- Vital-sign Watch bands (heart rate, blood pressure, SpO₂, glucose 70–140 mg/dL, HRV, sleep, stress).
+- Vital-sign Watch bands (heart rate, blood pressure, SpO₂ ≤ 94 %, glucose ≥ 140 mg/dL, HRV, sleep, self-rated stress ≥ 4/5).
 - Radiation Watch levels (2 × the daily dose; 300 mSv cumulative = half the career limit).
 - The `hrv_sleep_decline` pattern settings.
 - Exercise and hydration targets, SANS cadence, Bristol and SANS settings, mission day 42, ISS increment and lunar stay lengths.
 
-**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), the 14 nights of HRV and sleep (`lib/demo/nightly.ts`) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
+**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
 
 ## 5. Libraries
 

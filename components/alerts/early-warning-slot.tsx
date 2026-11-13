@@ -1,5 +1,6 @@
 import { EarlyWarningCard } from "./early-warning-card";
-import { isAcknowledged, nightlyReadings, utcToday } from "@/lib/alerts/data";
+import { isAcknowledged, utcToday } from "@/lib/alerts/data";
+import { nightlyReadingsFor } from "@/lib/sleep/data";
 import { getCurrentUser } from "@/lib/auth/dal";
 import type { UserRow } from "@/lib/auth/users";
 import {
@@ -9,7 +10,8 @@ import {
 
 /**
  * Server part of the early-warning card: evaluates hrv_sleep_decline for the
- * signed-in crew member against their own data. Renders nothing for the
+ * signed-in crew member against their own sleep_entry rows (newest entry per
+ * night, so nights logged by hand replace the seeded ones). Renders nothing for the
  * flight surgeon, when the rule doesn't fire, or once dismissed today.
  * Render inside <Suspense> (it reads the session cookie).
  */
@@ -20,11 +22,11 @@ export async function EarlyWarningSlot() {
 }
 
 function evaluateFor(user: UserRow) {
-  if (user.role !== "crew" || !user.profileId) return null;
+  if (user.role !== "crew") return null;
   const today = utcToday();
   if (isAcknowledged(user.id, HRV_SLEEP_DECLINE_ID, today)) return null;
   const result = evaluateHrvSleepDecline(
-    nightlyReadings(user.profileId),
+    nightlyReadingsFor(user.id),
     today,
   );
   return result.fired ? result : null;

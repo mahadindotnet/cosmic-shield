@@ -47,8 +47,9 @@ test("CS-003 sees the calm early-warning card with its numbers and can dismiss i
   await expect(page.getByTestId("early-warning-card")).toHaveCount(0);
 });
 
-test("CS-001 (normal pattern) sees no early-warning card", async ({ page }) => {
-  await signInOk(page, "CS-001");
+test("CS-002 (normal pattern) sees no early-warning card", async ({ page }) => {
+  // CS-002, not CS-001: the sleep test logs low nights for CS-001.
+  await signInOk(page, "CS-002");
   await expect(page.getByTestId("streak-panel")).toBeVisible();
   await expect(page.getByTestId("early-warning-card")).toHaveCount(0);
 });

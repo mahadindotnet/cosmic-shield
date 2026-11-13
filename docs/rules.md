@@ -19,25 +19,47 @@ Each number in `data/rules/thresholds.json`, `lib/health/reference-ranges.ts` an
 | Mars gravity 0.38 g, light delay 3–22 min, sol ≈ 24.66 h | sourced | [NASA Mars Fact Sheet](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html) |
 | Mars transit 180 days, Mars surface 500 days | sourced | Hassler et al., *Science* 2014: one NASA design reference mission |
 | ISS 180-day increment, lunar 30-day stay, ISS "0 g" and "< 1 s" | app default | Scenario values |
-| Vital-sign baselines and Watch bands (HR, HRV, SpO₂, BP, sleep, stress), glucose 70–140, exercise 120–180 min, hydration 2–3 L, SANS cadence, Bristol and SANS settings, mission day 42 | app default | Not clinical cut-offs |
+| SpO₂ below 90 % → Escalate | sourced | World Health Organization, *Pulse Oximetry Training Manual*, WHO Patient Safety 2011 (ISBN 978 92 4 150113 2), [PDF](https://cdn.who.int/media/docs/default-source/patient-safety/pulse-oximetry/who-ps-pulse-oxymetry-training-manual-en.pdf): "If the oxygen saturation is 94% or lower, the patient is hypoxic and needs to be treated quickly. A saturation of less than 90% is a clinical emergency." Written for anaesthesia providers; applied here as a general hypoxaemia cut-off. |
+| Glucose below 70 mg/dL → Watch; below 54 mg/dL → Escalate | sourced | American Diabetes Association, *Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose)*, patient version, based on the Standards of Care in Diabetes—2025, [PDF](https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf): "LEVEL 1 Your blood glucose is less than 70 mg/dL but over or at 54 mg/dL"; "LEVEL 2 Your blood glucose is less than 54 mg/dL". |
+| Blood pressure Escalate (AHA "hypertensive crisis", > 180 and/or > 120 mmHg) | **not added** | Could not be confirmed on a primary AHA page: heart.org returned 403 to automated fetches (checked 2026-11-13). Blood pressure stays Watch-only until the source is verified; then add it in `thresholds.json` (`bloodPressureEscalate`) with its citation. |
+| Resting heart rate Escalate | **not added** | No verifiable source for an escalation cut-off was found. Heart rate stays Watch-only. |
+| Vital-sign baselines and Watch bands (HR, HRV, SpO₂ ≤ 94 %, BP, sleep, stress), glucose ≥ 140, self-rated stress ≥ 4/5, exercise 120–180 min, hydration 2–3 L, SANS cadence, Bristol and SANS settings, mission day 42 | app default | Not clinical cut-offs |
 | Glucose "Inspiration4 crew reference (n=4)" 56–100 mg/dL | sourced | NASA OSDR OSD-575 (Inspiration4 metabolic panel): min–max of all 12 pre-flight samples (L-92, L-44, L-3) from the 4 crew, `data/nasa/derived/baselines.json`. Fasting status not stated in the source. Shown for context only; it does not set the Watch bounds. |
 
 ## Vitals (`lib/vitals/rules.ts`)
 
-Runs every time vitals are read (statuses are never stored), so a changed threshold applies to old readings too. Each measure of a reading is checked against its Watch bounds in `data/rules/thresholds.json` (all **app default**); the reading's status is the worst of its measures. Vitals rules raise **Watch** only, never Escalate.
+Runs every time vitals are read (statuses are never stored), so a changed threshold applies to old readings too. Each measure of a reading is checked against its limits in `data/rules/thresholds.json`; the reading's status is the worst of its measures. Every limit carries its basis, and every sourced limit must name a citation in `thresholds.json` `sources` (the module refuses to load otherwise).
 
-| Measure | Watch when | Basis |
+| Measure | Watch when | Escalate when |
 |---|---|---|
-| Heart rate | ≥ 88 or ≤ 52 bpm | app default |
-| Blood pressure | systolic ≥ 135 or ≤ 100 mmHg, or diastolic ≥ 88 mmHg | app default |
-| SpO₂ | ≤ 94 % | app default |
-| Glucose (optional) | ≥ 140 or ≤ 70 mg/dL | app default |
+| Heart rate | ≥ 88 or ≤ 52 bpm (app default) | never (no verified source) |
+| Blood pressure | systolic ≥ 135 or ≤ 100 mmHg, or diastolic ≥ 88 mmHg (app default) | never (AHA source not verified, see above) |
+| SpO₂ | ≤ 94 % (app default) | **< 90 %** (sourced: WHO) |
+| Glucose (optional) | **< 70 mg/dL** (sourced: ADA level 1), or ≥ 140 mg/dL (app default) | **< 54 mg/dL** (sourced: ADA level 2) |
 
-Bounds are inclusive: the band drawn on charts is where readings count as Normal, and Watch begins at its edge. Example: 150/95 → Watch ("Systolic 150 mmHg is at or above the Watch level (135 mmHg)", and the same for diastolic 95). The Health Dashboard tile shows the first flagged measure of the latest reading (heart rate when nothing is flagged), so a Watch badge never sits next to an unrelated number. Tests: `lib/vitals/rules.test.ts`.
+App-default Watch bounds are inclusive: the band drawn on charts is where readings count as Normal, and Watch begins at its edge. Sourced limits use the source's own comparison ("less than 90%", "less than 54 mg/dL"), so SpO₂ 90 % is Watch and 89 % is Escalate; glucose 54 is Watch and 53 is Escalate. Examples: 150/95 → Watch ("Systolic 150 mmHg is at or above the Watch level (135 mmHg)", and the same for diastolic 95); SpO₂ 88 → Escalate ("SpO₂ 88 % is below the Escalate level (90 %).").
+
+**When a reading escalates:** the reading is saved together with a row in the `escalation` table (same transaction), holding the values, every limit crossed with its basis and full citation, and the crew ID. The page and the toast show **"Contact the flight surgeon"** with the guidance to re-check the reading and keep the device on. The Health Dashboard tile shows the worst flagged measure of the latest reading (heart rate when nothing is flagged), so a status badge never sits next to an unrelated number.
+
+Tests: `lib/vitals/rules.test.ts`, `lib/vitals/escalation.test.ts`; Playwright `e2e/vitals.spec.ts` (SpO₂ 88 → Escalate).
+
+## Sleep & Stress (`lib/sleep/rules.ts`)
+
+Per night, evaluated on read, Watch only. All **app default**:
+
+| Measure | Watch when |
+|---|---|
+| Sleep | ≤ 5.5 h |
+| HRV (RMSSD, optional) | ≤ 28 ms (population floor; the personal pattern below matters more) |
+| Stress (self-rated 1 calm – 5 overwhelmed) | ≥ 4 |
+
+Sleep quality (1–5) is recorded but not scored. Several entries for the same night are kept in history; the newest one counts for trends, the tile and the early-warning rule. Tests: `lib/sleep/sleep.test.ts`.
 
 ## `hrv_sleep_decline` (early warning)
 
 Code: `lib/rules/hrv-sleep-decline.ts` · Tests: `lib/rules/hrv-sleep-decline.test.ts` · Thresholds: `thresholds.patterns.hrvSleepDecline`
+
+**Data:** the crew member's own `sleep_entry` rows (newest entry per night), so nights logged by hand on the Sleep & Stress page count, and replace the seeded night for the same date.
 
 **What it looks for:** heart-rate variability (HRV, as RMSSD in milliseconds) clearly below the crew member's **own** recent baseline for several nights in a row, together with less sleep than usual. The two together suggest recovery isn't keeping up, so the card suggests simple countermeasures before it becomes a bigger problem.
 
@@ -95,9 +117,11 @@ The card shows the headline "HRV has dropped for three nights. Sleep is down." I
 
 ### Demo data
 
-`npm run db:seed` writes 14 nights of simulated HRV and sleep for each demo crew member, ending last night (UTC):
+`npm run db:seed` writes 14 nights of simulated sleep, HRV (RMSSD), quality and stress per demo crew member into `sleep_entry` (source "seed"), ending last night (UTC). Generator: `lib/demo/nightly.ts` (deterministic).
 
+- **Realistic variation:** night-to-night RMSSD varies with a coefficient of variation of 8–12 % and sleep with an SD of 0.4–0.6 h around each person's baseline (normal draws capped at ±2.5 SD). Normal nights are kept above the per-night Watch levels, so seeded data never shows Watch on its own.
 - **CS-003 Lindqvist:** 11 normal nights (around 45 ms RMSSD, about 7.2 h sleep), then 3 nights with HRV about 18–22 % down and sleep 5.1–5.4 h. The rule fires.
-- **Everyone else:** normal variation (within ±4 % HRV, ±0.25 h sleep). The rule stays quiet.
+- **Everyone else:** normal variation only. The rule stays quiet (checked in `lib/sleep/sleep.test.ts`).
+- **By hand:** entering 3 low nights (e.g. HRV 30 ms, 4.8 h) for the last three nights as CS-001 makes the card appear (`e2e/sleep-stress.spec.ts`).
 
 Because alerts only use the last 2 nights, **re-seed before a demo**.

@@ -166,12 +166,18 @@ export function SegmentedField({
   options,
   required,
   hint,
+  defaultValue,
+  error,
 }: {
   label: string;
   name: string;
   options: { value: string; label: string; title?: string }[];
   required?: boolean;
   hint?: string;
+  /** Pre-selected option (e.g. what was typed before a rejected submit). */
+  defaultValue?: string;
+  /** Validation message from the server. */
+  error?: string;
 }) {
   return (
     <fieldset className="flex flex-col gap-1.5">
@@ -179,14 +185,28 @@ export function SegmentedField({
       <div className="flex flex-wrap gap-1.5">
         {options.map((o) => (
           <label key={o.value} title={o.title} className="cursor-pointer">
-            <input type="radio" name={name} value={o.value} required={required} className="peer sr-only" />
+            <input
+              type="radio"
+              name={name}
+              value={o.value}
+              required={required}
+              defaultChecked={o.value === defaultValue}
+              aria-label={`${label}: ${o.label}`}
+              className="peer sr-only"
+            />
             <span className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-input bg-input/30 px-2.5 font-mono text-xs text-muted-foreground transition-colors peer-checked:border-primary/60 peer-checked:bg-primary/15 peer-checked:text-primary peer-focus-visible:ring-3 peer-focus-visible:ring-ring/50 hover:text-foreground">
               {o.label}
             </span>
           </label>
         ))}
       </div>
-      {hint && <p className="text-[11px] text-muted-foreground">{hint}</p>}
+      {error ? (
+        <p className="text-[11px] text-escalate-foreground" data-testid={`entry-${name}-error`}>
+          {error}
+        </p>
+      ) : (
+        hint && <p className="text-[11px] text-muted-foreground">{hint}</p>
+      )}
     </fieldset>
   );
 }

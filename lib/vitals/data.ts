@@ -1,9 +1,10 @@
 import "server-only";
 import { desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { vitalsEntry, type EntrySource } from "@/lib/db/schema";
+import { escalation, vitalsEntry } from "@/lib/db/schema";
 import { getBaselines } from "@/lib/nasa/loaders";
-import type { VitalsValues } from "./rules";
+import { vitalsEscalation } from "./escalation";
+import { evaluateVitals, type VitalsValues } from "./rules";
 import { summarizeVitals, type VitalsRow, type VitalsSummary } from "./summary";
 
 /** Newest rows kept on the page (history table + 14-day trend). */
@@ -11,23 +12,44 @@ const HISTORY_LIMIT = 200;
 
 export const utcToday = () => new Date().toISOString().slice(0, 10);
 
-export function insertVitals(
-  userId: number,
-  values: VitalsValues,
-  opts: { enteredBy: number; source?: EntrySource; recordedAt?: string },
-) {
-  const now = new Date().toISOString();
-  return db
-    .insert(vitalsEntry)
-    .values({
-      userId,
-      enteredBy: opts.enteredBy,
-      source: opts.source ?? "manual",
-      recordedAt: opts.recordedAt ?? now,
-      createdAt: now,
-      ...values,
-    })
-    .run();
+/**
+ * Saves a manual reading and, when the rules put it in Escalate, an
+ * escalation record with its evidence, in one transaction.
+ */
+export function recordVitals(crew: { id: number; crewId: string }, enteredBy: number, values: VitalsValues) {
+  const evaluation = evaluateVitals(values);
+  const draft = vitalsEscalation(values, evaluation);
+  return db.transaction((tx) => {
+    const now = new Date().toISOString();
+    const entry = tx
+      .insert(vitalsEntry)
+      .values({ userId: crew.id, enteredBy, source: "manual", recordedAt: now, createdAt: now, ...values })
+      .run();
+    const entryId = Number(entry.lastInsertRowid);
+    let escalationId: number | null = null;
+    if (draft) {
+      const row = tx
+        .insert(escalation)
+        .values({
+          userId: crew.id,
+          crewId: crew.crewId,
+          ruleId: draft.ruleId,
+          entryTable: "vitals_entry",
+          entryId,
+          reason: draft.reason,
+          evidenceJson: JSON.stringify(draft.evidence),
+          createdAt: now,
+        })
+        .run();
+      escalationId = Number(row.lastInsertRowid);
+    }
+    return { entryId, evaluation, escalationId };
+  });
+}
+
+/** One user's escalations, newest first. */
+export function escalationsFor(userId: number, limit = 20) {
+  return db.select().from(escalation).where(eq(escalation.userId, userId)).orderBy(desc(escalation.createdAt), desc(escalation.id)).limit(limit).all();
 }
 
 /** One user's vitals, newest first. Callers must have checked access to `userId`. */

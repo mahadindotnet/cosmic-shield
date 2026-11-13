@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import { toast } from "sonner";
-import { Activity, Droplet, HeartPulse, Wind } from "lucide-react";
+import { Activity, Droplet, HeartPulse, OctagonAlert, Wind } from "lucide-react";
 import { Await } from "@/components/cosmic-shield/await";
 import { EntryField, EntryFieldGrid, EntryForm } from "@/components/cosmic-shield/entry-form";
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
@@ -13,6 +13,7 @@ import { StatusCard } from "@/components/cosmic-shield/status-card";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
 import { logVitalsAction, type LogVitalsState } from "@/lib/vitals/actions";
+import { ESCALATE_GUIDANCE } from "@/lib/vitals/escalation";
 import type { MeasureCheck, VitalsMeasure } from "@/lib/vitals/rules";
 import type { DailyPoint, VitalsSummary } from "@/lib/vitals/summary";
 
@@ -99,14 +100,14 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
           <Await promise={data}>
             {(d) => {
               const { latest, takenAt, emptyCaption } = view(d);
-              const watch = latest?.evaluation.status === "watch";
+              const level = latest?.evaluation.status;
               const flagged = latest?.evaluation.reasons ?? [];
               return (
                 <>
                   <StatusCard
                     title="Latest reading"
                     icon={HeartPulse}
-                    value={latest ? (watch ? "Watch" : "Normal") : null}
+                    value={latest ? (level === "escalate" ? "Escalate" : level === "watch" ? "Watch" : "Normal") : null}
                     status={latest?.evaluation.status}
                     caption={latest ? takenAt : emptyCaption}
                     reference={latest ? `${flagged.length} measure${flagged.length === 1 ? "" : "s"} flagged` : undefined}
@@ -120,14 +121,18 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
                       </ul>
                     )}
                   </StatusCard>
-                  <NextStepCard
-                    title={watch ? "Re-check in 30 minutes" : "Log today's vitals"}
-                    body={
-                      watch
-                        ? "Rest seated for five minutes and take the flagged measure again. If it stays in Watch, follow onboard guidance."
-                        : "One set of readings takes about five minutes. Tap a callout to jump to its field."
-                    }
-                  />
+                  {level === "escalate" ? (
+                    <EscalateNotice />
+                  ) : (
+                    <NextStepCard
+                      title={level === "watch" ? "Re-check in 30 minutes" : "Log today's vitals"}
+                      body={
+                        level === "watch"
+                          ? "Rest seated for five minutes and take the flagged measure again. If it stays in Watch, follow onboard guidance."
+                          : "One set of readings takes about five minutes. Tap a callout to jump to its field."
+                      }
+                    />
+                  )}
                 </>
               );
             }}
@@ -150,7 +155,7 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="vitals-status-cards">
                 <StatusCard title="Heart rate" icon={HeartPulse} value={value("heartRate")} unit="bpm" status={status("heartRate")} caption={caption} reference={`Normal ${R.heartRate.min}–${R.heartRate.max} bpm`} />
                 <StatusCard title="Blood pressure" icon={Activity} value={value("bloodPressure")} unit="mmHg" status={status("bloodPressure")} caption={caption} reference={`Normal ${R.systolic.min}–${R.systolic.max} / <${R.diastolic.max}`} />
-                <StatusCard title="SpO₂" icon={Wind} value={value("spo2")} unit="%" status={status("spo2")} caption={caption} reference={`Normal above ${R.spo2.min}%`} />
+                <StatusCard title="SpO₂" icon={Wind} value={value("spo2")} unit="%" status={status("spo2")} caption={caption} reference={`Normal above ${R.spo2.min}% · Escalate below 90%`} />
                 <StatusCard
                   title="Glucose"
                   icon={Droplet}
@@ -272,7 +277,8 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
 
   useEffect(() => {
     if (!state.savedAt) return;
-    if (state.status === "watch") toast.warning("Reading saved: Watch", { description: state.reasons?.join(" ") });
+    if (state.status === "escalate") toast.error("Reading saved: Escalate", { description: ESCALATE_GUIDANCE });
+    else if (state.status === "watch") toast.warning("Reading saved: Watch", { description: state.reasons?.join(" ") });
     else toast.success("Reading saved: Normal");
   }, [state.savedAt, state.status, state.reasons]);
 
@@ -286,10 +292,13 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
       disabledNote={canEdit === null ? "Loading…" : canEdit ? undefined : "Flight surgeons are view-only. Crew members log their own vitals."}
       message={
         state.ok ? (
-          <p className="flex flex-wrap items-center gap-2 text-xs text-foreground" data-testid="vitals-result" role="status">
-            Saved. <StatusBadge status={state.status ?? "normal"} />
-            {state.reasons?.[0]}
-          </p>
+          <div className="flex flex-col gap-2" data-testid="vitals-result" role="status">
+            <p className="flex flex-wrap items-center gap-2 text-xs text-foreground">
+              Saved. <StatusBadge status={state.status ?? "normal"} />
+              {state.reasons?.[0]}
+            </p>
+            {state.status === "escalate" && <EscalateNotice compact />}
+          </div>
         ) : state.error ? (
           <p className="text-xs text-escalate-foreground" role="alert" data-testid="vitals-error">
             {state.error}
@@ -308,5 +317,23 @@ function VitalsForm({ canEdit }: { canEdit: boolean | null }) {
         <EntryField label="Glucose (optional)" name="glucose" unit="mg/dL" type="number" inputMode="decimal" min={20} max={600} step="any" defaultValue={v.glucose} error={err.glucose} />
       </div>
     </EntryForm>
+  );
+}
+
+/** "Contact the flight surgeon" guidance for an Escalate reading. Icon + text, never colour alone. */
+function EscalateNotice({ compact }: { compact?: boolean }) {
+  return (
+    <div
+      role="alert"
+      data-testid="escalate-guidance"
+      className="flex gap-3 rounded-xl border border-escalate/45 bg-escalate/12 p-3 text-left"
+    >
+      <OctagonAlert className="mt-0.5 size-4 shrink-0 text-escalate-foreground" aria-hidden="true" />
+      <div className="min-w-0">
+        <p className="text-sm font-medium text-escalate-foreground">Contact the flight surgeon</p>
+        {!compact && <p className="mt-1 text-xs text-foreground">{ESCALATE_GUIDANCE}</p>}
+        {compact && <p className="mt-0.5 text-[11px] text-foreground">An evidence record was sent with this reading.</p>}
+      </div>
+    </div>
   );
 }

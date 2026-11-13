@@ -33,11 +33,14 @@ export const REFERENCE_RANGES = {
   },
   spo2: { min: v.spo2Pct.watchLow, max: 100, unit: "%", label: "Normal band", provenance: APP_DEFAULT },
   glucose: {
-    min: v.glucoseMgDl.watchLow,
+    min: v.glucoseMgDl.watchBelow,
     max: v.glucoseMgDl.watchHigh,
     unit: "mg/dL",
     label: "Normal band",
-    provenance: { basis: "app default", note: v.glucoseMgDl.note },
+    provenance: {
+      basis: "app default",
+      note: `Lower bound 70 mg/dL: ADA level 1 hypoglycaemia (sourced, see docs/rules.md). ${v.glucoseMgDl.note}`,
+    },
   },
   sleepHours: {
     min: v.sleepHours.watchLow,

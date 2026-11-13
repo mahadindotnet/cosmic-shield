@@ -70,11 +70,12 @@ export function dailySeries(rows: VitalsRow[], key: TrendKey, today: string, day
 }
 
 /**
- * The tile shows one reading: the first flagged measure of the latest entry,
+ * The tile shows one reading: the worst flagged measure of the latest entry,
  * so a Watch is never shown next to an unrelated number; heart rate otherwise.
  */
 export function tileReading(evaluation: VitalsEvaluation): TileReading {
-  const flagged = evaluation.checks.find((c) => c.status === "watch");
+  const flagged =
+    evaluation.checks.find((c) => c.status === "escalate") ?? evaluation.checks.find((c) => c.status === "watch");
   const c: MeasureCheck = flagged ?? evaluation.checks.find((x) => x.measure === "heartRate")!;
   return { metric: c.label, value: c.display, unit: c.unit, status: evaluation.status };
 }

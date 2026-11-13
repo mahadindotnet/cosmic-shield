@@ -53,6 +53,12 @@ export interface OverviewData {
     /** Daily mean heart rate, last 7 days, oldest first. */
     heartRateWeek: (number | null)[];
   };
+  sleep: {
+    /** Latest night: metric label (e.g. "Sleep last night"), hours, status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Sleep hours, last 7 nights, oldest first. */
+    week: MiniPoint[];
+  };
 }
 
 const NO_DATA: Promise<OverviewData | null> = Promise.resolve(null);
@@ -97,10 +103,10 @@ export function OverviewView({
 }) {
   const env = useMissionEnvironment();
   const withData = (t: TileDef) =>
-    t.slug === "vitals" ? (
+    t.slug === "vitals" || t.slug === "sleep-stress" ? (
       <Await key={t.slug} promise={data}>
         {(d) => {
-          const tile = d?.vitals.tile;
+          const tile = t.slug === "vitals" ? d?.vitals.tile : d?.sleep.tile;
           return (
             <ModuleTile
               {...(tile ? { ...t, metric: tile.metric, value: tile.value, unit: tile.unit, status: tile.status } : t)}
@@ -236,16 +242,20 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           keyPoint={`7 nights · target ${R.sleepHours.min}–${R.sleepHours.max} h`}
           href="/dashboard/sleep-stress"
         >
-          <MiniChart
-            kind="bar"
-            data={[]}
-            window={WEEK}
-            unit="h"
-            seriesLabel="Sleep"
-            colorSlot={2}
-            band={R.sleepHours}
-            yDomain={[0, 10]}
-          />
+          <Await promise={data}>
+            {(d) => (
+              <MiniChart
+                kind="bar"
+                data={d?.sleep.week ?? []}
+                window={WEEK}
+                unit="h"
+                seriesLabel="Sleep"
+                colorSlot={2}
+                band={R.sleepHours}
+                yDomain={[0, 10]}
+              />
+            )}
+          </Await>
         </StatPanel>
 
         <StatPanel

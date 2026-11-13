@@ -61,8 +61,9 @@ test("CS-001 logs BP 150/95: Watch on the page, in history and on the dashboard;
   await crew2.close();
 });
 
-test("rejects an impossible reading with field messages and keeps what was typed", async ({ page }) => {
+test("rejects an impossible reading, then SpO₂ 88 escalates with flight-surgeon guidance", async ({ page }) => {
   // CS-003: CS-004 is locked and unlocked by the auth tests running alongside.
+  // One test so the history counts can't race.
   await signInOk(page, "CS-003");
   await page.goto("/dashboard/vitals");
   const form = visible(page, "vitals-form");
@@ -75,7 +76,28 @@ test("rejects an impossible reading with field messages and keeps what was typed
   await expect(visible(page, "entry-spo2-error")).toHaveText("SpO₂ must be 50–100.");
   await expect(visible(page, "entry-diastolic-error")).toHaveText("Diastolic must be lower than systolic.");
   await expect(form.getByLabel("Heart rate")).toHaveValue("72");
-  await expect(visible(page, "vitals-history").getByTestId("vitals-history-row")).toHaveCount(14);
+  const rows = visible(page, "vitals-history").getByTestId("vitals-history-row");
+  await expect(rows).toHaveCount(14);
+
+  // SpO₂ 88 % (WHO: below 90 % is a clinical emergency) → Escalate.
+  await form.getByLabel("SpO₂").fill("88");
+  await form.getByLabel("Systolic").fill("118");
+  await form.getByLabel("Diastolic").fill("74");
+  await form.getByRole("button", { name: "Log entry" }).click();
+
+  const result = visible(page, "vitals-result");
+  await expect(result).toContainText("Escalate");
+  await expect(result).toContainText("SpO₂ 88 % is below the Escalate level (90 %).");
+  await expect(result.getByTestId("escalate-guidance")).toContainText("Contact the flight surgeon");
+  await expect(rows).toHaveCount(15);
+  await expect(rows.first()).toHaveAttribute("data-status", "escalate");
+  // The hero repeats the guidance in full.
+  await expect(page.getByTestId("escalate-guidance").filter({ visible: true }).filter({ hasText: "evidence record has been sent" })).toBeVisible();
+
+  await page.goto("/dashboard");
+  const tile = visible(page, "tile-vitals");
+  await expect(tile).toHaveAttribute("data-status", "escalate");
+  await expect(tile).toContainText("SpO₂");
 });
 
 test("the flight surgeon is view-only on Vitals", async ({ page }) => {

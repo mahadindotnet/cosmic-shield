@@ -2,6 +2,8 @@
   "_about": "Rule thresholds. Every entry has a basis: \"sourced\" (see its source key in `sources`) or \"app default\" (a Cosmic Shield setting, not a NASA standard or clinical cut-off). See docs/rules.md.",
   "sources": {
     "nasa-std-3001-career": "NASA-STD-3001 Volume 1 (NASA Space Flight Human-System Standard, Crew Health): universal career effective-dose limit of 600 mSv. Confirmed via Zanon C et al., Tomography 2026;12(7):106 (doi:10.3390/tomography12070106), which cites the NASA-STD-3001 Technical Brief; NASA's own PDF links returned 404 when checked (2026-11-13).",
+    "who-pulse-oximetry-2011": "World Health Organization. Pulse Oximetry Training Manual. WHO Patient Safety, 2011 (ISBN 978 92 4 150113 2), https://cdn.who.int/media/docs/default-source/patient-safety/pulse-oximetry/who-ps-pulse-oxymetry-training-manual-en.pdf. Verbatim: \"During anaesthesia the oxygen saturation should always be 95 - 100%. If the oxygen saturation is 94% or lower, the patient is hypoxic and needs to be treated quickly. A saturation of less than 90% is a clinical emergency.\" Written for anaesthesia providers; applied here as a general hypoxaemia cut-off.",
+    "ada-hypoglycemia-levels-2025": "American Diabetes Association. Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose), patient version, based on the Standards of Care in Diabetes—2025, https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf. Verbatim: \"LEVEL 1 Your blood glucose is less than 70 mg/dL but over or at 54 mg/dL\"; \"LEVEL 2 Your blood glucose is less than 54 mg/dL\".",
     "radlab-iss-altea": "NASA OSDR RadLab, ISS ALTEA-Survey dose_equivalent_rate, 1–7 Jun 2011: 0.717 mSv/day (data/nasa/derived/radiation-environments.json).",
     "nasa-mars-factsheet": "NASA Mars Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html): Earth–Mars distance 54.6–401.4 × 10^6 km; maximum one-way light time = 401.4e6 km ÷ 299,792.458 km/s ≈ 22.3 min."
   },
@@ -13,16 +15,33 @@
   "vitals": {
     "heartRateBpm": { "baseline": 68, "watchHigh": 88, "watchLow": 52, "basis": "app default" },
     "hrvMs": { "baseline": 42, "watchLow": 28, "basis": "app default" },
-    "spo2Pct": { "baseline": 97, "watchLow": 94, "basis": "app default" },
+    "spo2Pct": {
+      "baseline": 97,
+      "watchLow": 94,
+      "basis": "app default",
+      "escalateBelow": 90,
+      "escalateBasis": "sourced",
+      "escalateSource": "who-pulse-oximetry-2011"
+    },
     "systolicBp": { "baseline": 118, "watchHigh": 135, "watchLow": 100, "basis": "app default" },
     "diastolicBp": { "baseline": 72, "watchHigh": 88, "basis": "app default" },
     "glucoseMgDl": {
-      "watchLow": 70,
+      "watchBelow": 70,
+      "watchBelowBasis": "sourced",
+      "watchBelowSource": "ada-hypoglycemia-levels-2025",
+      "escalateBelow": 54,
+      "escalateBasis": "sourced",
+      "escalateSource": "ada-hypoglycemia-levels-2025",
       "watchHigh": 140,
       "basis": "app default",
-      "note": "Display band and Watch bounds only, not a diagnostic cut-off. Fasting status is not recorded with the reading."
+      "note": "watchHigh is an app default display band, not a diagnostic cut-off. Fasting status is not recorded with the reading."
+    },
+    "bloodPressureEscalate": {
+      "status": "not added",
+      "note": "AHA 'hypertensive crisis' (>180 and/or >120 mmHg) could not be confirmed on a primary AHA page: heart.org returned 403 when checked (2026-11-13). Add escalateAbove values here with a source once verified."
     },
     "sleepHours": { "baseline": 7.2, "watchLow": 5.5, "basis": "app default" },
+    "selfRatedStress": { "scale": "1 calm – 5 overwhelmed", "watchHigh": 4, "basis": "app default" },
     "stressIndex": { "baseline": 35, "watchHigh": 65, "basis": "app default" },
     "radiationMsvDay": {
       "baseline": 0.717,

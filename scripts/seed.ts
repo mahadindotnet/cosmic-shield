@@ -6,6 +6,7 @@ import {
   countermeasureEntry,
   crew,
   doseEntry,
+  escalation,
   escalationEvent,
   eyeScreening,
   giEntry,
@@ -15,7 +16,7 @@ import {
   vitalReading,
   vitalsEntry,
 } from "@/lib/db/schema";
-import { demoNightlySeries, NIGHTLY_METRICS } from "@/lib/demo/nightly";
+import { demoNightlySeries } from "@/lib/demo/nightly";
 import { assertAuthEnv } from "@/lib/auth/config";
 import { DEMO_ACCOUNTS } from "@/lib/auth/demo-accounts";
 import { hashPin } from "@/lib/auth/pin";
@@ -27,7 +28,7 @@ async function main() {
   assertAuthEnv();
 
   // Typed health entries (all rows, including manual ones: the seed resets the demo).
-  for (const t of [vitalsEntry, sleepEntry, doseEntry, countermeasureEntry, giEntry, eyeScreening, checkin]) {
+  for (const t of [vitalsEntry, sleepEntry, doseEntry, countermeasureEntry, giEntry, eyeScreening, checkin, escalation]) {
     await db.delete(t);
   }
   await db.delete(alertAck);
@@ -65,22 +66,6 @@ async function main() {
         recordedAt: now,
       });
     }
-
-    // 14 nights of simulated HRV (RMSSD) and sleep, ending last night (UTC).
-    const today = new Date().toISOString().slice(0, 10);
-    const nights = demoNightlySeries(payload.id, today);
-    nights.forEach((n, i) => {
-      const missionDay = payload.missionDay - (nights.length - i);
-      const recordedAt = `${n.night}T22:00:00.000Z`; // sleep period start
-      if (n.hrvMs !== null) {
-        db.insert(vitalReading).values({ crewId: payload.id, metric: NIGHTLY_METRICS.hrv, value: n.hrvMs, missionDay, recordedAt }).run();
-      }
-      if (n.sleepHours !== null) {
-        db.insert(vitalReading)
-          .values({ crewId: payload.id, metric: NIGHTLY_METRICS.sleep, value: n.sleepHours, missionDay, recordedAt })
-          .run();
-      }
-    });
 
     for (const log of payload.behavioralLog) {
       await db.insert(checkIn).values({
@@ -136,6 +121,31 @@ async function main() {
     vitalsRows += rows.length;
   });
 
+  // 14 nights of sleep, HRV (RMSSD), quality and stress per crew member,
+  // ending last night (UTC). Only CS-003 shows the early-warning pattern.
+  let sleepRows = 0;
+  for (const u of crewUsers) {
+    const nights = u.profileId ? demoNightlySeries(u.profileId, today) : [];
+    if (!nights.length) continue;
+    db.insert(sleepEntry)
+      .values(
+        nights.map((n) => ({
+          userId: u.id,
+          enteredBy: u.id,
+          source: "seed" as const,
+          recordedAt: `${n.night}T22:00:00.000Z`,
+          createdAt,
+          night: n.night,
+          sleepHours: n.sleepHours,
+          hrvRmssd: n.hrvMs,
+          quality: n.quality,
+          stress: n.stress,
+        })),
+      )
+      .run();
+    sleepRows += nights.length;
+  }
+
   console.log(
     "Seed complete:",
     Object.keys(dashboards).length,
@@ -143,7 +153,9 @@ async function main() {
     DEMO_ACCOUNTS.length,
     "login accounts,",
     vitalsRows,
-    "vitals entries",
+    "vitals entries,",
+    sleepRows,
+    "sleep entries",
   );
 }
 

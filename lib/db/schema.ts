@@ -116,7 +116,7 @@ export const sleepEntry = sqliteTable(
     hrvRmssd: real("hrv_rmssd"),
     /** Self-rated 1–5. */
     quality: integer("quality"),
-    /** Self-rated stress 0–10. */
+    /** Self-rated stress 1 (calm) – 5 (overwhelmed). */
     stress: integer("stress"),
   },
   (t) => [index("sleep_entry_user_night").on(t.userId, t.night)],
@@ -202,6 +202,36 @@ export const checkin = sqliteTable(
     note: text("note"),
   },
   (t) => [index("checkin_user_time").on(t.userId, t.recordedAt)],
+);
+
+/**
+ * An Escalate raised by a saved entry: a record for the flight surgeon with
+ * the evidence (values, limits crossed and their sources). Written once when
+ * the entry is saved; the entry's status itself is still computed on read.
+ */
+export const escalation = sqliteTable(
+  "escalation",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Whose data raised it (users.id). */
+    userId: integer("user_id").notNull(),
+    /** Crew ID at the time, e.g. "CS-001". */
+    crewId: text("crew_id").notNull(),
+    /** Which rule set raised it, e.g. "vitals". */
+    ruleId: text("rule_id").notNull(),
+    /** Table and row that raised it. */
+    entryTable: text("entry_table").notNull(),
+    entryId: integer("entry_id").notNull(),
+    /** Plain-language reasons, joined. */
+    reason: text("reason").notNull(),
+    /** JSON: values, triggered limits with sources. */
+    evidenceJson: text("evidence_json").notNull(),
+    createdAt: text("created_at").notNull(),
+    /** Set when the flight surgeon has reviewed it (epoch ms). */
+    reviewedAt: integer("reviewed_at"),
+    reviewedBy: integer("reviewed_by"),
+  },
+  (t) => [index("escalation_user_time").on(t.userId, t.createdAt)],
 );
 
 /* ----------------------------------------------------------- alerts */

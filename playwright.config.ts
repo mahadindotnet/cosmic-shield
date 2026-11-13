@@ -38,6 +38,9 @@ export default defineConfig({
       dependencies: ["setup"],
       use: { storageState: "e2e/.auth/crew.json" },
     },
+    // Changes CS-001's sleep data (the early-warning card appears), so it runs
+    // after the dashboard tests that share CS-001's session.
+    { name: "after-dashboard", testMatch: /sleep-stress\.spec\.ts/, dependencies: ["dashboard"] },
   ],
   webServer: {
     command: `npx next dev --turbopack --port ${PORT}`,

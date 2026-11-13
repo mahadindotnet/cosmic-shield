@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { activeCrew, requireUser } from "@/lib/auth/dal";
-import { insertVitals } from "./data";
-import { evaluateVitals, type VitalsStatus } from "./rules";
+import { recordVitals } from "./data";
+import type { VitalsStatus } from "./rules";
 import { VitalsInput, type VitalsField } from "./schema";
 
 export interface LogVitalsState {
@@ -12,6 +12,8 @@ export interface LogVitalsState {
   /** Status of the saved reading (rules run on the saved values). */
   status?: VitalsStatus;
   reasons?: string[];
+  /** Set when the reading raised an escalation record for the flight surgeon. */
+  escalationId?: number | null;
   error?: string;
   fieldErrors?: Partial<Record<VitalsField, string>>;
   /** What was typed, so a rejected form keeps its values. */
@@ -39,10 +41,9 @@ export async function logVitalsAction(_prev: LogVitalsState, formData: FormData)
     };
   }
 
-  insertVitals(crew.id, parsed.data, { enteredBy: current.user.id, source: "manual" });
+  const { evaluation: e, escalationId } = recordVitals(crew, current.user.id, parsed.data);
   revalidatePath("/dashboard/vitals");
   revalidatePath("/dashboard");
 
-  const e = evaluateVitals(parsed.data);
-  return { ok: true, status: e.status, reasons: e.reasons, savedAt: Date.now() };
+  return { ok: true, status: e.status, reasons: e.reasons, escalationId, savedAt: Date.now() };
 }
