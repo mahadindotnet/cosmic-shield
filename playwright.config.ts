@@ -44,7 +44,7 @@ export default defineConfig({
     },
     // Changes CS-001's sleep data (the early-warning card appears), so it runs
     // after the dashboard tests that share CS-001's session.
-    { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind|bone|gi)\.spec\.ts/, dependencies: ["dashboard"] },
+    { name: "after-dashboard", testMatch: /(sleep-stress|copilot|mind|bone|gi|eyes)\.spec\.ts/, dependencies: ["dashboard"] },
     // Runs last: uses CS-004 (after the lockout test) and the alerts other specs created.
     { name: "final", testMatch: /(onboarding|summary|gamification)\.spec\.ts/, dependencies: ["auth", "after-dashboard"] },
     // Deletes and changes demo accounts in the test database: after everything else.

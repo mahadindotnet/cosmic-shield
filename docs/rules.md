@@ -87,7 +87,7 @@ One log per day or several (they add up): aerobic and resistance minutes, resist
 | Daily exercise, other environments | Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen | app default |
 | Weekly exercise | 7 × the daily target | app default |
 | Calcium | 1000 mg/day | **sourced**: lower bound of NASA's 2020 exploration requirement, 1,000–1,200 mg/day (Smith et al., *Human Adaptation to Spaceflight: The Role of Food and Nutrition*, NASA 2021, Table 1). The 1996 ISS requirement was higher, 1,200–2,000 mg. |
-| Vitamin D | 800 IU/day | **sourced**: same book: in-flight data "provide evidence that 800 IU vitamin D/d is enough to maintain vitamin D status during long-duration spaceflight". NASA's 2020 exploration requirement is 1000 IU/day; we use the 800 IU the evidence supports. |
+| Vitamin D | 1000 IU/day | **sourced**: NASA's 2020 exploration requirement, 1000 IU (25 µg)/day (same book, Table 1; the 1996 ISS requirement was 10 µg = 400 IU). Supporting context from the same book: in-flight data "provide evidence that 800 IU vitamin D/d is enough to maintain vitamin D status during long-duration spaceflight", so the 1000 IU target sits above the level shown to maintain status. |
 | Watch below 50 % of the weekly target | 50 % | app default |
 
 **Rule `bone_exercise`** (Watch only, evaluated on read): if anything was logged in the 7 days ending today, total exercise below 50 % of the weekly target is Watch (e.g. under 420 min against 840). No logs in the window means no status, not Watch. Calcium and vitamin D are shown against their targets but never raise a status. The alert goes through `lib/alerts/active.ts` (bell, dashboard summary, co-pilot). Days with exercise minutes count as exercise days for points.
@@ -128,6 +128,27 @@ Several entries on one day count as one day. Fluid intake is shown against a **2
 
 Tests: `lib/gi/gi.test.ts`, `lib/uploads/photos.test.ts`; Playwright `e2e/gi.spec.ts`.
 
+## Eyes (`lib/eyes/rules.ts`)
+
+**Why eyes are screened in flight (sourced):** NASA Human Research Program, Human Research Roadmap, *Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS)* ([risk page](https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105), last published 05/13/25): "70% of crewmembers experience one or more of the hallmark signs of SANS" (optic disc edema, chorioretinal folds, globe flattening, hyperopic shifts). This explains the module; it sets no threshold. The self-checks help a crew member notice a change and tell the CMO; they do not detect or rule out SANS.
+
+Stored in `eye_screening`, one row per test of one eye:
+
+- **Amsler grid:** the full-screen test (20 × 20 grid) saves the squares marked as wavy, blurred or missing (JSON `[[row, col], …]`), whether the centre dot was seen, and a note. Squares are marked by click, or with the arrow keys and Space. History shows a small preview of the marked squares.
+- **Fundus photo:** the same secure handling as GI photos (`lib/uploads/photos.ts`: JPEG/PNG/WebP by signature, ≤ 5 MB, metadata removed, stored under `uploads/eye/<userId>/`, served only by `GET /api/photos/eye/[id]` to the owner or the flight surgeon; anyone else 404). The classifier (`lib/eyes/classifier.ts`, also `POST /api/vision/sans`) always returns "Not analysed: prototype": no finding, no confidence, no status.
+
+**Rules (all app defaults, Watch only, never a diagnosis; `thresholds.json` `eyes`):**
+
+| Rule | When | Result |
+|---|---|---|
+| `eye_amsler` | The latest Amsler test of either eye has a marked square, or the centre dot was not seen | Watch: "Vision change noticed: repeat the test tomorrow and tell your CMO." (bell, dashboard, co-pilot) |
+| `eye_amsler_repeat` | 2 Amsler tests in a row of the **same eye** show a change | Also an escalation record for the flight surgeon (Watch level). Created once, when the run reaches 2; a normal test ends the run. |
+| `eye_ground_review` | The crew member ticks "Flag for ground review" on a fundus photo | An escalation record for the flight surgeon (Watch level), with a link to the photo on Crew admin |
+
+Escalation records say "Watch level, not a diagnosis." The flight surgeon's bell lists them as "New escalation: CS-…". Screening cadence (fundus: the environment's `sansCadence`, e.g. ISS every 2 weeks; Amsler weekly, each eye) is an app default. Each day with an eye screening earns 5 points (app default). No eye screenings are seeded: the module stays empty until a crew member takes a test.
+
+Tests: `lib/eyes/eyes.test.ts`, `lib/eyes/eyes-db.test.ts`; Playwright `e2e/eyes.spec.ts`.
+
 ## Gamification (`lib/gamification/rules.ts`)
 
 Motivation only: points and streaks never change a health status. All values are **app defaults** in `thresholds.json` `gamification`.
@@ -140,11 +161,12 @@ Motivation only: points and streaks never change a health status. All values are
 | Dosimeter reading | 5 |
 | Exercise (a Bone log with exercise minutes) | 10 |
 | GI entry | 5 |
+| Eye screening (Amsler test or fundus photo) | 5 |
 
 - Each activity earns its points **once per UTC day**: logging the same thing again that day earns nothing more.
 - **Streak** = consecutive UTC days with a daily check-in. The current streak counts back from today, or from yesterday while today's check-in is still open; **best streak** is the longest run in all history.
 - **Streak bonuses:** every run that reaches 7 days earns +20 once, and 30 days +50.
-- The month calendar is coloured by how many of the six activities were logged that day.
+- The month calendar is coloured by how many of the seven activities were logged that day.
 - Demo seed entries count: they stand in for the demo crew's past logging.
 - The bell's reminder names the current streak: "Daily check-in due: keep your 5-day streak" (or "start a streak today").
 

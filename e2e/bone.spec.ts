@@ -14,7 +14,7 @@ test("CS-002 logs exercise and intake: history, status cards, dashboard tile and
   await expect(rows).toHaveCount(14);
   const cards = visible(page, "bone-status-cards");
   await expect(cards).toContainText("Target 1000 mg/day · NASA");
-  await expect(cards).toContainText("Target 800 IU/day · NASA");
+  await expect(cards).toContainText("Target 1000 IU/day · NASA");
 
   // Nothing filled in: rejected with a message, nothing saved.
   const form = visible(page, "bone-form");

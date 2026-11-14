@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import sharp from "sharp";
-import { signInOk } from "./helpers";
+import { pick, signInOk } from "./helpers";
 
 /**
  * GI end to end, as CS-003 (14 seeded daily entries ending yesterday, types
@@ -26,7 +26,7 @@ test("manual entries: history, status cards, a Watch pattern, the dashboard tile
   await expect(rows).toHaveCount(14);
 
   // Today: type 1 with fluid and a note.
-  await form.getByLabel("Bristol type: 1").check({ force: true });
+  await pick(form.getByLabel("Bristol type: 1"));
   await form.getByLabel("Fluids").fill("1.2");
   await form.getByLabel("Note (optional)").fill("Long EVA prep day");
   await form.getByRole("button", { name: "Log entry" }).click();
@@ -41,7 +41,7 @@ test("manual entries: history, status cards, a Watch pattern, the dashboard tile
   await expect(cards.locator('[data-slot="card"]').filter({ hasText: "Last 3 days" })).toHaveAttribute("data-status", "normal");
 
   // Yesterday: type 2. Two of the last three days with types 1–2: gi_hard (Watch).
-  await form.getByLabel("Bristol type: 2").check({ force: true });
+  await pick(form.getByLabel("Bristol type: 2"));
   await form.getByLabel("Day").fill(yesterday());
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "gi-result")).toHaveText("Saved: Bristol type 2.");
@@ -73,7 +73,7 @@ test("photo upload: stored without EXIF, labelled 'Not analysed: prototype', vis
   const form = visible(page, "gi-form");
 
   // Not an image (whatever the name and type say): rejected on the server, nothing saved.
-  await form.getByLabel("Bristol type: 4").check({ force: true });
+  await pick(form.getByLabel("Bristol type: 4"));
   await form.getByLabel("Photo (optional)").setInputFiles({ name: "photo.jpg", mimeType: "image/jpeg", buffer: Buffer.from("%PDF-1.7 not a photo") });
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "entry-photo-error")).toHaveText("Only JPEG, PNG or WebP images can be uploaded.");
@@ -85,7 +85,7 @@ test("photo upload: stored without EXIF, labelled 'Not analysed: prototype', vis
     .withExif({ IFD0: { Make: "TestCam", Model: "Secret-Model", Copyright: "GPS 51.5N 0.1W" } })
     .toBuffer();
   expect((await sharp(jpeg).metadata()).exif).toBeDefined();
-  await form.getByLabel("Bristol type: 4").check({ force: true });
+  await pick(form.getByLabel("Bristol type: 4"));
   await form.getByLabel("Photo (optional)").setInputFiles({ name: "stool.jpg", mimeType: "image/jpeg", buffer: jpeg });
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "gi-result")).toHaveText("Saved: Bristol type 4. Photo stored · Not analysed: prototype.");

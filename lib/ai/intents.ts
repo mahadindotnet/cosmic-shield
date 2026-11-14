@@ -71,7 +71,7 @@ export function guidanceFor(alert: { ruleId: string; level: string; detail: stri
     if (alert.level === "escalate" && /(Systolic|Diastolic)[^.]*Escalate/.test(alert.detail)) return "vitals_blood_pressure";
     return "vitals";
   }
-  if (["hrv_sleep_decline", "sleep_night", "radiation_daily", "radiation_career", "mind_pattern", "mind_safety", "bone_exercise", "gi_hard", "gi_loose"].includes(alert.ruleId))
+  if (["hrv_sleep_decline", "sleep_night", "radiation_daily", "radiation_career", "mind_pattern", "mind_safety", "bone_exercise", "gi_hard", "gi_loose", "eye_amsler"].includes(alert.ruleId))
     return alert.ruleId as GuidanceId;
   return "vitals";
 }

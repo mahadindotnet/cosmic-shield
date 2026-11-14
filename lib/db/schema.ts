@@ -193,12 +193,18 @@ export const eyeScreening = sqliteTable(
     ...entryColumns(),
     kind: text("kind", { enum: ["amsler", "fundus"] }).notNull(),
     eye: text("eye", { enum: ["left", "right", "both"] }).notNull(),
-    /** Amsler: "normal" or "distortion". */
+    /** Amsler: "normal" (nothing marked, centre dot seen) or "distortion" (a change was noticed). */
     amslerResult: text("amsler_result", { enum: ["normal", "distortion"] }),
-    /** JSON of marked grid cells, Amsler only. */
+    /** JSON array of marked [row, col] cells on the 20 × 20 grid, Amsler only. */
     amslerMarks: text("amsler_marks"),
-    /** Relative path under uploads/, fundus only. */
+    /** Amsler: could the crew member see the centre dot? */
+    centreVisible: integer("centre_visible", { mode: "boolean" }),
+    /** Relative path under uploads/, fundus only (served via /api/photos/eye/[id]). */
     photoPath: text("photo_path"),
+    /** Fundus classifier result; the prototype never analyses ("not_analysed"). */
+    photoAnalysis: text("photo_analysis"),
+    /** Fundus: the crew member asked for ground review (creates an escalation record). */
+    groundReview: integer("ground_review", { mode: "boolean" }).notNull().default(false),
     note: text("note"),
   },
   (t) => [index("eye_screening_user_time").on(t.userId, t.recordedAt)],

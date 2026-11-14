@@ -43,6 +43,8 @@ const RULE_LABELS: Record<string, string> = {
   mind_safety: "Safety check (Mind)",
   vitals: "Vitals",
   radiation_career: "Career dose",
+  eye_amsler_repeat: "Eyes: Amsler change on 2 tests in a row",
+  eye_ground_review: "Eyes: fundus photo flagged for ground review",
 };
 
 const DONKI_LABELS: Record<string, string> = {

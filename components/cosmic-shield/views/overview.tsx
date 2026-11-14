@@ -83,6 +83,13 @@ export interface OverviewData {
     /** Daily exercise target (app default). */
     dailyTargetMin: number | null;
   };
+  eyes: {
+    /** Cells marked on the latest Amsler test of each eye, and the status. */
+    tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
+    /** Latest Amsler test (ISO, and "No change noticed" / what was marked), latest fundus photo (ISO). */
+    lastAmsler: { at: string; result: string; status: "normal" | "watch" } | null;
+    lastFundus: { at: string; flagged: boolean } | null;
+  };
   gi: {
     /** Latest Bristol type and the 3-day pattern status. */
     tile: { metric: string; value: string; unit: string; status: "normal" | "watch" } | null;
@@ -117,7 +124,7 @@ const LEFT: TileDef[] = [
   { slug: "bone", metric: "Exercise today", unit: "min" },
 ];
 const RIGHT: TileDef[] = [
-  { slug: "eyes", metric: "Last screening" },
+  { slug: "eyes", metric: "Amsler: cells marked (latest)", unit: "cells" },
   { slug: "gi", metric: "Bristol type (latest)", unit: "/7" },
   { slug: "mind", metric: "Mood", unit: "/5" },
 ];
@@ -156,7 +163,9 @@ export function OverviewView({
                     ? d?.bone.tile
                     : t.slug === "gi"
                       ? d?.gi.tile
-                      : null; // Eyes has no entries yet.
+                      : t.slug === "eyes"
+                        ? d?.eyes.tile
+                        : null;
         // Empty states say why there's no number: loading, the flight surgeon's view, or nothing logged yet.
         const empty = !d ? "Loading…" : d.viewer === "flight_surgeon" ? "Crew data is in Crew admin" : EMPTY_TILE;
         return tile ? (
@@ -440,17 +449,28 @@ function Statistics({ env, data }: { env: MissionEnvironment | null; data: Promi
           }
           href="/dashboard/eyes"
         >
-          <dl className="grid grid-cols-2 gap-3" data-testid="stat-eyes">
-            {["Last fundus scan", "Last Amsler test"].map((k) => (
-              <div
-                key={k}
-                className="rounded-lg border border-border bg-background/40 px-3 py-2.5"
-              >
-                <dt className="text-[11px] text-muted-foreground">{k}</dt>
-                <dd className="mt-0.5 text-xs text-muted-foreground">No screening logged yet</dd>
-              </div>
-            ))}
-          </dl>
+          <Await promise={data}>
+            {(d) => {
+              const none = !d ? "Loading…" : d.viewer === "flight_surgeon" ? "Crew data is in Crew admin" : "No screening logged yet";
+              const day = (iso: string) => new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" });
+              const a = d?.eyes.lastAmsler;
+              const f = d?.eyes.lastFundus;
+              return (
+                <dl className="grid grid-cols-2 gap-3" data-testid="stat-eyes">
+                  <div className="rounded-lg border border-border bg-background/40 px-3 py-2.5" data-testid="stat-eyes-amsler" data-status={a?.status ?? "no-data"}>
+                    <dt className="text-[11px] text-muted-foreground">Last Amsler test</dt>
+                    <dd className={a ? "mt-0.5 text-xs text-foreground" : "mt-0.5 text-xs text-muted-foreground"}>{a ? `${day(a.at)} · ${a.result}` : none}</dd>
+                  </div>
+                  <div className="rounded-lg border border-border bg-background/40 px-3 py-2.5" data-testid="stat-eyes-fundus">
+                    <dt className="text-[11px] text-muted-foreground">Last fundus photo</dt>
+                    <dd className={f ? "mt-0.5 text-xs text-foreground" : "mt-0.5 text-xs text-muted-foreground"}>
+                      {f ? `${day(f.at)} · not analysed${f.flagged ? " · flagged" : ""}` : none}
+                    </dd>
+                  </div>
+                </dl>
+              );
+            }}
+          </Await>
         </StatPanel>
       </div>
     </section>

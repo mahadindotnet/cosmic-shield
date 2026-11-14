@@ -60,7 +60,7 @@ export interface StreakPanelProps {
  */
 export function StreakPanel({ summary = null, checkins = {} }: StreakPanelProps) {
   const today = useToday();
-  // Calendar colour: how many activities were logged that day (check-in, vitals, sleep, dose, exercise, GI).
+  // Calendar colour: how many activities were logged that day (check-in, vitals, sleep, dose, exercise, GI, eyes).
   const m = buildMonth(today, summary?.activitiesByDay ?? checkins);
   const checkinMonth = buildMonth(today, summary?.checkinsByDay ?? checkins);
   const streak = summary ? summary.streak : checkinMonth.streak;

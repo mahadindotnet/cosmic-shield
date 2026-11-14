@@ -14,9 +14,9 @@ NASA Space Apps projects that use AI should describe **what runs in the product*
 | Module | Endpoint | Output |
 |--------|----------|--------|
 | Bristol stool classification | `POST /api/vision/bristol` | Prototype stub: always "Not analysed: prototype", never a type or a status. The crew member confirms the Bristol type manually; photos are stored privately with metadata removed (see rules.md → GI). |
-| SANS ocular screening | `POST /api/vision/sans` | Confidence score, nominal / watch / escalate band |
+| Fundus (SANS) photo | `POST /api/vision/sans` | Prototype stub: always "Not analysed: prototype", never a finding, confidence or status. The crew member can flag a photo for ground review (an escalation record for the flight surgeon). See rules.md → Eyes. |
 
-Hackathon builds use **deterministic prototype classifiers** so judges can reproduce results offline. Production deployments would attach trained models (e.g. ONNX) to the same API contract.
+Both are **prototype stubs**: no model is connected, so they never analyse an image or produce a status. Photos are still stored securely (metadata removed, owner and flight surgeon only), so a trained model could later be attached to the same API contract.
 
 ## Rules engine (primary “intelligence” for judges)
 

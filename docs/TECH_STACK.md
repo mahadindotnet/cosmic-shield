@@ -45,7 +45,7 @@ Loaded by `lib/nasa/loaders.ts` (derived, then fixtures). Space weather can also
 | Mission co-pilot | Vercel AI SDK (`ai`, `@ai-sdk/react`, `@ai-sdk/anthropic`, `@ai-sdk/openai-compatible`) + `lib/ai/` + `/api/assistant/chat` | Tool-calling agent over eight read-only tools; offline mock by default, Claude or Ollama via `AI_PROVIDER` (see docs/ai-disclosure.md) |
 | Bristol classifier | `/api/vision/bristol` | Prototype stub ("Not analysed: prototype"); the crew member confirms the type |
 | Photo handling | `sharp` + `lib/uploads/photos.ts` | Type check by signature, 5 MB limit, metadata removed, private storage under `uploads/` |
-| SANS screening | `/api/vision/sans` | Ocular risk workflow; extensible to ONNX |
+| Fundus classifier | `/api/vision/sans` | Prototype stub ("Not analysed: prototype"); "Flag for ground review" creates an escalation record |
 
 Details: [intelligent-systems.md](./intelligent-systems.md).
 

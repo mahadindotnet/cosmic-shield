@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signInOk } from "./helpers";
+import { pick, signInOk } from "./helpers";
 
 /** Next keeps visited routes mounted but hidden, so scope to what is on screen. */
 const visible = (page: Page, testId: string) => page.getByTestId(testId).filter({ visible: true });
@@ -14,9 +14,9 @@ test("CS-001 checks in: the history row, the dashboard tile and the streak updat
   await expect(visible(page, "mind-safety-line").first()).toHaveText("If you feel unsafe or unable to cope, contact your Crew Medical Officer now.");
 
   const form = visible(page, "checkin-form");
-  await form.getByRole("radio", { name: "Mood (1 low – 5 great): 4" }).check({ force: true });
-  await form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }).check({ force: true });
-  await form.getByRole("radio", { name: "Sleep quality (optional, 1 poor – 5 great): 3" }).check({ force: true });
+  await pick(form.getByRole("radio", { name: "Mood (1 low – 5 great): 4" }));
+  await pick(form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }));
+  await pick(form.getByRole("radio", { name: "Sleep quality (optional, 1 poor – 5 great): 3" }));
   await form.getByLabel("Anything on your mind? (optional)").fill("Calm day, good call home");
   await form.getByRole("button", { name: "Log entry" }).click();
 

@@ -6,6 +6,8 @@ import { boneSummaryFor } from "@/lib/bone/data";
 import { BONE_EXERCISE_ID } from "@/lib/bone/rules";
 import { db } from "@/lib/db";
 import { escalation } from "@/lib/db/schema";
+import { eyeSummaryFor } from "@/lib/eyes/data";
+import { EYE_AMSLER_ID } from "@/lib/eyes/rules";
 import { giSummaryFor } from "@/lib/gi/data";
 import { mindSummaryFor } from "@/lib/mind/data";
 import { MIND_PATTERN_ID } from "@/lib/mind/rules";
@@ -133,6 +135,18 @@ export function activeAlertsFor(userId: number, today = utcToday()): ActiveAlert
         href: "/dashboard/gi",
         key: `alert:${p.ruleId}:${p.days.at(-1)}`,
       });
+
+  // Eyes: the latest Amsler test of either eye showed a change (Watch only, app default).
+  const amsler = eyeSummaryFor(userId).amsler;
+  if (amsler.status === "watch")
+    alerts.push({
+      ruleId: EYE_AMSLER_ID,
+      level: "watch",
+      title: "Eyes: vision change noticed",
+      detail: amsler.reason ?? "",
+      href: "/dashboard/eyes",
+      key: `alert:${EYE_AMSLER_ID}:${amsler.changedEyes.map((e) => amsler.latest[e]!.id).join("-")}`,
+    });
 
   const since = new Date(Date.now() - 7 * 86_400_000).toISOString();
   const openEscalations = db

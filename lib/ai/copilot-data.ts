@@ -279,6 +279,7 @@ export const GUIDANCE_IDS = [
   "bone_exercise",
   "gi_hard",
   "gi_loose",
+  "eye_amsler",
 ] as const;
 export type GuidanceId = (typeof GUIDANCE_IDS)[number];
 
@@ -346,6 +347,13 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
       whenToContact: `If it continues or you feel unwell, talk to your Crew Medical Officer, or ${contact}.`,
       citation: `${RULES_DOC}. Bristol types per Lewis & Heaton 1997; the 3-day pattern rule and the fluid band are app defaults (Watch only).`,
       label: "Rules engine",
+    },
+    eye_amsler: {
+      steps: ["Repeat the Amsler test for that eye tomorrow, in good light, at about 35 cm.", "Tell your Crew Medical Officer what you noticed.", "Log a fundus photo if one is due, and flag it for ground review if you want a person to look."],
+      whenToContact: `Tell your Crew Medical Officer now. If changes show on 2 tests in a row, the flight surgeon is told automatically; you can also reach them: ${contact}.`,
+      citation: `${RULES_DOC}. Amsler rule is an app default (Watch only, not a diagnosis). Why eyes are monitored: NASA HRP, Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS).`,
+      label: "Rules engine",
+      url: "https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105",
     },
     gi_loose: {
       steps: ["Hydrate: sip fluids steadily through the day.", "Keep logging each entry on the GI page."],

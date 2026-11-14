@@ -26,7 +26,7 @@ describe("targets", () => {
   });
 
   it("calcium and vitamin D targets are sourced from NASA's nutrition requirements", () => {
-    expect(BONE_LIMITS).toMatchObject({ calciumMgPerDay: 1000, vitaminDIuPerDay: 800 });
+    expect(BONE_LIMITS).toMatchObject({ calciumMgPerDay: 1000, vitaminDIuPerDay: 1000 });
     expect(BONE_LIMITS.calciumBasis).toMatch(/^sourced/);
     expect(BONE_LIMITS.vitaminDBasis).toMatch(/^sourced/);
   });

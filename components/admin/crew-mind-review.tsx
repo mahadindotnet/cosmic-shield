@@ -3,6 +3,7 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { HistoryTable } from "@/components/cosmic-shield/history-table";
 import { StatusBadge } from "@/components/cosmic-shield/status";
 import { MIND_SAFETY_ID } from "@/lib/ai/safety";
+import { EYE_GROUND_REVIEW_ID } from "@/lib/eyes/rules";
 import type { ReviewEscalation, SafetyEvidence } from "@/lib/mind/safety-escalation";
 import type { MindSummary } from "@/lib/mind/summary";
 
@@ -12,6 +13,8 @@ const RULE_LABELS: Record<string, string> = {
   mind_safety: "Safety check (Mind)",
   vitals: "Vitals",
   radiation_career: "Career dose",
+  eye_amsler_repeat: "Eyes: Amsler change on 2 tests in a row",
+  eye_ground_review: "Eyes: fundus photo flagged for ground review",
 };
 
 /**
@@ -67,6 +70,17 @@ export function CrewMindReview({ crewId, mind, escalations }: { crewId: string; 
                     <span className="font-mono text-[11px] text-muted-foreground">{utc(e.createdAt)}</span>
                   </div>
                   <p className="mt-1 text-foreground/90">{e.reason}</p>
+                  {e.ruleId === EYE_GROUND_REVIEW_ID && e.entryTable === "eye_screening" && (
+                    <a
+                      href={`/api/photos/eye/${e.entryId}`}
+                      target="_blank"
+                      rel="noopener"
+                      className="mt-1 inline-block text-primary underline-offset-2 hover:underline"
+                      data-testid="admin-escalation-photo"
+                    >
+                      View fundus photo
+                    </a>
+                  )}
                   {safety && (
                     <div className="mt-2 border-t border-border/60 pt-2">
                       <p className="text-[11px] text-muted-foreground">

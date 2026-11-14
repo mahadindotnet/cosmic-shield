@@ -176,7 +176,7 @@ export function BoneView({ data }: { data: Promise<BonePageData> }) {
         </div>
       </PageSection>
 
-      <PageSection id="bone-trends" eyebrow="Trends" title="Calcium and vitamin D" description="Daily intake, last 14 days. The band starts at the daily target: calcium 1000 mg (lower bound of NASA's 2020 exploration requirement), vitamin D 800 IU (NASA in-flight evidence; the 2020 requirement is 1000 IU).">
+      <PageSection id="bone-trends" eyebrow="Trends" title="Calcium and vitamin D" description="Daily intake, last 14 days. The band starts at the daily target: calcium 1000 mg (lower bound of NASA's 2020 exploration requirement), vitamin D 1000 IU (NASA's 2020 exploration requirement).">
         <Await promise={data}>
           {(d) => (
             <div className="grid gap-4 lg:grid-cols-2">

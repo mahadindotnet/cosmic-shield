@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signInOk } from "./helpers";
+import { pick, signInOk } from "./helpers";
 
 /** Next keeps visited routes mounted but hidden, so scope to what is on screen. */
 const visible = (page: Page, testId: string) => page.getByTestId(testId).filter({ visible: true });
@@ -12,8 +12,8 @@ async function logNight(page: Page, night: string, v: { sleep: string; hrv: stri
   await form.getByLabel("Night of").fill(night);
   await form.getByLabel("Sleep", { exact: true }).fill(v.sleep);
   await form.getByLabel("HRV (optional)").fill(v.hrv);
-  await form.getByRole("radio", { name: `Sleep quality (1 poor – 5 great): ${v.quality}` }).check({ force: true });
-  await form.getByRole("radio", { name: `Stress (1 calm – 5 overwhelmed): ${v.stress}` }).check({ force: true });
+  await pick(form.getByRole("radio", { name: `Sleep quality (1 poor – 5 great): ${v.quality}` }));
+  await pick(form.getByRole("radio", { name: `Stress (1 calm – 5 overwhelmed): ${v.stress}` }));
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "sleep-result")).toContainText(`Saved night of ${new Date(`${night}T00:00:00Z`).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" })}`);
 }
@@ -57,8 +57,8 @@ test("sleep form rejects a future night and keeps what was typed", async ({ page
   const form = visible(page, "sleep-form");
   await form.getByLabel("Night of").fill(daysAgo(-2));
   await form.getByLabel("Sleep", { exact: true }).fill("7");
-  await form.getByRole("radio", { name: "Sleep quality (1 poor – 5 great): 4" }).check({ force: true });
-  await form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }).check({ force: true });
+  await pick(form.getByRole("radio", { name: "Sleep quality (1 poor – 5 great): 4" }));
+  await pick(form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }));
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "entry-night-error")).toHaveText("The night can't be in the future.");
   await expect(form.getByLabel("Sleep", { exact: true })).toHaveValue("7");

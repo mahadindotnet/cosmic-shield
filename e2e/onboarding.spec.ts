@@ -1,5 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
-import { signInOk } from "./helpers";
+import { pick, signInOk } from "./helpers";
 
 /**
  * Environment dialog, Back button and notification bell, as CS-004. Runs in
@@ -101,8 +101,8 @@ test("the bell shows Daily check-in due until a check-in is submitted; read item
   // Submit today's check-in: the task disappears by itself.
   await page.goto("/dashboard/mind");
   const form = visible(page, "checkin-form");
-  await form.getByRole("radio", { name: "Mood (1 low – 5 great): 4" }).check({ force: true });
-  await form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }).check({ force: true });
+  await pick(form.getByRole("radio", { name: "Mood (1 low – 5 great): 4" }));
+  await pick(form.getByRole("radio", { name: "Stress (1 calm – 5 overwhelmed): 2" }));
   await form.getByRole("button", { name: "Log entry" }).click();
   await expect(visible(page, "checkin-result")).toContainText("Saved");
 

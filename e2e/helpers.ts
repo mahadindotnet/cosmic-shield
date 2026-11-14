@@ -1,4 +1,4 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 export const DEMO = {
   "CS-001": "472915",
@@ -39,4 +39,14 @@ export async function chooseEnvironmentLater(page: Page) {
   await dialog.getByTestId("env-dialog-later").click();
   await expect(dialog).toHaveCount(0);
   await saved;
+}
+
+/**
+ * Checks a visually hidden radio or checkbox. Under load a click can land
+ * before the page is interactive (the box doesn't stay checked): retry it.
+ */
+export async function pick(control: Locator) {
+  await expect(async () => {
+    await control.check({ force: true, timeout: 5_000 });
+  }).toPass({ timeout: 30_000 });
 }

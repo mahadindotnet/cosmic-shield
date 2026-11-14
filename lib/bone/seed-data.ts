@@ -18,7 +18,7 @@ export interface SeedBone {
  * Deterministic demo bone logs: one per day (18:00 UTC) on the `days` days
  * before `today`: aerobic 45–75 min and resistance 45–60 min (about the
  * 120-minute default target), a load around 60–80 kg × 30 reps, calcium
- * 900–1200 mg and vitamin D 700–1000 IU. Never raises bone_exercise.
+ * 900–1200 mg and vitamin D 900–1200 IU. Never raises bone_exercise.
  */
 export function seedBoneSeries(crewIndex: number, today: string, days = 14): SeedBone[] {
   return Array.from({ length: days }, (_, i) => {
@@ -35,7 +35,7 @@ export function seedBoneSeries(crewIndex: number, today: string, days = 14): See
       loadKg,
       reps: 30,
       calciumMg: Math.round(1050 + 150 * w(3)),
-      vitaminDIu: Math.round(850 + 150 * w(4)),
+      vitaminDIu: Math.round(1050 + 150 * w(4)),
       note: null,
     };
   });

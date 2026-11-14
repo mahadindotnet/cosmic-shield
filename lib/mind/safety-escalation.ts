@@ -80,6 +80,9 @@ export interface ReviewEscalation {
   reason: string;
   createdAt: string;
   reviewedAt: number | null;
+  /** The row that raised it, e.g. "eye_screening" #12 (a flagged fundus photo). */
+  entryTable: string;
+  entryId: number;
   /** Parsed evidence. For mind_safety this includes the message excerpt. */
   evidence: unknown;
 }
@@ -98,5 +101,5 @@ export function escalationsForReview(viewer: Pick<UserRow, "role">, crewUserId: 
     .orderBy(desc(escalation.createdAt), desc(escalation.id))
     .limit(limit)
     .all()
-    .map((e) => ({ id: e.id, ruleId: e.ruleId, reason: e.reason, createdAt: e.createdAt, reviewedAt: e.reviewedAt, evidence: JSON.parse(e.evidenceJson) }));
+    .map((e) => ({ id: e.id, ruleId: e.ruleId, reason: e.reason, createdAt: e.createdAt, reviewedAt: e.reviewedAt, entryTable: e.entryTable, entryId: e.entryId, evidence: JSON.parse(e.evidenceJson) }));
 }
