@@ -64,7 +64,7 @@ export function GiView({ data }: { data: Promise<GiPageData> }) {
               const s = d?.summary;
               return (
                 <OrganStage
-                  visual={<OrganImage src="/organs/gi.webp" alt="Intestines" />}
+                  visual={<OrganImage src="/organs/gi.webp" alt="Intestines (AI-generated illustration)" aiGenerated />}
                   hotspots={[
                     { id: "bristol", ...onImage(0.52, 0.86, GI_ASPECT), side: "right", label: "Bristol type", icon: ListOrdered, unit: "/7", field: "bristolType", value: s?.latest?.bristolType ?? null },
                     { id: "fluids", ...onImage(0.74, 0.42, GI_ASPECT), side: "right", label: "Fluids today", icon: Droplets, unit: "L", field: "hydrationLiters", value: s?.fluidTodayL ?? null },

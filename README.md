@@ -1,114 +1,73 @@
 # Cosmic Shield
 
-**Cosmic Shield** is astronaut-facing health monitoring and **decision support** software built for the [NASA International Space Apps Challenge 2026](https://www.spaceappschallenge.org/) challenge [*Create Health Monitoring Software for Astronauts on Space Missions*](https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/).
+**Cosmic Shield** is astronaut-facing health monitoring and **decision support** software, built for the [NASA International Space Apps Challenge 2026](https://www.spaceappschallenge.org/) challenge [*Create Health Monitoring Software for Astronauts on Space Missions*](https://www.spaceappschallenge.org/2026/challenges/create-health-monitoring-software-for-astronauts-on-space-missions/).
 
-Long-duration crews cannot rely on real-time ground support. Cosmic Shield helps astronauts **gather** vitals and mission context, **evaluate** trends against NASA human-research evidence, and **act** with onboard guidance or escalation to a flight surgeon — without claiming to diagnose or prescribe.
+Long-duration crews can't count on real-time help from the ground. Cosmic Shield lets an astronaut **gather** their own health data in a few taps, **evaluates** it with transparent rules (every threshold labelled with its source, or as an app default), and helps them **act**: simple next steps, the comms delay to the ground, and an escalation record for the flight surgeon when it matters. It never diagnoses or prescribes.
 
----
-
-## Challenge alignment
-
-| Challenge theme | How Cosmic Shield addresses it |
-|-----------------|--------------------------------|
-| Self-monitoring in space | Dashboard designed for the **astronaut** as primary user |
-| Radiation, isolation, altered gravity, closed environment | Radiation dose tracking, stress/sleep, countermeasure compliance |
-| Immune, cardiovascular, behavioral risks | Multi-domain vitals + structured check-ins + explainable escalation |
-| Gather → evaluate → act | Rule engine produces **Normal / Watch / Escalate** with recommended countermeasures |
+It runs entirely on one laptop, offline: a Next.js app with a local SQLite database, bundled NASA reference data and an offline co-pilot.
 
 ---
 
 ## Features
 
-- **Mission console** — heart rate, HRV, sleep, blood pressure, SpO₂, radiation, stress, hydration, exercise compliance
-- **Trend analysis** — 14-day HR/HRV charts with Inspiration4-derived baseline bands
-- **Escalation ladder** — transparent thresholds tied to [NASA HRP](https://humanresearchroadmap.nasa.gov/) risk domains
-- **SANS ocular screening** — fundus-style capture workflow (Spaceflight Associated Neuro-ocular Syndrome)
-- **GI monitoring** — Bristol stool classification pipeline (Inspiration4 stool data reference)
-- **Behavioral check-in** — structured 1–5 affect scale (screening, not diagnosis)
-- **Mission co-pilot** — chat panel built on the Vercel AI SDK: answers from your own logged data through eight read-only, cited tools; works offline by default (`AI_PROVIDER=mock`), with Claude or Ollama optional; decision support, never a diagnosis ([docs/ai-disclosure.md](./docs/ai-disclosure.md))
-- **Offline-ready demo** — NASA reference datasets bundled under `data/nasa/` for reproducible judging
+Every module stores real entries, shows status cards, a 14-day trend and a history, feeds a tile on the Health Dashboard, and raises alerts through one shared source (`lib/alerts/active.ts`) used by the bell, the dashboard, Crew admin and the co-pilot. Statuses are **Normal / Watch / Escalate**; thresholds and their sources are in [docs/rules.md](./docs/rules.md).
 
----
+| Module | What you log | What it checks |
+|---|---|---|
+| **Vitals** | Heart rate, blood pressure, SpO₂, glucose (optional) | Watch bands (app default). **Escalate** for SpO₂ < 90 % (WHO), glucose < 54 mg/dL (ADA), BP > 180/120 (AHA), with "rest and re-measure" guidance and a record for the flight surgeon. Glucose shows the Inspiration4 crew pre-flight range (NASA OSDR OSD-575). |
+| **Sleep & Stress** | Sleep hours and quality, HRV (RMSSD), stress 1–5 | Per-night Watch; an **early warning** when HRV drops below your own 14-night baseline for 3 nights while sleep is short (`hrv_sleep_decline`). |
+| **Radiation** | Dosimeter readings | Daily Watch (2 × your environment's typical dose); career total against NASA-STD-3001's **600 mSv** limit, with the projected dose for your mission; live NASA DONKI solar storm alerts. |
+| **Bone protection** | Aerobic and resistance minutes, load × reps, calcium, vitamin D | Watch when exercise over 7 days is below half the weekly target. ISS target 120 min/day, calcium 1000 mg, vitamin D 1000 IU (all NASA-sourced). |
+| **GI** | Bristol type 1–7 (with the standard description and a picture of each type), fluids, note, optional photo | Watch on 3-day patterns (types 1–2 or 6–7 on 2 of the last 3 days) with simple advice. **Photo: prototype**, stored privately and **not analysed** ("Not analysed: prototype"); your chosen type is what gets logged. |
+| **Eyes** | Amsler grid self-test (mark the squares that look wrong, per eye), optional fundus photo | Watch on any change ("repeat the test tomorrow and tell your CMO"); changes on 2 tests in a row also tell the flight surgeon. **Fundus photo: prototype**, **not analysed**; "Flag for ground review" sends it to the flight surgeon. |
+| **Mind** | Daily check-in: mood, stress, sleep quality (1–5), private note | Watch after 3 hard days in a row; a supportive "talk it through" conversation; a crisis safety check on every note and chat message. |
+| **Mission** | Your mission environment: ISS, Lunar surface, Mars transit or Mars surface | Sets the typical dose and Watch level, exercise target, comms delay to the ground, gravity and eye-screening cadence. |
 
-## Tech stack
+Also:
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Application | **Next.js**, **React**, **TypeScript** | Web UI + API in one codebase |
-| Styling | **Tailwind CSS**, **Radix UI** | Accessible mission-control interface |
-| State | **Zustand** | Crew selection and live module updates |
-| Charts | **Recharts**, SVG sparklines | Vitals trends and baseline visualization |
-| Data | **Drizzle ORM**, **SQLite** | Crew vitals, check-ins, escalation audit log |
-| Rules | TypeScript + JSON thresholds | Explainable Normal / Watch / Escalate logic |
-| Vision APIs | Next.js route handlers | Bristol + SANS classification endpoints (extensible to ONNX) |
-| Assistant | Vercel AI SDK tool calling | Offline mock (default), Claude (`claude-opus-5-5`) or Ollama |
-| Testing | **Playwright** | End-to-end dashboard smoke tests |
-| Deploy | **Docker Compose** (optional Postgres) | Local / demo hosting |
-
-See [docs/TECH_STACK.md](./docs/TECH_STACK.md) and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for detail.
-
----
-
-## NASA open data usage
-
-Reference data and documentation:
-
-- [OSDR OSD-575](https://osdr.nasa.gov/bio/repo/data/studies/OSD-575) — Inspiration4 metabolic panel baselines (pre- and post-flight only; no in-flight samples)  
-- [RadLab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/) — measured daily dose for ISS, lunar orbit and the Mars surface; ISS dose equivalent from ALTEA  
-- Published dose equivalents where RadLab has none: Mars transit (Zeitlin et al. 2013), Mars surface (Hassler et al. 2014), lunar surface (Zhang et al. 2020)  
-- [DONKI](https://api.nasa.gov/) — recent solar flares, SEPs, CMEs and geomagnetic storms  
-- [NASA Human Research Program risks](https://humanresearchroadmap.nasa.gov/) — escalation framework  
-
-Full mapping: [docs/nasa-data-sources.md](./docs/nasa-data-sources.md). Submission checklist: [docs/SUBMISSION.md](./docs/SUBMISSION.md).
-
-Demo crew vitals are **simulated**; NASA data drives **thresholds, baselines, and validity** of the decision-support logic.
+- **Health Dashboard:** body map, module tiles, alerts summary, trends, space weather, points and check-in streak (computed from real entries; motivation only).
+- **Mission co-pilot:** a chat panel that answers questions about *your own* data through eight read-only, cited tools. Offline by default. See [AI use and safety limits](#ai-use-and-safety-limits).
+- **Notification bell:** daily check-in due, vitals not logged, every active alert, recent solar activity. In-app only.
+- **Flight surgeon (Crew admin):** every crew member's latest readings, active alerts, check-in scores (never the notes), escalation records with evidence and photos, sign-in activity; reset PINs, unlock accounts, reassign crew IDs. View-only for health data.
+- **Private photos:** JPEG/PNG/WebP up to 5 MB, location and camera data (EXIF) removed, visible only to the owner and the flight surgeon.
 
 ---
 
 ## Quick start
 
+Requires **Node.js 20.9 or newer**.
+
 ```bash
 git clone https://github.com/mahadindotnet/cosmic-shield.git
 cd cosmic-shield
 npm install
-cp .env.example .env      # then set SESSION_SECRET and PIN_PEPPER (see below)
-npm run db:migrate
-npm run db:seed
+npm run setup     # creates .env with random secrets, builds the database, loads the demo data
 npm run dev
 ```
 
-`npm run db:migrate` applies the SQL migrations in `drizzle/` (generated with `npm run db:generate` after editing `lib/db/schema.ts`). A database created earlier with `drizzle-kit push` is adopted automatically. `npm run db:seed` resets the demo: accounts, 14 days of morning vitals per crew member (source "seed", ending yesterday so today is free for a real entry), and the simulated nights for the early-warning demo.
+Open **http://localhost:3000** and sign in with a demo account below.
 
-Open **http://localhost:3000** and sign in with a demo account below. After logging in, pick a mission environment (ISS, Lunar surface, Mars transit or Mars surface) in the top bar. The seed sets no default environment, so the projected dose and the environment-specific thresholds and guidance appear once you choose one.
+**After logging in, pick a mission environment** (ISS, Lunar surface, Mars transit or Mars surface) in the dialog that appears, or later in the top bar. The demo sets none on purpose: environment-specific targets, the projected dose, comms delays and guidance appear once you choose.
 
-`SESSION_SECRET` and `PIN_PEPPER` are required; the server refuses to start without them. Generate each with:
+`npm run setup` is safe to run again: it keeps an existing `.env` and only re-creates the database contents. To reset the demo data at any time, run `npm run db:seed`. **Re-seed before a demo**: the seeded data ends yesterday, and the early-warning card only looks at the last 2 nights.
 
-```bash
-node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
-```
+Optional settings in `.env` (see `.env.example`): `AI_PROVIDER` (`mock`, `anthropic`, `ollama`), `NASA_API_KEY` (live DONKI space weather), `COOKIE_SECURE=false` (plain HTTP on a LAN IP), `SHOW_DEMO_ACCOUNTS=false`.
 
-## Login instructions
+### Demo accounts
 
-Cosmic Shield uses an **assigned crew ID and a 6-digit PIN** (no email or password). Go to **/login**, enter the crew ID, then the PIN with the on-screen keypad or your keyboard. The login page also lists these accounts; tap one to fill it in.
+Sign in with an **assigned crew ID and a 6-digit PIN** (no email or password). The login page lists these accounts; tap one to fill it in. All people are fictional.
 
 | Crew ID | PIN | Name | Role |
 |---|---|---|---|
 | `CS-001` | `472915` | Cmdr. Elena Reyes | Crew · Commander |
 | `CS-002` | `538204` | Dr. Amara Okafor | Crew · Crew Medical Officer (CMO) |
-| `CS-003` | `619473` | Lt. Sven Lindqvist | Crew · Systems |
+| `CS-003` | `619473` | Lt. Sven Lindqvist | Crew · Systems (shows the early-warning card) |
 | `CS-004` | `705318` | Spec. Kenji Tanaka | Crew · Payload |
-| `FS-001` | `846251` | Dr. Maya Chen (fictional) | Ground flight surgeon (admin) |
+| `FS-001` | `846251` | Dr. Maya Chen | Ground flight surgeon (Crew admin) |
 
-These are public demo values. `npm run db:seed` restores them at any time (it also clears the login audit).
+Each crew account has 14 days of **simulated** history (marked "Demo seed"). No eye screenings or photos are seeded.
 
-**Run `npm run db:seed` before a demo: alerts only use the last 2 nights.** The seed writes 14 nights of simulated HRV (RMSSD) and sleep ending last night; signing in as **CS-003** shows the "Early warning" card (rule `hrv_sleep_decline`, see [docs/rules.md](./docs/rules.md)). Other crew see no card.
-
-- **Crew** see only their own data. **The flight surgeon** opens **Crew admin** from the account menu: pick a crew member to review (escalation, latest readings, check-ins, sign-in activity), assign a new crew ID, reset a PIN (shows a one-time temporary PIN and forces a new PIN at next sign-in), unlock an account, and view the login audit.
-- **Wrong crew ID or wrong PIN** both show "Invalid crew ID or PIN". **Five failures lock the account for 5 minutes** (a countdown is shown). Unknown IDs lock the same way, so lockouts don't reveal which IDs exist.
-- **Lock** (top bar) or **15 minutes without activity** returns to the PIN screen with your crew ID pre-filled. **Log out** forgets the crew ID. Sessions end after **12 hours** regardless.
-- **Change PIN** is in the account menu and needs your current PIN. Weak PINs are refused: one digit repeated (`111111`) or a straight run (`123456`, `654321`).
-
-**How it is secured:** PINs are stored as `bcrypt(HMAC-SHA256(PIN_PEPPER, pin))`, so the database alone can't be brute-forced; **changing `PIN_PEPPER` invalidates every PIN, so re-run `npm run db:seed` afterwards**. The session is a signed (`SESSION_SECRET`), httpOnly, `Secure`, `SameSite=Lax` cookie. `proxy.ts` protects `/dashboard/*` and the data API routes, and every page, Server Action and API route re-checks the user (`requireUser()` / `requireRole("flight_surgeon")`). PINs, hashes and secrets are never logged. For plain-HTTP testing on a LAN IP (e.g. from a phone), set `COOKIE_SECURE=false`; to hide the demo box, set `SHOW_DEMO_ACCOUNTS=false`.
+**Security, briefly:** PINs are stored as `bcrypt(HMAC-SHA256(PIN_PEPPER, pin))`; five wrong attempts lock an account for 5 minutes; the session is a signed, httpOnly cookie that locks after 15 minutes idle and ends after 12 hours; every page, action and API route re-checks the user and role on the server. PINs, hashes and secrets are never logged. Changing `PIN_PEPPER` invalidates every PIN (re-run `npm run db:seed`).
 
 ### Production build
 
@@ -117,75 +76,95 @@ npm run build
 npm start
 ```
 
-### NASA reference data
+---
+
+## Running the tests
 
 ```bash
-npm run data:fetch   # download and cache OSDR, DONKI and RadLab data (needs NASA_API_KEY in .env)
-npm run data:build   # build data/nasa/derived/*.json from the cache (no network)
+npm test             # Vitest unit tests: rules, summaries, schemas, photo handling, auth, co-pilot, migrations
+npm run lint         # ESLint
+npx tsc --noEmit     # type check
+npm run test:e2e     # Playwright end-to-end tests
 ```
 
-The derived files are also committed in `data/nasa/fixtures/`, so the app works offline without running either command. See [docs/nasa-data-sources.md](./docs/nasa-data-sources.md).
+The end-to-end tests start their own dev server on port 3100 with a separate database (`data/cosmic-shield.test.db`) and photo folder (`uploads-test/`), migrated and seeded fresh before every run, so your demo data is never touched. They cover every module end to end, access control (crew can't see each other's data or photos), the flight surgeon's view and the co-pilot in offline mode. First run: `npx playwright install chromium`, or use an installed browser with `PW_CHANNEL=msedge` (or `chrome`).
 
-### Tests
+---
 
-The e2e tests start their own dev server on port 3100 with a separate database, `data/cosmic-shield.test.db`, which is migrated and seeded fresh before every run (`npm run db:test:prepare`). The demo database is never touched.
+## NASA data used
 
-```bash
-npm test             # Vitest unit tests (data maths, PIN hashing, weak PINs, lockout, sessions)
-npm run test:e2e     # Playwright end-to-end tests (use PW_CHANNEL=msedge or chrome to use an installed browser)
-```
+| Source | Used for |
+|---|---|
+| [NASA OSDR OSD-575](https://osdr.nasa.gov/osdr/data/osd/files/575): Inspiration4 metabolic panel | Glucose "Inspiration4 crew reference (n=4)" band on Vitals; pre-flight baselines in the co-pilot |
+| [NASA OSDR RadLab](https://visualization.osdr.nasa.gov/radlab/gui/data-api/): ISS ALTEA-Survey and DOSIS, LRO CRaTER, Curiosity MSL-RAD | Typical daily dose per mission environment (plus published values for Mars transit, Mars surface and the lunar surface) |
+| [NASA DONKI](https://api.nasa.gov/) | Recent solar flares, particle events, CMEs and geomagnetic storms (live with `NASA_API_KEY`, cached otherwise) |
+| NASA-STD-3001 Volume 1 | 600 mSv career dose limit |
+| [NASA Human Research Roadmap](https://humanresearchroadmap.nasa.gov/) | Why sleep ([sleep risk](https://humanresearchroadmap.nasa.gov/Risks/?i=100)) and eyes ([SANS risk](https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105)) are monitored |
+| NASA ["Astronaut Exercise"](https://www.nasa.gov/missions/station/iss-research/astronaut-exercise/) and *Human Adaptation to Spaceflight: The Role of Food and Nutrition* (NASA 2021) | ISS exercise target (about two hours a day); calcium and vitamin D targets |
+| NASA Moon and Mars Fact Sheets | Gravity, comms delay and day length per environment |
+
+The derived NASA files are committed (`data/nasa/fixtures/`), so the app works offline. To refresh them: `npm run data:fetch` (needs `NASA_API_KEY`) then `npm run data:build`. Details: [docs/nasa-data-sources.md](./docs/nasa-data-sources.md). Every source, paper, dataset and library: [docs/REFERENCES.md](./docs/REFERENCES.md).
+
+The demo crew's health data is **simulated**. NASA data provides the reference values, limits and context.
+
+---
+
+## AI use and safety limits
+
+- **One AI feature: the mission co-pilot.** It answers from the crew member's own logged data through eight read-only tools, each returning a cited source. It can't change anything.
+- **Offline by default** (`AI_PROVIDER=mock`): a deterministic mode with **no AI model** that calls the same tools and fills fixed templates. Optional: Claude (`anthropic`, needs `ANTHROPIC_API_KEY`; the question and tool results are then sent to Anthropic) or a local Ollama model.
+- **Statuses never come from AI.** Every Normal / Watch / Escalate comes from deterministic, unit-tested rules; the co-pilot only explains them.
+- **Server-side post-check** on every answer: diagnosis and prescription language is blocked and replaced with a safe reply; every number must match a tool result; contact advice includes the comms delay.
+- **Crisis safety check** before any model, on every chat message and check-in note: a caring response, the CMO line, and an escalation record for the flight surgeon. It is simple phrase matching, **not a clinical tool**, and can miss or misread messages.
+- **Image analysis is a prototype**: the GI and fundus "classifiers" are stubs that always return "Not analysed: prototype". Photos are never sent to any model.
+- **Decision support only.** Cosmic Shield doesn't diagnose, prescribe or replace the Crew Medical Officer or the flight surgeon, and it is not cleared for clinical use.
+
+Full disclosure and limits: [docs/ai-disclosure.md](./docs/ai-disclosure.md). How the rest fits together: [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md), [docs/intelligent-systems.md](./docs/intelligent-systems.md), [docs/TECH_STACK.md](./docs/TECH_STACK.md).
 
 ---
 
 ## Project structure
 
 ```
-app/                 # Pages and API routes
-components/          # Dashboard UI
-lib/                 # Rules engine, NASA loaders, co-pilot, database
-data/nasa/           # Bundled NASA reference JSON (offline demo)
-data/rules/          # Escalation thresholds
-docs/                # Architecture, NASA data, intelligent systems notes
-scripts/seed.ts      # Demo crew seed data
-e2e/                 # Playwright tests
+app/                 Pages (dashboard modules, Crew admin, login) and API routes
+components/          UI components and module views
+lib/<module>/        rules, schema, summary, data, actions and seed data per module
+lib/alerts/          the single list of active alerts
+lib/ai/              co-pilot: tools, providers, mock model, safety and post-checks
+lib/uploads/         private photo handling
+data/rules/          thresholds.json, every value with its basis and source
+data/nasa/           bundled NASA reference data (derived + committed fixtures)
+drizzle/             SQL migrations
+scripts/             setup, migrate, seed, NASA data fetch and build
+docs/                architecture, rules, NASA data, AI disclosure, references
+e2e/                 Playwright tests
 ```
-
----
-
-## Safety and scope
-
-Cosmic Shield is **clinical decision support** for demonstration and hackathon evaluation. It does **not** provide medical diagnosis, prescription, or emergency care. Escalation paths are designed to mirror flight-surgeon handoff workflows.
-
-Intelligent features in the product (co-pilot, vision classifiers): [docs/intelligent-systems.md](./docs/intelligent-systems.md).
 
 ---
 
 ## Image credits
 
+- ISS in orbit, the ISS background, `public/backgrounds/iss-orbit.webp`: Photo by NASA on Unsplash, https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0
+- Astronaut on the lunar surface, the Lunar surface background, `public/backgrounds/lunar-surface-eva.webp`, with the mission patch on the suit blurred out: Photo by History in HD on Unsplash, https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg
+- Mars from space, the Mars transit background, `public/backgrounds/mars-planet.webp`: Photo by javier Miranda on Unsplash, https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo
+- Martian cliffs, the Mars surface background, `public/backgrounds/mars-cliff.webp`: Photo by Nicolas Lobos on Unsplash, https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI
+- Anatomical body figure, the Health Dashboard body map, `public/organs/anatomy.webp`: Photo by Rohit Choudhari on Unsplash, https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ
+- Anatomical heart (AI-generated), the Vitals page, `public/organs/heart.webp`: Photo by Mohammad-Ben-Ammar on Pixabay, https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/
+- Human skeleton, the Bone protection page, `public/organs/bone.webp`: Photo by divotomezove on Pixabay, https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/
+- Human eye, the Eyes page, `public/organs/eye.webp`: Photo by 95C on Pixabay, https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/
+- Digestive system (AI-generated), the GI page, `public/organs/gi.webp`: Photo by Phylum on Pixabay, https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/
+- Brain, the Mind page, `public/organs/mind.webp`: Photo by Milad Fakurian on Unsplash, https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U
 
-- ISS in orbit (background for the ISS environment, `public/backgrounds/iss-orbit.webp`): Photo by [NASA] on [Unsplash], [(https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0)]
-- Astronaut on the lunar surface (background for Lunar surface, `public/backgrounds/lunar-astronaut.webp`): Photo by [History in HD] on [Unsplash], [(https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg)]
-- Mars from space (background for Mars transit, `public/backgrounds/mars-planet.webp`): Photo by [javier Miranda] on [Unsplash], [https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo]
-- Martian cliffs (background for Mars surface, `public/backgrounds/mars-cliff.webp`): Photo by [Nicolas Lobos] on [Unsplash], [https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI]
-- Anatomical body figure (Health Dashboard body map, `public/organs/anatomy.webp`): Photo by [Rohit Choudhari] on [Unsplash], [(https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ)]
-- Anatomical heart (Vitals page, `public/organs/heart.webp`): Photo by [Mohammad-Ben-Ammar] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/]
-- Skeleton / bone (Bone Protection page, `public/organs/bone.webp`): Photo by [divotomezove] on [Pixabay], [https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/]
-- Human eye (Eyes page, `public/organs/eye.webp`): Photo by [95C] on [Pixabay], [https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/]
-- Digestive system (GI page, `public/organs/gi.webp`): Photo by [Phylum] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/]
-- Brain (Mind page, `public/organs/mind.webp`): Photo by [Milad-Fakurian] on [Unsplash], [https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U]
+The two images marked (AI-generated) are AI-generated illustrations; the app shows a visible “AI-generated image” label on them wherever they appear (Vitals and GI pages).
 
-The images were converted to WebP for the app (and cropped, keyed to a transparent background or recoloured). Everything else visual (logo, holograms, charts) is drawn in code.
+The images were converted to WebP (and cropped, keyed to a transparent background or recoloured). Everything else visual (logo, holograms, Bristol pictograms, Amsler grid, charts) is drawn in code. No NASA logo (the insignia or the logotype) and no mission emblem appears in the app or the repository: the Apollo 11 mission patch on the lunar photo's suit is blurred out. NASA is named only as a data source.
 
-Photos are used under the Unsplash License (https://unsplash.com/license) and the Pixabay Content License (https://pixabay.com/service/license-summary/), and are not covered by this repository's MIT licence.
-
----
-
-## License
-
-[MIT](./LICENSE) — suitable for NASA Space Apps open-source requirements.
+Photos are used under the [Unsplash License](https://unsplash.com/license) and the [Pixabay Content License](https://pixabay.com/service/license-summary/), and are not covered by this repository's MIT licence.
 
 ---
 
-## Team / contact
+## Licence
+
+Code: [MIT](./LICENSE). Images: see Image credits above.
 
 Repository: [github.com/mahadindotnet/cosmic-shield](https://github.com/mahadindotnet/cosmic-shield)

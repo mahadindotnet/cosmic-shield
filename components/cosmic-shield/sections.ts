@@ -39,8 +39,8 @@ export const SECTIONS: SectionDef[] = [
   { slug: "sleep-stress", title: "Sleep & Stress", description: "Sleep duration and quality, heart-rate variability and stress load.", icon: Moon, href: "/dashboard/sleep-stress", group: "health" },
   { slug: "radiation", title: "Radiation", description: "Dosimeter readings against the career limit, plus solar storm alerts.", icon: Radiation, href: "/dashboard/radiation", group: "health" },
   { slug: "bone", title: "Bone Protection", description: "Exercise minutes, resistance load, calcium and vitamin D.", icon: Bone, href: "/dashboard/bone", group: "health" },
-  { slug: "eyes", title: "Eyes", description: "Fundoscope SANS screening and the Amsler grid self-test.", icon: Eye, href: "/dashboard/eyes", group: "health" },
-  { slug: "gi", title: "GI", description: "Bristol stool classification, hydration and nutrition.", icon: Droplets, href: "/dashboard/gi", group: "health" },
+  { slug: "eyes", title: "Eyes", description: "Amsler grid self-test and fundus photos (prototype, not analysed).", icon: Eye, href: "/dashboard/eyes", group: "health" },
+  { slug: "gi", title: "GI", description: "Bristol stool type, fluid intake and photos (prototype, not analysed).", icon: Droplets, href: "/dashboard/gi", group: "health" },
   { slug: "mind", title: "Mind", description: "Mood check-ins and a supportive AI conversation.", icon: Brain, href: "/dashboard/mind", group: "health" },
   { slug: "mission", title: "Mission", description: "Mission environment: radiation, gravity and ground-comms delay.", icon: Rocket, href: "/dashboard/mission", group: "mission" },
 ];

@@ -1,6 +1,8 @@
 import { CircleCheck, CircleDashed, OctagonAlert, TriangleAlert, type LucideIcon } from "lucide-react";
-import type { EscalationLevel } from "@/lib/rules/types";
 import { cn } from "@/lib/utils";
+
+/** Rules-engine status levels (Watch and Escalate come from each module's rules.ts). */
+export type EscalationLevel = "normal" | "watch" | "escalate";
 
 /** Escalation tier from the rules engine, plus "no-data" for empty modules. */
 export type HealthStatus = EscalationLevel | "no-data";

@@ -9,6 +9,7 @@
     "url": "https://github.com/mahadindotnet/cosmic-shield.git"
   },
   "scripts": {
+    "setup": "tsx scripts/setup.ts",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",

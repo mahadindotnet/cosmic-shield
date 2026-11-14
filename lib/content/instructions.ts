@@ -1,5 +1,9 @@
+import thresholds from "@/data/rules/thresholds.json";
 import type { SectionSlug } from "@/components/cosmic-shield/sections";
 import type { HowToMeasureProps } from "@/components/cosmic-shield/how-to-measure";
+
+const GI = thresholds.gi;
+const MIND = thresholds.mind;
 
 export interface InstructionSection {
   title: string;
@@ -106,48 +110,47 @@ export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
         { title: "Record the heaviest set you lifted", detail: "Use the device's load reading, not perceived effort." },
         { title: "Add supplements from your meal log", detail: "Calcium from food plus tablets; vitamin D from tablets." },
       ],
-      tip: "Without countermeasures, weight-bearing bones lose about 1–1.5% density per month in microgravity.",
+      tip: "On the ISS, crew members average about two hours of exercise a day (NASA). Aerobic and resistance minutes both count.",
     },
   },
   eyes: {
-    intro: "Screen for SANS (spaceflight-associated neuro-ocular syndrome) with fundoscope photos and the Amsler grid self-test.",
+    intro: "Check your vision with the Amsler grid self-test, and keep fundus photos for review. NASA tracks SANS (spaceflight-associated neuro-ocular syndrome) as a spaceflight risk; these self-checks help you notice a change and tell your CMO. They don't detect or rule out SANS.",
     sections: [
-      { title: "Eye hologram", body: "Callouts show the last SANS screening result and each eye's Amsler result.", anchor: "eyes-hero" },
-      { title: "Screening schedule", body: "How often to screen in your mission environment, and when you last did.", anchor: "eyes-hero" },
-      { title: "Fundoscope capture", body: "Upload a retina photo. AI screening flags signs of SANS for review; it never diagnoses.", anchor: "eyes-log" },
-      { title: "Amsler grid test", body: "Cover one eye, look at the centre dot and record whether any lines look wavy, broken or missing. Repeat for the other eye.", anchor: "eyes-log" },
-      { title: "History", body: "All fundoscope and Amsler results.", anchor: "eyes-history" },
+      { title: "Eye hologram", body: "Callouts show how many squares you marked on each eye's latest Amsler test.", anchor: "eyes-hero" },
+      { title: "Screening schedule", body: "How often to screen in your mission environment (app default), and when you last did.", anchor: "eyes-hero" },
+      { title: "Amsler grid test", body: "Full screen, one eye at a time: tap any square that looks wavy, blurred or missing, say whether you could see the centre dot, and save. Any change is a Watch: repeat the test tomorrow and tell your CMO.", anchor: "eyes-log" },
+      { title: "Fundus photo (prototype)", body: "Upload a retina photo from the fundoscope. It is stored privately and not analysed. Tick \"Flag for ground review\" if you want the flight surgeon to look at it.", anchor: "eyes-log" },
+      { title: "History", body: "Every Amsler test (with a small preview of the marked squares) and fundus photo.", anchor: "eyes-history" },
     ],
     measure: {
-      equipment: ["Reading glasses if used", "Fundoscope"],
+      equipment: ["Reading glasses if used", "Fundoscope (for photos)"],
       duration: "≈ 2 min per eye",
       steps: [
         { title: "Hold the screen ~35 cm away", detail: "Good, even lighting; wear your normal reading glasses." },
         { title: "Cover one eye", detail: "Look only at the centre dot. Don't move your gaze." },
-        { title: "Check the lines", detail: "Are any wavy, broken, blurred or missing? Note where." },
-        { title: "Repeat with the other eye", detail: "Log each eye as its own entry." },
+        { title: "Mark what looks wrong", detail: "Tap each square where lines look wavy, broken, blurred or missing." },
+        { title: "Save, then do the other eye", detail: "Each eye is saved as its own result." },
       ],
-      caution: "New distortion in central vision should be logged right away. It may trigger a Watch for SANS.",
+      caution: "A change on two tests in a row of the same eye is also sent to the flight surgeon. Not a diagnosis.",
     },
   },
   gi: {
-    intro: "Track gut health, hydration and nutrition. A photo is fastest: the classifier suggests a Bristol type for you to confirm.",
+    intro: "Log each bowel movement by Bristol type, with fluid intake and an optional note or photo. Nothing here diagnoses.",
     sections: [
-      { title: "Gut hologram", body: "Callouts show the last Bristol type, today's fluids, meals logged and the AI image check.", anchor: "gi-hero" },
-      { title: "Hydration gauge", body: "Today's fluid intake against the daily target.", anchor: "gi-hero" },
-      { title: "Bristol photo (AI)", body: "Upload a photo and confirm or correct the suggested type. Your answer is what gets logged.", anchor: "gi-log" },
-      { title: "Manual entry", body: "No photo? Pick the Bristol type yourself and add fluids and meals.", anchor: "gi-log" },
-      { title: "Bristol scale", body: "Reference for types 1–7. Types 3–4 are normal.", anchor: "gi-scale" },
-      { title: "History", body: "Past GI and intake entries.", anchor: "gi-history" },
+      { title: "Gut hologram", body: "Callouts show your latest Bristol type and today's fluids.", anchor: "gi-hero" },
+      { title: "Fluids gauge", body: `Today's fluid intake against the ${GI.fluidMinL}–${GI.fluidMaxL} L daily band (app default).`, anchor: "gi-hero" },
+      { title: "Log an entry", body: "Pick the type that matches best (each shows its standard description), add fluids and a note if you like. A photo is optional: it is stored privately and not analysed (prototype).", anchor: "gi-log" },
+      { title: "Bristol scale", body: "The seven types and their descriptions (Lewis & Heaton 1997).", anchor: "gi-scale" },
+      { title: "History", body: "Every entry, newest first, with a link to any photo.", anchor: "gi-history" },
     ],
     measure: {
-      equipment: ["Tablet camera", "Waste collection bag"],
+      equipment: ["Tablet camera (optional)", "Waste collection bag"],
       steps: [
-        { title: "Photograph inside the collection bag", detail: "Before sealing; fill the frame." },
-        { title: "Use the cabin light, no flash", detail: "Flash washes out colour and texture." },
-        { title: "Confirm or correct the AI's type", detail: "Your correction is what gets logged." },
+        { title: "Compare with the scale", detail: "Pick the type whose description fits best." },
+        { title: "Add today's fluids", detail: "Litres since your last entry; they add up through the day." },
+        { title: "Photo, if you want one", detail: "Use the cabin light, no flash. It isn't analysed; your chosen type is what gets logged." },
       ],
-      tip: "Types 6–7 on two logs in a row trigger a Watch. Keep your fluids up.",
+      tip: `Types ${GI.hardTypes.join("–")} or ${GI.looseTypes.join("–")} on ${GI.minDays} of the last ${GI.windowDays} days trigger a Watch with simple advice. Keep your fluids up.`,
     },
   },
   mind: {
@@ -165,7 +168,7 @@ export const INSTRUCTIONS: Record<SectionSlug, PageInstructions> = {
         { title: "Rate mood and stress honestly", detail: "The flight surgeon sees your scores; your note stays private to you." },
         { title: "Add a note if something stands out", detail: "Sleep, workload, conflict, homesickness…" },
       ],
-      tip: "Mood 2 or lower, or stress 4 or higher, on 3 days in a row triggers a Watch, never a diagnosis. If you feel unsafe or unable to cope, contact your Crew Medical Officer now.",
+      tip: `Mood ${MIND.lowMoodMax} or lower, or stress ${MIND.highStressMin} or higher, on ${MIND.consecutiveDays} days in a row triggers a Watch, never a diagnosis. If you feel unsafe or unable to cope, contact your Crew Medical Officer now.`,
     },
   },
   mission: {

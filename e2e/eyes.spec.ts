@@ -140,6 +140,12 @@ test("fundus photo: saved as a prototype, flagged for ground review; the flight 
   await expect(fs.locator('[data-testid="admin-escalation"][data-rule="eye_amsler_repeat"]')).toContainText(
     "Vision change noticed on 2 Amsler tests in a row (right eye): 3 cells marked, then centre dot not seen.",
   );
+  // Crew admin's review panel reads logged entries only (lib/crew/snapshot.ts).
+  const readings = fs.getByTestId("crew-review-readings");
+  await expect(readings.locator('[data-module="eyes"]')).toHaveAttribute("data-status", "watch");
+  await expect(readings.locator('[data-module="vitals"]')).not.toHaveAttribute("data-status", "no-data");
+  await expect(fs.getByTestId("crew-review-alerts").locator('[data-rule="eye_amsler"]')).toBeVisible();
+  await expect(fs.getByTestId("crew-review")).not.toContainText("Simulated demo crew data");
   const surgeonPhoto = await fs.request.get(href);
   expect(surgeonPhoto.status()).toBe(200);
   await fs.getByTestId("notification-bell").click();

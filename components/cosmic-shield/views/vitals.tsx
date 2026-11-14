@@ -11,6 +11,7 @@ import { OrganImage, OrganStage, onImage } from "@/components/cosmic-shield/orga
 import { StatusBadge, type HealthStatus } from "@/components/cosmic-shield/status";
 import { StatusCard } from "@/components/cosmic-shield/status-card";
 import { TrendChart, type TrendPoint } from "@/components/cosmic-shield/trend-chart";
+import thresholds from "@/data/rules/thresholds.json";
 import { REFERENCE_RANGES as R } from "@/lib/health/reference-ranges";
 import { logVitalsAction, type LogVitalsState } from "@/lib/vitals/actions";
 import { escalateGuidance, remeasureFirst } from "@/lib/vitals/escalation";
@@ -84,7 +85,7 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
               const { value, status } = view(d);
               return (
                 <OrganStage
-                  visual={<OrganImage src="/organs/heart.webp" alt="Anatomical heart" />}
+                  visual={<OrganImage src="/organs/heart.webp" alt="Anatomical heart (AI-generated illustration)" aiGenerated />}
                   hotspots={[
                     { id: "hr", ...onImage(0.66, 0.72, HEART_ASPECT), side: "right", label: "Heart rate", icon: HeartPulse, unit: "bpm", field: "heartRate", value: value("heartRate"), status: status("heartRate") },
                     { id: "bp", ...onImage(0.6, 0.2, HEART_ASPECT), side: "right", label: "Blood pressure", icon: Activity, unit: "mmHg", field: "systolic", value: value("bloodPressure"), status: status("bloodPressure") },
@@ -155,7 +156,7 @@ export function VitalsView({ data }: { data: Promise<VitalsPageData> }) {
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" data-testid="vitals-status-cards">
                 <StatusCard title="Heart rate" icon={HeartPulse} value={value("heartRate")} unit="bpm" status={status("heartRate")} caption={caption} reference={`Normal ${R.heartRate.min}–${R.heartRate.max} bpm`} />
                 <StatusCard title="Blood pressure" icon={Activity} value={value("bloodPressure")} unit="mmHg" status={status("bloodPressure")} caption={caption} reference={`Normal ${R.systolic.min}–${R.systolic.max} / <${R.diastolic.max}`} />
-                <StatusCard title="SpO₂" icon={Wind} value={value("spo2")} unit="%" status={status("spo2")} caption={caption} reference={`Normal above ${R.spo2.min}% · Escalate below 90%`} />
+                <StatusCard title="SpO₂" icon={Wind} value={value("spo2")} unit="%" status={status("spo2")} caption={caption} reference={`Normal above ${R.spo2.min}% · Escalate below ${thresholds.vitals.spo2Pct.escalateBelow}% (WHO)`} />
                 <StatusCard
                   title="Glucose"
                   icon={Droplet}

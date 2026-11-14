@@ -83,7 +83,13 @@ test("a crew member cannot open the admin page", async ({ page }) => {
   // Crew can't read another crew member's data either.
   const res = await page.request.get("/api/crew/CS-002");
   expect(res.status()).toBe(403);
-  expect((await page.request.get("/api/crew/CS-001")).status()).toBe(200);
+  const own = await page.request.get("/api/crew/CS-001");
+  expect(own.status()).toBe(200);
+  // Real module readings only (lib/crew/snapshot.ts): no old demo snapshot fields.
+  const body = await own.json();
+  expect(body.crewId).toBe("CS-001");
+  expect(body.readings.map((r: { module: string }) => r.module)).toEqual(["vitals", "sleep-stress", "radiation", "bone", "gi", "eyes", "mind"]);
+  expect(JSON.stringify(body)).not.toMatch(/sansConfidence|moduleState|behavioralLog|missionDay/);
 });
 
 test("Log out ends the session and forgets the crew ID", async ({ page }) => {

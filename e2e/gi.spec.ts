@@ -15,6 +15,8 @@ test.describe.configure({ mode: "serial" });
 test("manual entries: history, status cards, a Watch pattern, the dashboard tile and the alert", async ({ page }) => {
   await signInOk(page, "CS-003");
   await page.goto("/dashboard/gi");
+  // AI-generated illustration: visibly labelled (Space Apps rule).
+  await expect(page.getByTestId("ai-generated-label").filter({ visible: true })).toHaveText("AI-generated image");
   const rows = visible(page, "gi-history").getByTestId("gi-history-row");
   await expect(rows).toHaveCount(14);
   await expect(visible(page, "gi-status-cards")).toContainText("Bristol Stool Form Scale (Lewis & Heaton 1997)");

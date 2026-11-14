@@ -7,8 +7,8 @@ import { CrewMindReview } from "@/components/admin/crew-mind-review";
 import { mindSummaryForReview } from "@/lib/mind/data";
 import { escalationsForReview } from "@/lib/mind/safety-escalation";
 import { requireRole } from "@/lib/auth/dal";
-import { auditFor, listUsers, recentAudit } from "@/lib/auth/users";
-import { getCrewDashboardWithLogs } from "@/lib/services/crew-service";
+import { auditFor, findUserById, listUsers, recentAudit } from "@/lib/auth/users";
+import { crewSnapshot } from "@/lib/crew/snapshot";
 
 export const metadata: Metadata = { title: "Crew admin" };
 
@@ -38,7 +38,8 @@ async function AdminContent({ searchParams }: { searchParams: PageProps<"/dashbo
   const review = data.selected
     ? {
         account: data.selected.account,
-        data: data.selected.profileId ? await getCrewDashboardWithLogs(data.selected.profileId) : null,
+        // Real entries only: every module's latest reading and the active alerts.
+        snapshot: crewSnapshot(findUserById(data.selected.userId)!),
         activity: auditFor(data.selected.account.crewId),
         // Flight surgeon only (enforced again inside both functions).
         mind: mindSummaryForReview(viewer, data.selected.userId),
@@ -53,7 +54,7 @@ async function AdminContent({ searchParams }: { searchParams: PageProps<"/dashbo
           Crew member
         </h2>
         <CrewPicker crew={data.picker} selected={data.selected?.account.crewId ?? null} />
-        {review && <CrewReview account={review.account} data={review.data} activity={review.activity} />}
+        {review && <CrewReview account={review.account} snapshot={review.snapshot} activity={review.activity} />}
         {review && <CrewMindReview crewId={review.account.crewId} mind={review.mind} escalations={review.escalations} />}
       </section>
 
@@ -91,7 +92,6 @@ function loadAdminData(requested: string | null) {
     selected: chosen
       ? {
           userId: chosen.id,
-          profileId: chosen.profileId,
           account: {
             crewId: chosen.crewId,
             displayName: chosen.displayName,

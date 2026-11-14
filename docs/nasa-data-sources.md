@@ -75,15 +75,17 @@ Source: NASA DONKI via `api.nasa.gov` (fallback: `kauai.ccmc.gsfc.nasa.gov`), la
 
 ## Other bundled files
 
-| File | Status |
-|---|---|
-| `data/nasa/hrp-risks.json` | [NASA HRP human system risks](https://humanresearchroadmap.nasa.gov/) index for the escalation ladder |
-
-The placeholder files `inspiration4-baselines.json` and `radlab-sample.json` (hand-made numbers) have been removed.
+None. The placeholder files `inspiration4-baselines.json`, `radlab-sample.json` (hand-made numbers) and the unused `hrp-risks.json` index have been removed, as have the old simulated crew snapshots (`lib/demo/crew-profiles.ts`) and the engine that read them. Every number the app shows comes from a crew member's logged entries, from the derived NASA files above, or from `data/rules/thresholds.json` with its basis.
 
 ## Other references (not downloaded)
 
 | Module | Reference | Notes |
 |---|---|---|
-| Cytokine context | Inspiration4 publications | "18 markers in 3 days", used in outreach copy only |
-| Stool / GI | OSD-630 (Inspiration4 stool) | Validity reference for the Bristol module |
+| Exercise | NASA, "Astronaut Exercise" (2024, updated 2025) | ISS daily exercise target 120 min: "crew members now averaging two hours of exercise per day." |
+| Nutrition | Smith SM et al., *Human Adaptation to Spaceflight: The Role of Food and Nutrition*, NASA 2021 | Calcium 1000 mg/day and vitamin D 1000 IU/day targets (Table 1, 2020 exploration requirements) |
+| Sleep | NASA HRP, Risk of Performance Decrements … Sleep Loss … ([?i=100](https://humanresearchroadmap.nasa.gov/Risks/?i=100)) | Why sleep and recovery are monitored (early-warning card) |
+| Eyes | NASA HRP, Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS) ([risk.aspx?i=105](https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105)) | Why eyes are screened in flight (Eyes page) |
+| Career dose | NASA-STD-3001 Volume 1 | 600 mSv career limit (confirmed via Zanon et al. 2026) |
+| Moon and Mars | NASA Moon and Mars Fact Sheets | Gravity, light delay, day length per environment |
+
+OSD-630 (Inspiration4 stool) was considered for the GI module but is **not used**: the Bristol type meanings come from Lewis & Heaton 1997.

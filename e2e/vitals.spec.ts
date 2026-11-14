@@ -14,6 +14,8 @@ test("CS-001 logs BP 150/95: Watch on the page, in history and on the dashboard;
   await signInOk(page, "CS-001");
 
   await page.goto("/dashboard/vitals");
+  // AI-generated illustration: visibly labelled (Space Apps rule).
+  await expect(page.getByTestId("ai-generated-label").filter({ visible: true })).toHaveText("AI-generated image");
   const history = visible(page, "vitals-history");
   // 14 seeded mornings are there before the entry.
   await expect(history.getByTestId("vitals-history-row")).toHaveCount(14);

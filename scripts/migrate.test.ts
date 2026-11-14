@@ -35,9 +35,11 @@ describe("runMigrations", () => {
     expect(runMigrations(`file:${file}`).adopted).toBe(false);
     runMigrations(`file:${file}`);
     const { names, userCols } = inspect(file);
-    for (const t of ["vitals_entry", "sleep_entry", "dose_entry", "countermeasure_entry", "gi_entry", "eye_screening", "checkin", "users", "vital_reading"]) {
+    for (const t of ["vitals_entry", "sleep_entry", "dose_entry", "countermeasure_entry", "gi_entry", "eye_screening", "checkin", "users", "escalation"]) {
       expect(names).toContain(t);
     }
+    // 0008 retired the old demo-snapshot tables.
+    for (const t of ["crew", "vital_reading", "check_in", "escalation_event"]) expect(names).not.toContain(t);
     expect(userCols).toContain("environment");
   });
 

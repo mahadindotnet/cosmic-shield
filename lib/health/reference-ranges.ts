@@ -64,8 +64,8 @@ export const REFERENCE_RANGES = {
     label: "Below watch",
     provenance: { basis: "app default", note: v.radiationMsvDay.watchHighNote },
   },
-  exerciseMinutes: { min: 120, max: 180, unit: "min", label: "Daily target", provenance: APP_DEFAULT },
-  hydration: { min: 2, max: 3, unit: "L", label: "Daily target", provenance: APP_DEFAULT },
+  exerciseMinutes: { min: thresholds.bone.defaultDailyExerciseMin, max: thresholds.bone.defaultDailyExerciseMin + 60, unit: "min", label: "Daily target", provenance: APP_DEFAULT },
+  hydration: { min: thresholds.gi.fluidMinL, max: thresholds.gi.fluidMaxL, unit: "L", label: "Daily target", provenance: APP_DEFAULT },
 } satisfies Record<string, ReferenceRange>;
 
 /**

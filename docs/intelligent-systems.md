@@ -1,32 +1,33 @@
 # Intelligent systems in Cosmic Shield
 
-NASA Space Apps projects that use AI should describe **what runs in the product** and how it is used safely. This document covers in-app intelligent features only.
+What runs in the product, and how it is kept safe.
 
-## Mission co-pilot
+## Mission co-pilot (the only AI feature)
 
-- **Location:** floating button and "Ask co-pilot" → chat panel → `/api/assistant/chat`
-- **Behavior:** answers questions about the crew member's alerts, vitals, sleep, radiation dose, space weather, mission environment and OSD-575 baselines.
-- **Grounding:** eight read-only tools with cited sources; offline deterministic mode by default (`AI_PROVIDER=mock`), Claude or Ollama optional.
-- **Safety:** decision support only; a server-side post-check blocks diagnosis and prescription language. Full details: [ai-disclosure.md](./ai-disclosure.md).
+- **Where:** the floating button, "Ask co-pilot" on the early-warning card, and "Talk it through" on the Mind page → `POST /api/assistant/chat`.
+- **What it does:** answers questions about the crew member's own alerts, vitals, sleep, radiation dose, space weather, mission environment and OSD-575 baselines, through eight read-only tools that return cited sources.
+- **Models:** an offline deterministic mock by default (`AI_PROVIDER=mock`, no AI model), Claude (`anthropic`) or a local Ollama model (`ollama`).
+- **Safety:** decision support only. A crisis safety check runs before any model; a server-side post-check blocks diagnosis and prescription language and checks every number against the tool results. Full details and limits: [ai-disclosure.md](./ai-disclosure.md).
 
-## Vision-assisted modules
+## Image modules: prototype stubs
 
 | Module | Endpoint | Output |
 |--------|----------|--------|
-| Bristol stool classification | `POST /api/vision/bristol` | Prototype stub: always "Not analysed: prototype", never a type or a status. The crew member confirms the Bristol type manually; photos are stored privately with metadata removed (see rules.md → GI). |
-| Fundus (SANS) photo | `POST /api/vision/sans` | Prototype stub: always "Not analysed: prototype", never a finding, confidence or status. The crew member can flag a photo for ground review (an escalation record for the flight surgeon). See rules.md → Eyes. |
+| GI (Bristol) photo | `POST /api/vision/bristol` | Always "Not analysed: prototype", never a type or a status. The crew member chooses the Bristol type; that is what gets logged. |
+| Fundus (SANS) photo | `POST /api/vision/sans` | Always "Not analysed: prototype", never a finding, confidence or status. The crew member can flag a photo for ground review (an escalation record for the flight surgeon). |
 
-Both are **prototype stubs**: no model is connected, so they never analyse an image or produce a status. Photos are still stored securely (metadata removed, owner and flight surgeon only), so a trained model could later be attached to the same API contract.
+No image model is connected. Photos are stored privately with metadata removed (owner and flight surgeon only), so a trained model could later be attached behind `classifyBristolPhoto()` / `classifyFundusPhoto()`.
 
-## Rules engine (primary “intelligence” for judges)
+## Rules engine (the source of every status)
 
-Most escalation logic is **explicit and auditable**:
+Every Normal / Watch / Escalate comes from explicit, unit-tested rules:
 
-- Thresholds in `data/rules/thresholds.json`
-- Evaluation in `lib/rules/engine.ts`
-- Evidence JSON stored with escalation events
+- One pure rules file per module (`lib/<module>/rules.ts`) and the `hrv_sleep_decline` pattern (`lib/rules/hrv-sleep-decline.ts`), evaluated on read.
+- Thresholds in `data/rules/thresholds.json`, each labelled "sourced" (with its citation) or "app default".
+- `lib/alerts/active.ts` collects every active alert for the bell, the dashboard, Crew admin and the co-pilot.
+- Escalation records (`escalation` table) carry the reason and the evidence JSON, for the flight surgeon.
 
-This supports **Validity** scoring: reviewers can see why a crew member entered Watch or Escalate.
+See [rules.md](./rules.md).
 
 ## Disclaimer
 

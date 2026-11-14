@@ -5,39 +5,38 @@ Use this when completing the official project page and demo videos.
 ## Repository
 
 - Public GitHub: [mahadindotnet/cosmic-shield](https://github.com/mahadindotnet/cosmic-shield)
-- License: MIT (see [LICENSE](../LICENSE))
-- README includes challenge link, tech stack, NASA data usage, run instructions
+- Licence: MIT (see [LICENSE](../LICENSE)); photos are under their own licences (README → Image credits)
+- README: challenge link, features, quick start, demo accounts, tests, NASA data, AI use and limits
 
-## NASA data to name on camera (Video 2)
+## NASA data to name on camera
 
-State explicitly that the project uses:
+1. **NASA OSDR OSD-575 (Inspiration4 metabolic panel)**: the glucose crew reference band on Vitals; baselines in the co-pilot.
+2. **NASA OSDR RadLab** (ISS ALTEA and DOSIS, LRO CRaTER, MSL-RAD): daily dose per mission environment.
+3. **NASA DONKI**: recent solar flares, particle events, CMEs and geomagnetic storms.
+4. **NASA Human Research Program**: the sleep and SANS risks, explaining why sleep and eyes are monitored.
+5. **NASA-STD-3001**: the 600 mSv career dose limit.
+6. **NASA "Astronaut Exercise" page and NASA nutrition requirements (Smith et al. 2021)**: ISS exercise, calcium and vitamin D targets.
 
-1. **NASA OSDR / Inspiration4** — clinical baseline references for vitals bands  
-2. **RadLab** — radiation dose context  
-3. **NASA Human Research Program** — risk framework for escalation logic  
-4. **OSD-630 (Inspiration4 stool)** — GI / Bristol module reference  
-
-See [nasa-data-sources.md](./nasa-data-sources.md).
+See [nasa-data-sources.md](./nasa-data-sources.md) and [REFERENCES.md](./REFERENCES.md).
 
 ## Demo script highlights
 
-- Switch crew members — show different Watch / Nominal states  
-- Open escalation ladder — explain rule-based, auditable logic  
-- Log behavioral check-in and hydration  
-- Run SANS re-capture and Bristol classification  
-- Ask mission co-pilot: “What is my escalation status?” and “Summarize radiation”
+- Sign in as CS-003, pick an environment: the early-warning card (HRV and sleep decline) and "Ask co-pilot: why am I seeing this warning?".
+- Log vitals with SpO₂ 88 %: Escalate, remeasure guidance, the flight surgeon is told.
+- Take the Amsler test with a few squares marked: Watch and the bell.
+- Log a GI entry with a photo: stored as "Not analysed: prototype".
+- Sign in as FS-001: Crew admin shows every crew member's latest readings, alerts and escalation records.
 
 ## Safety language
 
-Always say **decision support**, not diagnosis. Cosmic Shield surfaces countermeasures and flight surgeon escalation — it does not replace medical professionals.
+Always say **decision support**, not diagnosis. Image analysis is a **prototype** and does not analyse images. Cosmic Shield surfaces countermeasures and flight-surgeon escalation; it does not replace medical professionals.
 
 ## Reproducibility for judges
 
 ```bash
 npm install
-cp .env.example .env
-npm run db:migrate && npm run db:seed
+npm run setup
 npm run dev
 ```
 
-Dashboard: `http://localhost:3000/dashboard`
+Then open http://localhost:3000.

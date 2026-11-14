@@ -12,11 +12,6 @@
     "radlab-iss-altea": "NASA OSDR RadLab, ISS ALTEA-Survey dose_equivalent_rate, 1–7 Jun 2011: 0.717 mSv/day (data/nasa/derived/radiation-environments.json).",
     "nasa-mars-factsheet": "NASA Mars Fact Sheet (https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html): Earth–Mars distance 54.6–401.4 × 10^6 km; maximum one-way light time = 401.4e6 km ÷ 299,792.458 km/s ≈ 22.3 min."
   },
-  "missionDay": 42,
-  "missionDayBasis": "app default",
-  "commsDelayMinutes": 22,
-  "commsDelayMinutesBasis": "sourced",
-  "commsDelayMinutesSource": "nasa-mars-factsheet",
   "vitals": {
     "heartRateBpm": { "baseline": 68, "watchHigh": 88, "watchLow": 52, "basis": "app default" },
     "hrvMs": { "baseline": 42, "watchLow": 28, "basis": "app default" },
@@ -65,11 +60,6 @@
       "cumulativeWatchBasis": "app default",
       "cumulativeWatchNote": "Half of the 600 mSv career limit."
     }
-  },
-  "trends": {
-    "hrDriftDays": 14,
-    "hrDriftBpm": 6,
-    "basis": "app default"
   },
   "mind": {
     "basis": "app default",
@@ -132,11 +122,5 @@
       "sleepFloorHours": 6,
       "maxNightAgeDays": 2
     }
-  },
-  "modules": {
-    "bristolEscalateTypes": [6, 7],
-    "sansConfidenceWatch": 0.72,
-    "sansConfidenceEscalate": 0.88,
-    "basis": "app default"
   }
 }

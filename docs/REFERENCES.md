@@ -16,11 +16,10 @@ Last checked: 2026-11-13.
 | NASA **DONKI** (Space Weather Database Of Notifications, Knowledge, Information) | CME, geomagnetic storm (GST) and solar energetic particle (SEP) feeds. The solar flare (FLR) feed returned 404 when fetched | `space-weather.json`; Space weather panel on the Health Dashboard; Solar storm alerts on the Radiation page (live when `NASA_API_KEY` is set, otherwise cached, with a source badge) | [api.nasa.gov](https://api.nasa.gov/) (`/DONKI`); fallback [kauai.ccmc.gsfc.nasa.gov/DONKI](https://kauai.ccmc.gsfc.nasa.gov/DONKI/) |
 | NASA **Human Research Roadmap**: "Risk of Performance Decrements and Adverse Health Outcomes Resulting from Sleep Loss, Circadian Desynchronization, and Work Overload" | Why sleep and recovery are monitored (does not set any threshold) | `hrv_sleep_decline` early-warning card | [humanresearchroadmap.nasa.gov/Risks/?i=100](https://humanresearchroadmap.nasa.gov/Risks/?i=100) |
 | NASA **Human Research Roadmap**: "Risk of Spaceflight Associated Neuro-ocular Syndrome (SANS)" (last published 05/13/25) | Why eyes are screened in flight: "70% of crewmembers experience one or more of the hallmark signs of SANS" (does not set any threshold) | Eyes page ("Why eyes are screened in flight"), `eye_amsler` co-pilot guidance, `thresholds.json` source `nasa-hrr-sans` | [humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105](https://humanresearchroadmap.nasa.gov/Risks/risk.aspx?i=105) |
-| NASA Human Research Roadmap: human system risks index | Risk names | `data/nasa/hrp-risks.json` (loaded, not shown) | [humanresearchroadmap.nasa.gov](https://humanresearchroadmap.nasa.gov/) |
 | NASA **Moon Fact Sheet** | Gravity 0.165 g, light delay ≈ 1.3 s, lunar day ≈ 29.5 days | `lib/mission/environments.ts` | [nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html) |
-| NASA **Mars Fact Sheet** | Gravity 0.38 g, Earth–Mars distance → light delay 3–22 min, sol ≈ 24.66 h | `lib/mission/environments.ts`; `commsDelayMinutes` in `thresholds.json` | [nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html) |
+| NASA **Mars Fact Sheet** | Gravity 0.38 g, Earth–Mars distance → light delay 3–22 min, sol ≈ 24.66 h | `lib/mission/environments.ts` | [nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html](https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html) |
 | **NASA-STD-3001** Volume 1 (Crew Health) | Career effective-dose limit, 600 mSv | Career-dose meter; `careerLimitMsv` | NASA's own PDF links returned 404 when checked; confirmed via Zanon et al. 2026 (section 3) |
-| NASA OSDR **OSD-630**: Inspiration4 stool | Named as a validity reference for the Bristol (GI) module; not downloaded | GI module notes | [osdr.nasa.gov](https://osdr.nasa.gov/) (OSD-630) |
+| NASA OSDR **OSD-630**: Inspiration4 stool | Considered for the GI module but **not used** (the Bristol type meanings come from Lewis & Heaton 1997) | none | [osdr.nasa.gov](https://osdr.nasa.gov/) (OSD-630) |
 | NASA, **"Astronaut Exercise"** (Science in Space, 20 May 2024; updated 3 Feb 2025) | "crew members now averaging two hours of exercise per day." → the ISS daily exercise target, 120 min (sourced) | `lib/mission/environments.ts` (ISS `exerciseTarget`); Bone protection page | [nasa.gov](https://www.nasa.gov/missions/station/iss-research/astronaut-exercise/) |
 | Smith SM, Zwart SR, Douglas GL, Heer M. ***Human Adaptation to Spaceflight: The Role of Food and Nutrition***, 2nd ed. NASA, 2021 | Table 1: calcium 1,000–1,200 mg/day (exploration, 2020) → calcium target 1000 mg; vitamin D 1000 IU/day (exploration, 2020) → vitamin D target 1000 IU; the in-flight evidence that 800 IU/day maintains status is cited as supporting context | `thresholds.json` `bone`; Bone protection page | [PDF (nasa.gov)](https://www.nasa.gov/wp-content/uploads/2015/02/human_adaptation_2021_final.pdf) |
 
@@ -69,9 +68,9 @@ These are Cosmic Shield settings, labelled **app default** in the code and UI an
 - Vital-sign Watch bands (heart rate, blood pressure, SpO₂ ≤ 94 %, glucose ≥ 140 mg/dL, HRV, sleep, self-rated stress ≥ 4/5).
 - Radiation Watch levels (2 × the daily dose; 300 mSv cumulative = half the career limit).
 - The `hrv_sleep_decline` pattern settings.
-- Exercise targets other than the ISS's (Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen), the `bone_exercise` 50 % rule, the 2–3 L hydration band, the GI pattern rules (types 1–2 or 6–7 on 2 of 3 days), points for GI and eye-screening entries, the Amsler rules (any marked square or centre dot not seen → Watch; 2 changed tests in a row → flight surgeon), SANS screening cadence, mission day 42, ISS increment and lunar stay lengths.
+- Exercise targets other than the ISS's (Lunar surface 90, Mars transit 120, Mars surface 90 min; 120 min when none is chosen), the `bone_exercise` 50 % rule, the 2–3 L hydration band, the GI pattern rules (types 1–2 or 6–7 on 2 of 3 days), points for GI and eye-screening entries, the Amsler rules (any marked square or centre dot not seen → Watch; 2 changed tests in a row → flight surgeon), eye screening cadence, ISS increment and lunar stay lengths.
 
-**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), bone protection logs (`lib/bone/seed-data.ts`; exercise, load, calcium and vitamin D), GI entries (`lib/gi/seed-data.ts`; Bristol types 3–5, 2.2–2.8 L of fluid, no photos), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) and the crew snapshots on Crew admin (`lib/demo/crew-profiles.ts`). The four demo crew and the flight surgeon are fictional.
+**Simulated demo data** (not real crew data): the seeded vitals (`lib/vitals/seed-data.ts`), daily Mind check-ins (`lib/mind/seed-data.ts`; 1–5 scales, no notes), bone protection logs (`lib/bone/seed-data.ts`; exercise, load, calcium and vitamin D), GI entries (`lib/gi/seed-data.ts`; Bristol types 3–5, 2.2–2.8 L of fluid, no photos), dosimeter readings and previous-mission career doses (`lib/radiation/seed-data.ts`; the daily values are based on the measured ISS ALTEA dose, the career summaries are fictional), the 14 nights of sleep, HRV, quality and stress (`lib/demo/nightly.ts`; RMSSD CV 8–12 %, sleep SD 0.4–0.6 h, demo settings) No eye screenings or photos are seeded. The old simulated crew snapshots (`lib/demo/crew-profiles.ts`) have been removed: Crew admin shows only logged entries. The four demo crew and the flight surgeon are fictional.
 
 ## 5. Libraries
 
@@ -116,7 +115,7 @@ Versions are from `package.json`.
 | Playwright | ^1.55.1 | End-to-end tests and the contrast check | [playwright.dev](https://playwright.dev/) |
 | ESLint (+ eslint-config-next) | 9 | Linting | [eslint.org](https://eslint.org/) |
 | Prettier | ^3.6.2 | Formatting | [prettier.io](https://prettier.io/) |
-| sharp | (via Next.js) | Image conversion to WebP, cropping, background keying | [sharp.pixelplumbing.com](https://sharp.pixelplumbing.com/) |
+| sharp | ^0.35.5 | Preparing the bundled images: WebP conversion, cropping, background keying, blurring the lunar photo's mission patch | [sharp.pixelplumbing.com](https://sharp.pixelplumbing.com/) |
 
 ## 6. Assets
 
@@ -132,19 +131,21 @@ Loaded with `next/font/google`, all under the SIL Open Font License.
 
 ### Image credits
 
-The 10 images the app uses, all photos from Unsplash or Pixabay, converted to WebP (and cropped, keyed to a transparent background or recoloured) for the app:
+The 10 images the app uses, all from Unsplash or Pixabay, converted to WebP (and cropped, keyed to a transparent background, recoloured or, for the lunar photo, with the mission patch blurred) for the app:
 
-- ISS in orbit (background for the ISS environment, `public/backgrounds/iss-orbit.webp`): Photo by [NASA] on [Unsplash], [(https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0)]
-- Astronaut on the lunar surface (background for Lunar surface, `public/backgrounds/lunar-astronaut.webp`): Photo by [History in HD] on [Unsplash], [(https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg)]
-- Mars from space (background for Mars transit, `public/backgrounds/mars-planet.webp`): Photo by [javier Miranda] on [Unsplash], [https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo]
-- Martian cliffs (background for Mars surface, `public/backgrounds/mars-cliff.webp`): Photo by [Nicolas Lobos] on [Unsplash], [https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI]
-- Anatomical body figure (Health Dashboard body map, `public/organs/anatomy.webp`): Photo by [Rohit Choudhari] on [Unsplash], [(https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ)]
-- Anatomical heart (Vitals page, `public/organs/heart.webp`): Photo by [Mohammad-Ben-Ammar] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/]
-- Skeleton / bone (Bone Protection page, `public/organs/bone.webp`): Photo by [divotomezove] on [Pixabay], [https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/]
-- Human eye (Eyes page, `public/organs/eye.webp`): Photo by [95C] on [Pixabay], [https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/]
-- Digestive system (GI page, `public/organs/gi.webp`): Photo by [Phylum] on [Pixabay], [https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/]
-- Brain (Mind page, `public/organs/mind.webp`): Photo by [Milad-Fakurian] on [Unsplash], [https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U]
+- ISS in orbit, the ISS background, `public/backgrounds/iss-orbit.webp`: Photo by NASA on Unsplash, https://unsplash.com/photos/international-space-station-orbits-earth-wAkLQnT2TC0
+- Astronaut on the lunar surface, the Lunar surface background, `public/backgrounds/lunar-surface-eva.webp`, with the mission patch on the suit blurred out: Photo by History in HD on Unsplash, https://unsplash.com/photos/buzz-aldrin-walking-on-the-moon-e5eDHbmHprg
+- Mars from space, the Mars transit background, `public/backgrounds/mars-planet.webp`: Photo by javier Miranda on Unsplash, https://unsplash.com/photos/a-red-planet-with-a-star-in-the-background-lH1VONHniMo
+- Martian cliffs, the Mars surface background, `public/backgrounds/mars-cliff.webp`: Photo by Nicolas Lobos on Unsplash, https://unsplash.com/photos/person-walking-near-brown-rock-kGtFjYdm7DI
+- Anatomical body figure, the Health Dashboard body map, `public/organs/anatomy.webp`: Photo by Rohit Choudhari on Unsplash, https://unsplash.com/photos/x-ray-of-a-human-skeleton-against-black-background-ygO4wgzG0zQ
+- Anatomical heart (AI-generated), the Vitals page, `public/organs/heart.webp`: Photo by Mohammad-Ben-Ammar on Pixabay, https://pixabay.com/illustrations/ai-generated-heart-anatomical-8771275/
+- Human skeleton, the Bone protection page, `public/organs/bone.webp`: Photo by divotomezove on Pixabay, https://pixabay.com/illustrations/human-skeleton-skeletons-anatomy-5500722/
+- Human eye, the Eyes page, `public/organs/eye.webp`: Photo by 95C on Pixabay, https://pixabay.com/illustrations/eye-iris-globe-vision-vista-1882171/
+- Digestive system (AI-generated), the GI page, `public/organs/gi.webp`: Photo by Phylum on Pixabay, https://pixabay.com/illustrations/ai-generated-intestine-digestive-8424512/
+- Brain, the Mind page, `public/organs/mind.webp`: Photo by Milad Fakurian on Unsplash, https://unsplash.com/photos/iridescent-brain-render-on-blue-purple-background-58Z17lnVS4U
 
-Photos are used under the Unsplash License (https://unsplash.com/license) and the Pixabay Content License (https://pixabay.com/service/license-summary/), and are not covered by this repository's MIT licence.
+The two images marked (AI-generated) are AI-generated illustrations; the app shows a visible “AI-generated image” label on them wherever they appear (Vitals and GI pages).
+
+Photos are used under the Unsplash License, https://unsplash.com/license, and the Pixabay Content License, https://pixabay.com/service/license-summary/,, and are not covered by this repository's MIT licence.
 
 The source photos (`feature_img/`) and the design inspiration folder (`design-ref/`) are kept out of the repository (`.gitignore`) and were removed from the git history. The Cosmic Shield logo, the Sleep & Stress and Radiation holograms and the app icon (`app/icon.svg`) are drawn in code; `app/favicon.ico` is the Next.js starter favicon.

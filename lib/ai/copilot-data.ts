@@ -296,8 +296,8 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
       url: HRV_SLEEP_DECLINE_CITATIONS[0].url,
     },
     vitals_blood_pressure: { steps: [ESCALATE_GUIDANCE.bloodPressure], whenToContact: `If it is still above 180/120 after re-measuring, ${contact}.`, citation: sourceText(v.bloodPressureEscalate.source)!, label: "AHA" },
-    vitals_spo2: { steps: [ESCALATE_GUIDANCE.spo2], whenToContact: `Below 90 %: ${contact} now.`, citation: sourceText(v.spo2Pct.escalateSource)!, label: "WHO" },
-    vitals_glucose: { steps: [ESCALATE_GUIDANCE.glucose], whenToContact: `Below 54 mg/dL: ${contact} now.`, citation: sourceText(v.glucoseMgDl.escalateSource)!, label: "ADA" },
+    vitals_spo2: { steps: [ESCALATE_GUIDANCE.spo2], whenToContact: `Below ${v.spo2Pct.escalateBelow} %: ${contact} now.`, citation: sourceText(v.spo2Pct.escalateSource)!, label: "WHO" },
+    vitals_glucose: { steps: [ESCALATE_GUIDANCE.glucose], whenToContact: `Below ${v.glucoseMgDl.escalateBelow} mg/dL: ${contact} now.`, citation: sourceText(v.glucoseMgDl.escalateSource)!, label: "ADA" },
     vitals: {
       steps: ["Rest seated for five minutes and take the flagged measure again.", "If it stays in Watch, follow onboard guidance and log it."],
       whenToContact: `If a reading reaches Escalate, ${contact}.`,
@@ -318,7 +318,7 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
     },
     radiation_career: {
       steps: ["Keep logging every dosimeter reading.", "Review planned activities with the flight surgeon."],
-      whenToContact: `Above the 600 mSv career limit: ${contact}.`,
+      whenToContact: `Above the ${RADIATION_LIMITS.careerLimit} mSv career limit: ${contact}.`,
       citation: sourceText(RADIATION_LIMITS.careerLimitSource)!,
       label: "NASA-STD-3001",
     },
@@ -343,7 +343,7 @@ export function getGuidance(ctx: CopilotContext, ruleId: GuidanceId) {
       label: "Rules engine",
     },
     gi_hard: {
-      steps: ["Increase fluids through the day, toward the 2–3 L daily band.", "Add fibre-rich foods from the menu where you can.", "Keep logging each entry on the GI page."],
+      steps: [`Increase fluids through the day, toward the ${thresholds.gi.fluidMinL}–${thresholds.gi.fluidMaxL} L daily band.`, "Add fibre-rich foods from the menu where you can.", "Keep logging each entry on the GI page."],
       whenToContact: `If it continues or you feel unwell, talk to your Crew Medical Officer, or ${contact}.`,
       citation: `${RULES_DOC}. Bristol types per Lewis & Heaton 1997; the 3-day pattern rule and the fluid band are app defaults (Watch only).`,
       label: "Rules engine",

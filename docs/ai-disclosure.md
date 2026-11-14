@@ -1,6 +1,6 @@
 # AI disclosure: the mission co-pilot
 
-Cosmic Shield has one AI feature in the product: the **mission co-pilot**, a chat panel that answers an astronaut's questions about their own logged data. This page says what it is, what it can and can't do, and how it is kept safe. The vision modules (Bristol, SANS) are not AI models; see [intelligent-systems.md](./intelligent-systems.md).
+Cosmic Shield has one AI feature in the product: the **mission co-pilot**, a chat panel that answers an astronaut's questions about their own logged data. This page says what it is, what it can and can't do, and how it is kept safe. The image "classifiers" for GI and fundus photos are **prototype stubs, not AI models**: they never analyse an image and always return "Not analysed: prototype"; see [intelligent-systems.md](./intelligent-systems.md).
 
 ## What it is
 
@@ -34,7 +34,7 @@ Every tool reads only one crew member: the signed-in crew member, or, for the fl
 | `get_radiation_status` | Career total (sum of dose entries), % of 600 mSv, latest reading, projected mission dose | NASA-STD-3001; the environment's dose source (NASA RadLab or the cited paper) |
 | `get_space_weather` | NASA DONKI feeds and recent events, live or cached | NASA DONKI |
 | `get_environment` | Comms delay, gravity, typical dose, mission length, shelter procedure; or "none chosen" | NASA fact sheets, environment sources |
-| `get_active_alerts` | Every Watch / Escalate from the rules engine, including `hrv_sleep_decline` with its per-night numbers, plus open escalation records | Rules engine; NASA Human Research Roadmap (sleep risk) |
+| `get_active_alerts` | Every Watch / Escalate from `lib/alerts/active.ts` (vitals, sleep, radiation, bone, GI, eyes, mind, and `hrv_sleep_decline` with its per-night numbers), plus open escalation records | Rules engine; NASA Human Research Roadmap (sleep risk) |
 | `get_reference_baseline(indicator)` | Inspiration4 pre-flight range for glucose, calcium, sodium, potassium, BUN or creatinine | NASA OSDR OSD-575 |
 | `get_guidance(ruleId)` | Non-diagnostic steps for a rule, when to contact the ground, and the comms delay | The rule's citation |
 
@@ -64,6 +64,7 @@ The "Talk it through" card on the Mind page uses the same co-pilot (same route, 
 
 - Co-pilot and support conversations are **not stored on the server**; they live in the browser tab and disappear when it is closed or cleared.
 - The one exception is a safety escalation: its record holds the excerpt of the crew member's own recent messages, so the flight surgeon can follow up.
+- GI and fundus photos are never sent to any model. They are stored with metadata removed and served only to the owner and the flight surgeon.
 - The flight surgeon sees check-in **scores** and pattern status, and every escalation record, on Crew admin. Check-in notes stay private to the crew member (a note that triggered the safety check appears only inside that escalation record).
 - Escalation evidence (including excerpts) is readable only with the flight surgeon role (`escalationsForReview`, `mindSummaryForReview` return 403 for anyone else). Crew can never see another crew member's records; their own co-pilot only sees the generic reason line of their own records, never an excerpt.
 

@@ -150,9 +150,22 @@ export function onImage(fx: number, fy: number, aspect: number) {
 }
 
 /** A feature image (transparent PNG/WebP) presented as the stage visual. */
-export function OrganImage({ src, alt }: { src: string; alt: string }) {
+/**
+ * `aiGenerated`: the image is an AI-generated illustration. Space Apps asks
+ * for a visible label on those, so a small "AI-generated image" tag is shown
+ * in the stage's bottom-left corner (clear of every callout) at all sizes.
+ */
+export function OrganImage({ src, alt, aiGenerated = false }: { src: string; alt: string; aiGenerated?: boolean }) {
   return (
     <div className="absolute inset-0" style={{ padding: `${IMAGE_PAD * 100}%` }}>
+      {aiGenerated && (
+        <span
+          className="pointer-events-none absolute bottom-1 left-1 z-10 rounded-md border border-border bg-background/85 px-1.5 py-0.5 text-[11px] leading-tight font-medium text-foreground backdrop-blur"
+          data-testid="ai-generated-label"
+        >
+          AI-generated image
+        </span>
+      )}
       <div className="relative size-full">
         <Image
           src={src}

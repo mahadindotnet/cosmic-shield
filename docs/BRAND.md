@@ -52,7 +52,7 @@ The dashboard background is the chosen mission environment's image (`SpaceBackdr
 |---|---|
 | None selected | Plain dark space gradient (no image) |
 | ISS | `public/backgrounds/iss-orbit.webp` |
-| Lunar surface | `public/backgrounds/lunar-astronaut.webp` |
+| Lunar surface | `public/backgrounds/lunar-surface-eva.webp` (mission patch on the suit blurred out) |
 | Mars transit | `public/backgrounds/mars-planet.webp` |
 | Mars surface | `public/backgrounds/mars-cliff.webp` |
 

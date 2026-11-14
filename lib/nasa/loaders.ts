@@ -15,8 +15,6 @@ import { join } from "node:path";
 import baselinesFixture from "@/data/nasa/fixtures/baselines.json";
 import radiationFixture from "@/data/nasa/fixtures/radiation-environments.json";
 import spaceWeatherFixture from "@/data/nasa/fixtures/space-weather.json";
-import hrpRisks from "@/data/nasa/hrp-risks.json";
-import thresholds from "@/data/rules/thresholds.json";
 import { latestEvents, simplifyDonkiEvent, type DonkiType, type SpaceWeatherEvent } from "@/lib/nasa/donki";
 
 export type Baselines = typeof baselinesFixture;
@@ -124,27 +122,3 @@ export async function getLiveSpaceWeather({ days = 30, limit = 30 } = {}): Promi
   return { origin: "live", data: live };
 }
 
-/* ------------------------------------------------ rules and references */
-
-export function getMissionConfig() {
-  return {
-    missionDay: thresholds.missionDay,
-    commsDelayMinutes: thresholds.commsDelayMinutes,
-    thresholds: thresholds.vitals,
-    trendRules: thresholds.trends,
-    moduleRules: thresholds.modules,
-  };
-}
-
-export function getHrpRisks() {
-  return hrpRisks;
-}
-
-export function getDefaultNasaSourceTags() {
-  return [
-    { module: "Metabolic baselines", source: "NASA OSDR OSD-575 (Inspiration4 metabolic panel)" },
-    { module: "Radiation", source: "NASA OSDR RadLab, MSL-RAD and Chang'E-4 LND publications" },
-    { module: "Space weather", source: "NASA DONKI" },
-    { module: "Risk framework", source: "NASA HRP human system risks" },
-  ];
-}

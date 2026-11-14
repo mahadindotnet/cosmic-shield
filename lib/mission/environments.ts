@@ -136,7 +136,7 @@ export const MISSION_ENVIRONMENTS: MissionEnvironment[] = [
     name: "Lunar surface",
     tagline: "Lunar surface · one-sixth gravity",
     summary: "No magnetosphere and no thick atmosphere. Ground replies after a short pause.",
-    backdrop: { src: "/backgrounds/lunar-astronaut.webp", position: "55% 30%", dim: 0.8, blur: 2 },
+    backdrop: { src: "/backgrounds/lunar-surface-eva.webp", position: "55% 30%", dim: 0.8, blur: 2 },
     ...dose("lunar_surface"),
     missionDays: 30,
     missionDaysLabel: "30-day surface stay",

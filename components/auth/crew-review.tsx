@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
-  Activity,
-  Droplets,
+  Bone,
+  Eye,
   HeartPulse,
   KeyRound,
   Moon,
@@ -9,12 +9,22 @@ import {
   ShieldAlert,
   Smile,
   UserRound,
-  Wind,
+  Utensils,
   type LucideIcon,
 } from "lucide-react";
 import { StatusBadge } from "@/components/cosmic-shield/status";
-import type { CrewDashboardPayload } from "@/lib/rules/types";
+import type { CrewSnapshot, ModuleReading } from "@/lib/crew/snapshot";
 import { cn } from "@/lib/utils";
+
+const MODULE_ICONS: Record<ModuleReading["module"], LucideIcon> = {
+  vitals: HeartPulse,
+  "sleep-stress": Moon,
+  radiation: Radiation,
+  bone: Bone,
+  gi: Utensils,
+  eyes: Eye,
+  mind: Smile,
+};
 
 export interface CrewPickerItem {
   crewId: string;
@@ -93,30 +103,22 @@ export interface CrewAuditRow {
 
 const utc = (ms: number) => `${new Date(ms).toISOString().slice(0, 16).replace("T", " ")} UTC`;
 
-/** Review panel for the crew member chosen in the picker. */
+/**
+ * Review panel for the crew member chosen in the picker: account state, the
+ * latest reading of every module and the active alerts, all from the module
+ * tables (lib/crew/snapshot.ts, lib/alerts/active.ts). Nothing simulated.
+ */
 export function CrewReview({
   account,
-  data,
+  snapshot,
   activity,
 }: {
   account: CrewAccountSummary;
-  data: CrewDashboardPayload | null;
+  snapshot: CrewSnapshot;
   activity: CrewAuditRow[];
 }) {
-  const v = data?.vitals;
-  const tiles: { icon: LucideIcon; label: string; value: string; unit: string }[] = v
-    ? [
-        { icon: HeartPulse, label: "Heart rate", value: String(v.heartRateBpm), unit: "bpm" },
-        { icon: Activity, label: "HRV", value: String(v.hrvMs), unit: "ms" },
-        { icon: Wind, label: "SpO₂", value: String(v.spo2Pct), unit: "%" },
-        { icon: HeartPulse, label: "Blood pressure", value: `${v.systolicBp}/${v.diastolicBp}`, unit: "mmHg" },
-        { icon: Moon, label: "Sleep", value: v.sleepHours.toFixed(1), unit: "h" },
-        { icon: Smile, label: "Stress index", value: String(v.stressIndex), unit: "/100" },
-        { icon: Radiation, label: "Dose today", value: v.radiationDoseMsvDay.toFixed(2), unit: "mSv" },
-        { icon: Droplets, label: "Hydration", value: data!.moduleState.hydrationLiters.toFixed(1), unit: `of ${data!.moduleState.hydrationTargetLiters} L` },
-      ]
-    : [];
-
+  const alerts = snapshot.alerts;
+  const level = alerts.some((a) => a.level === "escalate") ? "escalate" : alerts.length ? "watch" : "normal";
   return (
     <section
       aria-labelledby="review-heading"
@@ -133,7 +135,9 @@ export function CrewReview({
             <h2 id="review-heading" className="font-heading text-xl font-medium text-foreground">
               {account.displayName}
             </h2>
-            <p className="text-xs text-muted-foreground">{account.title}</p>
+            <p className="text-xs text-muted-foreground">
+              {account.title} · {snapshot.environment ?? "No mission environment chosen"}
+            </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -156,74 +160,72 @@ export function CrewReview({
         </div>
       </div>
 
-      {data ? (
-        <>
-          <div className="rounded-xl border border-border bg-background/40 p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <ShieldAlert className="size-4 text-primary" aria-hidden="true" />
-              <p className="text-sm font-medium text-foreground">Escalation</p>
-              <StatusBadge status={data.escalation.level} />
-              <span className="text-[11px] text-muted-foreground">Mission day {data.missionDay}</span>
-            </div>
-            <p className="mt-2 text-sm text-foreground/90">{data.escalation.headline}</p>
-            {data.escalation.reasons.length > 0 && (
-              <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-muted-foreground">
-                {data.escalation.reasons.map((r) => (
-                  <li key={r}>{r}</li>
-                ))}
-              </ul>
+      <div className="rounded-xl border border-border bg-background/40 p-4" data-testid="crew-review-alerts">
+        <div className="flex flex-wrap items-center gap-2">
+          <ShieldAlert className="size-4 text-primary" aria-hidden="true" />
+          <p className="text-sm font-medium text-foreground">Active alerts</p>
+          <StatusBadge status={level} />
+        </div>
+        {alerts.length ? (
+          <ul className="mt-2 flex flex-col gap-1.5 text-xs">
+            {alerts.map((a) => (
+              <li key={a.key} data-rule={a.ruleId} className="text-foreground/90">
+                <span className="font-medium">{a.title}</span>
+                {a.detail && <span className="text-muted-foreground"> {a.detail}</span>}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground">All clear: no Watch or Escalate from the rules engine.</p>
+        )}
+      </div>
+
+      <div>
+        <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+          <h3 className="console-label">Latest readings</h3>
+          <p className="text-[11px] text-muted-foreground">From the crew member&apos;s logged entries (demo seed rows are marked on each module page).</p>
+        </div>
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4" data-testid="crew-review-readings">
+          {snapshot.readings.map((r) => {
+            const Icon = MODULE_ICONS[r.module];
+            return (
+              <div key={r.module} className="rounded-xl border border-border bg-background/40 px-3 py-2.5" data-module={r.module} data-status={r.status}>
+                <dt className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                  <Icon className="size-3.5 text-primary/80" aria-hidden="true" />
+                  {r.label}
+                </dt>
+                {r.value === null ? (
+                  <dd className="mt-1 text-xs text-muted-foreground">No entries yet</dd>
+                ) : (
+                  <dd className="mt-0.5 flex flex-wrap items-baseline gap-2">
+                    <span className="font-mono text-xl text-foreground tabular-nums">
+                      {r.value}
+                      <span className="ml-1 text-[11px] text-muted-foreground">{r.unit}</span>
+                    </span>
+                    {r.status !== "no-data" && <StatusBadge status={r.status} />}
+                  </dd>
+                )}
+              </div>
+            );
+          })}
+          <div className="rounded-xl border border-border bg-background/40 px-3 py-2.5" data-module="career-dose">
+            <dt className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+              <Radiation className="size-3.5 text-primary/80" aria-hidden="true" />
+              Career dose
+            </dt>
+            {snapshot.careerDose ? (
+              <dd className="mt-0.5 font-mono text-xl text-foreground tabular-nums">
+                {snapshot.careerDose.totalMsv}
+                <span className="ml-1 text-[11px] text-muted-foreground">of 600 mSv</span>
+              </dd>
+            ) : (
+              <dd className="mt-1 text-xs text-muted-foreground">No entries yet</dd>
             )}
           </div>
+        </dl>
+      </div>
 
-          <div>
-            <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-              <h3 className="console-label">Latest readings</h3>
-              <p className="text-[11px] text-muted-foreground">Simulated demo crew data, not NASA measurements.</p>
-            </div>
-            <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              {tiles.map((t) => (
-                <div key={t.label} className="rounded-xl border border-border bg-background/40 px-3 py-2.5">
-                  <dt className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-                    <t.icon className="size-3.5 text-primary/80" aria-hidden="true" />
-                    {t.label}
-                  </dt>
-                  <dd className="mt-0.5 font-mono text-xl text-foreground tabular-nums">
-                    {t.value}
-                    <span className="ml-1 text-[11px] text-muted-foreground">{t.unit}</span>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-2">
-            <div>
-              <h3 className="console-label mb-2">Recent check-ins</h3>
-              {data.behavioralLog.length ? (
-                <ul className="flex flex-col gap-2">
-                  {data.behavioralLog.slice(0, 4).map((l, i) => (
-                    <li key={i} className="rounded-lg border border-border bg-background/40 px-3 py-2 text-xs">
-                      <span className="font-mono text-muted-foreground">{l.at}</span>
-                      <span className="ml-2 text-muted-foreground">mood {l.affectScore}/5</span>
-                      <p className="mt-0.5 text-foreground/90">{l.note}</p>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-xs text-muted-foreground">No check-ins yet.</p>
-              )}
-            </div>
-            <ActivityList rows={activity} />
-          </div>
-        </>
-      ) : (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <p className="rounded-xl border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
-            No health data is linked to this account yet.
-          </p>
-          <ActivityList rows={activity} />
-        </div>
-      )}
+      <ActivityList rows={activity} />
     </section>
   );
 }

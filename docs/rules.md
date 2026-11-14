@@ -1,6 +1,6 @@
 # Decision-support rules
 
-Cosmic Shield's alerts come from deterministic rules in `lib/rules/`, with unit tests. Thresholds live in `data/rules/thresholds.json`. Nothing here diagnoses; an alert is a prompt to look and to talk to the Crew Medical Officer.
+Cosmic Shield's alerts come from deterministic rules, one file per module (`lib/<module>/rules.ts`, plus the `hrv_sleep_decline` pattern in `lib/rules/`), all unit-tested and evaluated on read. Thresholds live in `data/rules/thresholds.json`. Every active alert is collected in one place, `lib/alerts/active.ts` (bell, Health Dashboard, Crew admin, co-pilot). Nothing here diagnoses; an alert is a prompt to look and to talk to the Crew Medical Officer.
 
 ## Where every threshold comes from
 
@@ -23,7 +23,10 @@ Each number in `data/rules/thresholds.json`, `lib/health/reference-ranges.ts` an
 | Glucose below 70 mg/dL → Watch; below 54 mg/dL → Escalate | sourced | American Diabetes Association, *Guidelines InSIGHT: Hypoglycemia (Low Blood Glucose)*, patient version, based on the Standards of Care in Diabetes—2025, [PDF](https://professional.diabetes.org/sites/dpro/files/2025-05/hypoglycemia-patient-5-27-25.pdf): "LEVEL 1 Your blood glucose is less than 70 mg/dL but over or at 54 mg/dL"; "LEVEL 2 Your blood glucose is less than 54 mg/dL". |
 | Blood pressure: systolic > 180 or diastolic > 120 mmHg → Escalate | sourced | American Heart Association, *Understanding Blood Pressure Readings*, [https://goredforwomen.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings](https://goredforwomen.org/en/health-topics/high-blood-pressure/understanding-blood-pressure-readings). This is the AHA's own Go Red for Women mirror of heart.org/bplevels: heart.org (and the mirror) return 403 to automated fetches, so the wording was read from the mirror page by the project team (2026-11-13). Verbatim: category "HYPERTENSIVE CRISIS (consult your doctor immediately)", values "HIGHER THAN 180 and/or HIGHER THAN 120"; guidance "Wait five minutes after your first reading." / "Take your blood pressure again." / "If your readings are still unusually high, contact your health care professional immediately." Strictly greater than, so 180/120 is not Escalate. |
 | Resting heart rate Escalate | **not added** | No verifiable source for an escalation cut-off was found. Heart rate stays Watch-only. |
-| Vital-sign baselines and Watch bands (HR, HRV, SpO₂ ≤ 94 %, BP, sleep, stress), glucose ≥ 140, self-rated stress ≥ 4/5, exercise 120–180 min, hydration 2–3 L, SANS cadence, Bristol and SANS settings, mission day 42 | app default | Not clinical cut-offs |
+| Vital-sign baselines and Watch bands (HR, HRV, SpO₂ ≤ 94 %, BP, sleep, stress), glucose ≥ 140, self-rated stress ≥ 4/5, daily exercise targets other than the ISS's, hydration 2–3 L, the GI and Amsler pattern rules, eye screening cadence | app default | Not clinical cut-offs |
+| ISS daily exercise 120 min; calcium 1000 mg/day; vitamin D 1000 IU/day | sourced | NASA "Astronaut Exercise" page; NASA nutrition requirements (Smith et al. 2021). See Bone protection below. |
+| Bristol stool types 1–7 (meanings) | sourced | Lewis & Heaton 1997. See GI below. |
+| Why eyes are screened | sourced | NASA HRP, Risk of SANS (sets no threshold). See Eyes below. |
 | Glucose "Inspiration4 crew reference (n=4)" 56–100 mg/dL | sourced | NASA OSDR OSD-575 (Inspiration4 metabolic panel): min–max of all 12 pre-flight samples (L-92, L-44, L-3) from the 4 crew, `data/nasa/derived/baselines.json`. Fasting status not stated in the source. Shown for context only; it does not set the Watch bounds. |
 
 ## Vitals (`lib/vitals/rules.ts`)
